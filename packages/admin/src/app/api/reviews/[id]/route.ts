@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/api-auth";
 import { serializeReview } from "@/lib/serialize";
+import { updateReviewStatusSchema } from "@/lib/validation";
 
 export async function PATCH(
   request: NextRequest,
@@ -18,16 +19,17 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { status } = body;
 
-    // 验证 status 值
-    const validStatuses = ["pending", "approved", "rejected"];
-    if (!validStatuses.includes(status)) {
+    // zod 输入验证
+    const result = updateReviewStatusSchema.safeParse(body);
+    if (!result.success) {
       return NextResponse.json(
-        { error: "无效的评价状态" },
+        { error: result.error.issues[0]?.message || "输入参数无效" },
         { status: 400 },
       );
     }
+
+    const { status } = result.data;
 
     // 检查评价是否存在
     const existing = await prisma.review.findUnique({ where: { id } });

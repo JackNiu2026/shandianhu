@@ -1,11 +1,15 @@
 /**
  * GET /api/dashboard/stats - 仪表盘统计数据
  */
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { authenticateRequest } from "@/lib/api-auth";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const auth = authenticateRequest(request);
+    if (auth.response) return auth.response;
+
     // 并行查询各项统计数据
     const [
       teacherCount,

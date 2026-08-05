@@ -1,17 +1,23 @@
 /**
- * API 请求封装（预留空壳）
+ * API 请求封装（类型定义层）
  *
- * 当前阶段无后端，所有数据来自 shared/data。
- * 后续对接后端时，在此文件中实现多端兼容的请求方法：
- * - 小程序端：Taro.request
- * - H5 端：fetch
- * - RN 端：fetch
+ * 跨端 API 客户端的实际实现位于各端代码中：
+ * - 移动端（Taro）：packages/mobile/src/services/api.ts
+ * - 管理后台（Next.js）：packages/admin/src/lib/data.ts
  *
- * 示例：
- * export async function fetchTeachers(): Promise<Teacher[]> {
- *   const res = await Taro.request({ url: '/api/teachers', method: 'GET' });
- *   return res.data;
- * }
+ * 共享类型定义在此导出，供两端复用。
  */
 
-export {};
+/** 列表接口统一响应格式 */
+export interface ListResponse<T> {
+  data: T[];
+  total: number;
+  page?: number;
+  pageSize?: number;
+}
+
+/** 平台统计数据 */
+export interface PlatformStats {
+  teacherCount: number;
+  parentCount: number;
+}

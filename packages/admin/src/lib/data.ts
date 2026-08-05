@@ -1,4 +1,3 @@
-import { subjects, grades, budgetOptions } from "@lightning-tiger/shared";
 import type {
   TeacherAdmin,
   Parent,
@@ -6,55 +5,7 @@ import type {
   Review,
   Membership,
   Withdrawal,
-  MonthlyRevenue,
-  ContentConfig,
 } from "./types";
-
-/* ============ 静态数据（暂时保留，真实数据从 API 获取） ============ */
-
-/** 月度收益（静态占位，内容配置页面尚未完全对接） */
-export const monthlyRevenue: MonthlyRevenue[] = [
-  { month: "1月", revenue: 8200, orders: 12 },
-  { month: "2月", revenue: 9100, orders: 15 },
-  { month: "3月", revenue: 12400, orders: 18 },
-  { month: "4月", revenue: 10800, orders: 16 },
-  { month: "5月", revenue: 14200, orders: 22 },
-  { month: "6月", revenue: 15600, orders: 25 },
-  { month: "7月", revenue: 18240, orders: 28 },
-  { month: "8月", revenue: 9870, orders: 15 },
-];
-
-/** 内容配置（静态，真实数据可从 /api/content 获取） */
-export const contentConfig: ContentConfig = {
-  subjects: [...subjects],
-  grades: [...grades],
-  budgetOptions: [...budgetOptions],
-  platformStats: {
-    teacherCount: 856,
-    parentCount: 1240,
-  },
-};
-
-/** 科目分布（静态占位，真实数据从 /api/dashboard/stats 获取） */
-export const subjectDistribution = subjects.map((s) => ({
-  name: s,
-  count: 0,
-}));
-
-/** 评分分布（静态占位，真实数据从 /api/dashboard/stats 获取） */
-export const ratingDistribution = [
-  { name: "4.9", count: 0 },
-  { name: "4.8", count: 0 },
-  { name: "4.7", count: 0 },
-];
-
-/** MBTI 维度分布（静态占位，真实数据从 /api/dashboard/stats 获取） */
-export const mbtiDimensionStats = [
-  { dim: "EI", E: 4, I: 6 },
-  { dim: "SN", S: 5, N: 5 },
-  { dim: "TF", T: 6, F: 4 },
-  { dim: "JP", J: 7, P: 3 },
-];
 
 /* ============ 内部工具 ============ */
 
@@ -180,6 +131,36 @@ export async function getMemberships(): Promise<Membership[]> {
   return parseList<Membership>(res);
 }
 
+export async function createMembership(data: {
+  parentId: string;
+  duration: string;
+  amount: number;
+  startDate: string;
+  endDate: string;
+}): Promise<Membership> {
+  const res = await fetch("/api/memberships", {
+    method: "POST",
+    headers: JSON_HEADERS,
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("创建会员失败");
+  return res.json();
+}
+
+export async function updateMembershipStatus(id: string, status: Membership["status"]): Promise<void> {
+  const res = await fetch(`/api/memberships/${id}`, {
+    method: "PATCH",
+    headers: JSON_HEADERS,
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) throw new Error("更新会员状态失败");
+}
+
+export async function deleteMembership(id: string): Promise<void> {
+  const res = await fetch(`/api/memberships/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("删除会员失败");
+}
+
 /* ============ 提现 API ============ */
 
 export async function getWithdrawals(): Promise<Withdrawal[]> {
@@ -203,4 +184,46 @@ export async function getDashboardStats() {
   const res = await fetch("/api/dashboard/stats");
   if (!res.ok) throw new Error("获取仪表盘统计失败");
   return res.json();
+}
+
+/* ============ 平台配置 API ============ */
+
+export async function getPlatformConfig(): Promise<{ platformName: string; contact: string }> {
+  const res = await fetch("/api/content/config");
+  if (!res.ok) throw new Error("获取平台配置失败");
+  return res.json();
+}
+
+export async function updatePlatformConfig(data: { platformName: string; contact: string }): Promise<void> {
+  const res = await fetch("/api/content/config", {
+    method: "PUT",
+    headers: JSON_HEADERS,
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("更新平台配置失败");
+}
+
+/* ============ 修改密码 API ============ */
+
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  const res = await fetch("/api/auth/change-password", {
+    method: "POST",
+    headers: JSON_HEADERS,
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || "修改密码失败");
+  }
+}
+
+/* ============ 家长状态更新 API ============ */
+
+export async function updateParentStatus(id: string, status: string): Promise<void> {
+  const res = await fetch(`/api/parents/${id}`, {
+    method: "PATCH",
+    headers: JSON_HEADERS,
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) throw new Error("更新家长状态失败");
 }

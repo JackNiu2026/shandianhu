@@ -3,6 +3,7 @@ import { View, Text, Image } from "@tarojs/components";
 import { ActionIcon } from "@/components/Icons";
 import { NeedsSheet, TrustSheet, BookSheet, VideoPlayer } from "@/components/Modals";
 import { useAppStore } from "@/store";
+import { useTeachers, usePlatformStats } from "@/hooks";
 import { matchTeachers, isRelaxedMatch } from "@lightning-tiger/shared";
 import type { Teacher } from "@lightning-tiger/shared";
 import "./index.scss";
@@ -10,6 +11,10 @@ import "./index.scss";
 export default function MatchPage() {
   const { state, dispatch } = useAppStore();
   const { prefs, liked } = state;
+
+  // 从 API 获取老师列表和平台统计
+  const { teachers: apiTeachers, loading, error, reload } = useTeachers(prefs);
+  const { stats } = usePlatformStats();
 
   const [cursor, setCursor] = useState(0);
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
@@ -22,7 +27,7 @@ export default function MatchPage() {
   const [playing, setPlaying] = useState<Teacher | null>(null);
   const [swipeHistory, setSwipeHistory] = useState<{ teacher: Teacher; direction: "left" | "right" }[]>([]);
 
-  const matched = useMemo(() => matchTeachers(prefs), [prefs]);
+  const matched = useMemo(() => matchTeachers(prefs, apiTeachers), [prefs, apiTeachers]);
   const relaxed = isRelaxedMatch(prefs, matched);
   const teacher = matched[cursor];
 
@@ -72,13 +77,23 @@ export default function MatchPage() {
     <View className="match-screen">
       <View className="intro-row platform-stat">
         <Text>
-          已有 <Text>856</Text> 位优秀老师入驻平台
+          已有 <Text>{stats.teacherCount || "..."}</Text> 位优秀老师入驻平台
         </Text>
         <View className="filter-btn platform-filter" onClick={() => setNeedsOpen(true)}>
           <Text>筛选</Text>
         </View>
       </View>
-      {relaxed && (
+      {error && (
+        <View className="api-error" onClick={() => reload()}>
+          <Text>加载失败，点击重试</Text>
+        </View>
+      )}
+      {loading ? (
+        <View className="deck-end">
+          <Text>✦</Text>
+          <Text>正在为你匹配老师...</Text>
+        </View>
+      ) : relaxed && (
         <Text className="relax-note">符合预算的老师已看完，以下为放宽预算后的推荐</Text>
       )}
 

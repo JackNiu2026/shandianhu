@@ -58,6 +58,8 @@ uploads/
 
 # Reports (generated)
 lightning-tiger-analysis/
+project-analysis/
+.trae/
 
 # Figma (reference only, not built)
 figma/node_modules/

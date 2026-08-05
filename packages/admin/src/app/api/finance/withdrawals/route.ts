@@ -6,11 +6,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/api-auth";
 import { serializeWithdrawal } from "@/lib/serialize";
+import { updateWithdrawalSchema, parsePagination } from "@/lib/validation";
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = authenticateRequest(request);
+    if (auth.response) return auth.response;
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status") || "";
+    const { skip, take, page, pageSize } = parsePagination(searchParams);
 
     const where: Record<string, unknown> = {};
 
@@ -18,14 +23,20 @@ export async function GET(request: NextRequest) {
       where.status = status;
     }
 
-    const withdrawals = await prisma.withdrawal.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-    });
+    const [withdrawals, total] = await Promise.all([
+      prisma.withdrawal.findMany({
+        where,
+        include: { teacher: true },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take,
+      }),
+      prisma.withdrawal.count({ where }),
+    ]);
 
     const result = withdrawals.map(serializeWithdrawal);
 
-    return NextResponse.json({ data: result, total: result.length });
+    return NextResponse.json({ data: result, total, page, pageSize });
   } catch (error) {
     console.error("[Withdrawals List Error]", error);
     return NextResponse.json(
@@ -42,23 +53,17 @@ export async function PATCH(request: NextRequest) {
     if (auth.response) return auth.response;
 
     const body = await request.json();
-    const { id, status } = body;
 
-    if (!id) {
+    // zod 输入验证
+    const result = updateWithdrawalSchema.safeParse(body);
+    if (!result.success) {
       return NextResponse.json(
-        { error: "缺少提现记录 ID" },
+        { error: result.error.issues[0]?.message || "输入参数无效" },
         { status: 400 },
       );
     }
 
-    // 验证 status 值
-    const validStatuses = ["pending", "processed"];
-    if (!validStatuses.includes(status)) {
-      return NextResponse.json(
-        { error: "无效的提现状态" },
-        { status: 400 },
-      );
-    }
+    const { id, status } = result.data;
 
     // 检查提现记录是否存在
     const existing = await prisma.withdrawal.findUnique({ where: { id } });
@@ -72,6 +77,7 @@ export async function PATCH(request: NextRequest) {
     const withdrawal = await prisma.withdrawal.update({
       where: { id },
       data: { status },
+      include: { teacher: true },
     });
 
     return NextResponse.json(serializeWithdrawal(withdrawal));

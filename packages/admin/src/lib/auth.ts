@@ -5,9 +5,19 @@
 import jwt from "jsonwebtoken";
 import type { NextResponse } from "next/server";
 
-/** JWT 密钥，从环境变量读取，开发环境使用默认值 */
-export const JWT_SECRET =
-  process.env.JWT_SECRET || "lightning-tiger-dev-secret-change-in-production";
+/** JWT 密钥，从环境变量读取，生产环境必须设置 */
+export const JWT_SECRET = process.env.JWT_SECRET;
+
+/** 检查 JWT 密钥是否已配置 */
+function getJwtSecret(): string {
+  if (!JWT_SECRET) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("生产环境必须设置 JWT_SECRET 环境变量");
+    }
+    return "lightning-tiger-dev-secret-change-in-production";
+  }
+  return JWT_SECRET;
+}
 
 /** Cookie 名称 */
 export const AUTH_COOKIE_NAME = "admin-token";
@@ -37,7 +47,7 @@ export const PROTECTED_PATHS = [
 export function generateToken(username: string): string {
   return jwt.sign(
     { username, role: "superadmin", iat: Date.now() },
-    JWT_SECRET,
+    getJwtSecret(),
     { expiresIn: "7d" },
   );
 }
@@ -51,7 +61,7 @@ export function verifyToken(
   token: string,
 ): { username: string; role: string } | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as {
+    const decoded = jwt.verify(token, getJwtSecret()) as {
       username: string;
       role: string;
     };

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AUTH_COOKIE_NAME, PROTECTED_PATHS } from "@/lib/auth";
+import { AUTH_COOKIE_NAME, PROTECTED_PATHS, verifyToken } from "@/lib/auth";
 
 /**
  * 认证中间件
@@ -11,23 +11,23 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
 
-  // 判断是否为受保护路由
   const isProtected = PROTECTED_PATHS.some(
     (path) => pathname === path || pathname.startsWith(path + "/"),
   );
 
-  // 判断是否为登录页
   const isLoginPage = pathname === "/login";
 
-  // 受保护路由但未登录 → 重定向到登录页
-  if (isProtected && !token) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(loginUrl);
+  // 受保护路由：检查 token 存在且有效
+  if (isProtected) {
+    if (!token || !verifyToken(token)) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
   // 已登录访问登录页 → 重定向到看板
-  if (isLoginPage && token) {
+  if (isLoginPage && token && verifyToken(token)) {
     const dashboardUrl = new URL("/dashboard", request.url);
     return NextResponse.redirect(dashboardUrl);
   }

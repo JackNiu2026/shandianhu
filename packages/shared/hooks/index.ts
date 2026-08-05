@@ -1,10 +1,10 @@
 /**
- * 跨端通用 hooks（预留空壳）
+ * 跨端通用 Hooks（类型定义层）
  *
- * 后续按需添加跨端复用的 hooks，例如：
- * - useDebounce
- * - usePersistentState
- * - useMatchedTeachers
+ * 跨端 hooks 的实际实现位于各端代码中：
+ * - 移动端（Taro）：packages/mobile/src/hooks/index.ts
+ *
+ * 此文件导出共享的 hook 类型定义。
  */
 
 export {};

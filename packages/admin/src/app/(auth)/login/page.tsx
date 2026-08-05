@@ -92,14 +92,6 @@ function LoginForm() {
             {loading ? "登录中..." : "登 录"}
           </Button>
         </form>
-
-        {/* 默认凭据提示 */}
-        <div className="mt-6 p-3 rounded-lg border-2 border-dashed border-ink-muted/40 bg-surface-soft">
-          <p className="text-xs text-ink-muted text-center">
-            默认账号: <span className="font-mono font-bold text-ink">admin</span> /{" "}
-            <span className="font-mono font-bold text-ink">admin123</span>
-          </p>
-        </div>
       </div>
     </div>
   );

@@ -3,31 +3,17 @@
  * 返回当前登录的管理员信息
  */
 import { NextRequest, NextResponse } from "next/server";
-import { AUTH_COOKIE_NAME, verifyToken } from "@/lib/auth";
+import { authenticateRequest } from "@/lib/api-auth";
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
-
-    if (!token) {
-      return NextResponse.json(
-        { error: "未登录" },
-        { status: 401 },
-      );
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json(
-        { error: "Token 无效或已过期" },
-        { status: 401 },
-      );
-    }
+    const auth = authenticateRequest(request);
+    if (auth.response) return auth.response;
 
     return NextResponse.json({
       user: {
-        username: decoded.username,
-        role: decoded.role,
+        username: auth.username,
+        role: auth.role,
       },
     });
   } catch (error) {

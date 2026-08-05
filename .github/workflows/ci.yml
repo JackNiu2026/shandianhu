@@ -1,0 +1,96 @@
+# 闪电虎 — CI/CD 流水线
+# 触发：push 到 main/develop 分支，或 PR
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ============ 类型检查 + 构建 ============
+  build:
+    name: Build & Type Check
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: lightning_tiger_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm --filter admin exec prisma generate
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/lightning_tiger_test?schema=public"
+
+      - name: Type check admin
+        run: pnpm --filter admin exec tsc --noEmit
+
+      - name: Type check mobile
+        run: pnpm --filter mobile exec tsc --noEmit
+
+      - name: Push database schema
+        run: pnpm --filter admin exec prisma db push
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/lightning_tiger_test?schema=public"
+
+      - name: Seed database
+        run: pnpm --filter admin run db:seed
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/lightning_tiger_test?schema=public"
+          JWT_SECRET: "ci-test-secret"
+
+      - name: Build admin
+        run: pnpm --filter admin build
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/lightning_tiger_test?schema=public"
+          JWT_SECRET: "ci-test-secret"
+
+  # ============ Docker 构建 ============
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -f packages/admin/Dockerfile -t lightning-tiger-admin:latest .
+
+      - name: Log in to Container Registry
+        if: secrets.CONTAINER_REGISTRY_TOKEN != ''
+        run: echo "${{ secrets.CONTAINER_REGISTRY_TOKEN }}" | docker login -u ${{ secrets.CONTAINER_REGISTRY_USER }} --password-stdin
+
+      - name: Push Docker image
+        if: secrets.CONTAINER_REGISTRY_TOKEN != ''
+        run: docker tag lightning-tiger-admin:latest ${{ secrets.CONTAINER_REGISTRY }}/lightning-tiger-admin:latest && docker push ${{ secrets.CONTAINER_REGISTRY }}/lightning-tiger-admin:latest

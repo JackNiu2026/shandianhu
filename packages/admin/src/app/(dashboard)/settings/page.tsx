@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { changePassword, getPlatformConfig, updatePlatformConfig } from "@/lib/data";
 
 function LogOutIcon() {
   return (
@@ -45,36 +46,71 @@ function ShieldIcon() {
 
 export default function SettingsPage() {
   const router = useRouter();
+  const [currentPassword, setCurrentPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [pwdMsg, setPwdMsg] = React.useState<{ type: "error" | "success"; text: string } | null>(null);
+  const [savingPassword, setSavingPassword] = React.useState(false);
   const [loggingOut, setLoggingOut] = React.useState(false);
 
   const [platformName, setPlatformName] = React.useState("闪电虎");
   const [contact, setContact] = React.useState("contact@lightning-tiger.com");
-  const [saved, setSaved] = React.useState(false);
+  const [savingPlatform, setSavingPlatform] = React.useState(false);
+  const [platformMsg, setPlatformMsg] = React.useState<{ type: "error" | "success"; text: string } | null>(null);
 
-  const handleSavePassword = () => {
+  React.useEffect(() => {
+    getPlatformConfig()
+      .then((cfg) => {
+        if (cfg.platformName) setPlatformName(cfg.platformName);
+        if (cfg.contact) setContact(cfg.contact);
+      })
+      .catch(() => {
+        // 加载失败时保留默认值
+      });
+  }, []);
+
+  const handleSavePassword = async () => {
+    if (!currentPassword) {
+      setPwdMsg({ type: "error", text: "请输入当前密码" });
+      return;
+    }
     if (!newPassword) {
       setPwdMsg({ type: "error", text: "请输入新密码" });
       return;
     }
-    if (newPassword.length < 6) {
-      setPwdMsg({ type: "error", text: "密码长度至少 6 位" });
+    if (newPassword.length < 8) {
+      setPwdMsg({ type: "error", text: "密码长度至少 8 位" });
       return;
     }
     if (newPassword !== confirmPassword) {
       setPwdMsg({ type: "error", text: "两次输入的密码不一致" });
       return;
     }
-    setPwdMsg({ type: "success", text: "密码已更新" });
-    setNewPassword("");
-    setConfirmPassword("");
+    setSavingPassword(true);
+    try {
+      await changePassword(currentPassword, newPassword);
+      setPwdMsg({ type: "success", text: "密码已更新" });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      setPwdMsg({ type: "error", text: err instanceof Error ? err.message : "修改密码失败" });
+    } finally {
+      setSavingPassword(false);
+    }
   };
 
-  const handleSavePlatform = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSavePlatform = async () => {
+    setSavingPlatform(true);
+    setPlatformMsg(null);
+    try {
+      await updatePlatformConfig({ platformName, contact });
+      setPlatformMsg({ type: "success", text: "平台信息已保存" });
+    } catch (err) {
+      setPlatformMsg({ type: "error", text: err instanceof Error ? err.message : "保存失败" });
+    } finally {
+      setSavingPlatform(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -125,6 +161,20 @@ export default function SettingsPage() {
 
           <div className="border-t border-ink/10 pt-4">
             <p className="mb-3 text-sm font-medium text-ink">修改密码</p>
+            <div className="mb-4">
+              <label className="mb-1 block text-xs font-medium text-ink/60">
+                当前密码
+              </label>
+              <Input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => {
+                  setCurrentPassword(e.target.value);
+                  setPwdMsg(null);
+                }}
+                placeholder="输入当前密码"
+              />
+            </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1 block text-xs font-medium text-ink/60">
@@ -137,7 +187,7 @@ export default function SettingsPage() {
                     setNewPassword(e.target.value);
                     setPwdMsg(null);
                   }}
-                  placeholder="输入新密码"
+                  placeholder="输入新密码（至少 8 位）"
                 />
               </div>
               <div>
@@ -165,8 +215,8 @@ export default function SettingsPage() {
               </p>
             )}
             <div className="mt-3">
-              <Button variant="primary" onClick={handleSavePassword}>
-                保存密码
+              <Button variant="primary" onClick={handleSavePassword} disabled={savingPassword}>
+                {savingPassword ? "保存中..." : "保存密码"}
               </Button>
             </div>
           </div>
@@ -197,12 +247,16 @@ export default function SettingsPage() {
           </div>
         </div>
         <div className="mt-4 flex items-center gap-3">
-          <Button variant="primary" onClick={handleSavePlatform}>
-            保存
+          <Button variant="primary" onClick={handleSavePlatform} disabled={savingPlatform}>
+            {savingPlatform ? "保存中..." : "保存"}
           </Button>
-          {saved && (
-            <span className="text-xs font-medium text-success">
-              已保存
+          {platformMsg && (
+            <span
+              className={`text-xs font-medium ${
+                platformMsg.type === "error" ? "text-danger" : "text-success"
+              }`}
+            >
+              {platformMsg.text}
             </span>
           )}
         </div>

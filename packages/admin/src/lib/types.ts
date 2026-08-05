@@ -82,24 +82,6 @@ export interface Withdrawal {
   createdAt: string;
 }
 
-/* ============ 月度收益 ============ */
-export interface MonthlyRevenue {
-  month: string;
-  revenue: number;
-  orders: number;
-}
-
-/* ============ 内容配置 ============ */
-export interface ContentConfig {
-  subjects: string[];
-  grades: Grade[];
-  budgetOptions: { label: string; value: number }[];
-  platformStats: {
-    teacherCount: number;
-    parentCount: number;
-  };
-}
-
 /* ============ 管理员 ============ */
 export interface AdminUser {
   username: string;

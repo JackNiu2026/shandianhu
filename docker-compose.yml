@@ -1,0 +1,42 @@
+# 闪电虎 — Docker Compose 编排
+# 包含：PostgreSQL 数据库 + Admin 管理后台
+
+services:
+  # ============ PostgreSQL 数据库 ============
+  db:
+    image: postgres:16-alpine
+    container_name: lightning-tiger-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: lightning_tiger
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============ Admin 管理后台 ============
+  admin:
+    build:
+      context: .
+      dockerfile: packages/admin/Dockerfile
+    container_name: lightning-tiger-admin
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://postgres:${DB_PASSWORD:-postgres}@db:5432/lightning_tiger?schema=public"
+      JWT_SECRET: ${JWT_SECRET:-change-me-to-a-random-secret}
+      NODE_ENV: production
+    ports:
+      - "${ADMIN_PORT:-3000}:3000"
+
+volumes:
+  postgres_data:

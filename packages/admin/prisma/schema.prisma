@@ -1,12 +1,12 @@
 // 闪电虎管理后台 — Prisma Schema
-// SQLite 数据库（开发环境）
+// PostgreSQL 数据库
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -46,6 +46,7 @@ model Teacher {
   updatedAt DateTime @updatedAt
   reviews   Review[]
   bookings  Booking[]
+  withdrawals Withdrawal[]
 }
 
 model Parent {
@@ -74,6 +75,7 @@ model Booking {
   slot        String
   status      String   @default("pending") // pending | confirmed | completed | cancelled
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Review {
@@ -85,6 +87,7 @@ model Review {
   rating      Int      @default(5)
   status      String   @default("pending") // pending | approved | rejected
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Membership {
@@ -97,12 +100,23 @@ model Membership {
   endDate   String
   status    String   @default("active") // active | expired | cancelled
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Withdrawal {
   id          String   @id @default(cuid())
-  teacherName String
+  teacher     Teacher  @relation(fields: [teacherId], references: [id])
+  teacherId   String
   amount      Int
   status      String   @default("pending") // pending | processed
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PlatformConfig {
+  id           String   @id @default(cuid())
+  platformName String   @default("闪电虎")
+  contact      String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

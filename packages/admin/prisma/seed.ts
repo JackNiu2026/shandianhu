@@ -107,14 +107,6 @@ const membershipData = [
   { parentName: "刘子涵", duration: "月度会员", amount: 19.9, startDate: "2026-05-01", endDate: "2026-06-01", status: "cancelled" },
 ];
 
-/* ============ 提现数据 ============ */
-const withdrawalData = [
-  { teacherName: "林知夏", amount: 5000, status: "pending", createdAt: new Date("2026-08-01") },
-  { teacherName: "周予安", amount: 3000, status: "processed", createdAt: new Date("2026-07-28") },
-  { teacherName: "陈默", amount: 2000, status: "pending", createdAt: new Date("2026-08-03") },
-  { teacherName: "叶承川", amount: 4000, status: "processed", createdAt: new Date("2026-07-20") },
-];
-
 /* ============ 主函数 ============ */
 async function main() {
   console.log("开始种子数据初始化...");
@@ -266,15 +258,21 @@ async function main() {
 
   // 7. 创建提现数据（4 条）
   console.log("创建提现数据...");
-  for (const w of withdrawalData) {
-    await prisma.withdrawal.create({
-      data: {
-        teacherName: w.teacherName,
-        amount: w.amount,
-        status: w.status,
-        createdAt: w.createdAt,
-      },
-    });
+  const withdrawalTeachers = ["林知夏", "周予安", "陈默", "叶承川"];
+  const withdrawalAmounts = [5000, 3000, 2000, 4000];
+  const withdrawalStatuses = ["pending", "processed", "pending", "processed"];
+  for (let i = 0; i < withdrawalTeachers.length; i++) {
+    const teacherIdx = teachers.findIndex((t) => t.name === withdrawalTeachers[i]);
+    if (teacherIdx >= 0 && teacherIds[teacherIdx]) {
+      await prisma.withdrawal.create({
+        data: {
+          teacherId: teacherIds[teacherIdx],
+          amount: withdrawalAmounts[i],
+          status: withdrawalStatuses[i],
+          createdAt: new Date(2026, 7, 1 + i * 2),
+        },
+      });
+    }
   }
   console.log("  创建了 4 条提现记录");
 

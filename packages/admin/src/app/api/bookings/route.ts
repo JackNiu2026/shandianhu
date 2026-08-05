@@ -3,10 +3,14 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { authenticateRequest } from "@/lib/api-auth";
 import { serializeBooking } from "@/lib/serialize";
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = authenticateRequest(request);
+    if (auth.response) return auth.response;
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status") || "";
     const teacherId = searchParams.get("teacherId") || "";

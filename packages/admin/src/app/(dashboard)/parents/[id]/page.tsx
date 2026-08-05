@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Breadcrumb } from "@/components/dashboard/breadcrumb";
 import { Card, CardHeader, Badge, Button } from "@/components/ui";
 import { statusToVariant, formatDate } from "@/lib/utils";
-import { getParentById } from "@/lib/data";
+import { getParentById, updateParentStatus } from "@/lib/data";
 
 interface ParentDetail {
   id: string;
@@ -26,9 +26,11 @@ interface ParentDetail {
 
 export default function ParentDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const [parent, setParent] = useState<ParentDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [toggling, setToggling] = useState(false);
 
   useEffect(() => {
     if (params.id) {
@@ -42,12 +44,36 @@ export default function ParentDetailPage() {
   if (error) return <div className="text-center py-12 text-danger">{error}</div>;
   if (!parent) return <div className="text-center py-12 text-ink-muted">家长不存在</div>;
 
+  async function handleToggleStatus() {
+    if (!parent) return;
+    setToggling(true);
+    try {
+      const newStatus = parent.status === "active" ? "blocked" : "active";
+      await updateParentStatus(parent.id, newStatus);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "操作失败");
+    } finally {
+      setToggling(false);
+    }
+  }
+
   return (
     <div>
       <Breadcrumb />
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <Link href="/parents"><Button size="sm">← 返回列表</Button></Link>
-        <Badge variant={statusToVariant(parent.status)}>{parent.status === "active" ? "正常" : "已封禁"}</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant={statusToVariant(parent.status)}>{parent.status === "active" ? "正常" : "已封禁"}</Badge>
+          <Button
+            size="sm"
+            variant={parent.status === "active" ? "danger" : "success"}
+            onClick={handleToggleStatus}
+            disabled={toggling}
+          >
+            {toggling ? "处理中..." : parent.status === "active" ? "封禁" : "解封"}
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

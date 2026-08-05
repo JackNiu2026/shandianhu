@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/api-auth";
 import { serializeBooking } from "@/lib/serialize";
+import { updateBookingStatusSchema } from "@/lib/validation";
 
 export async function PATCH(
   request: NextRequest,
@@ -17,16 +18,17 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { status } = body;
 
-    // 验证 status 值
-    const validStatuses = ["pending", "confirmed", "completed", "cancelled"];
-    if (!validStatuses.includes(status)) {
+    // zod 输入验证
+    const result = updateBookingStatusSchema.safeParse(body);
+    if (!result.success) {
       return NextResponse.json(
-        { error: "无效的预约状态" },
+        { error: result.error.issues[0]?.message || "输入参数无效" },
         { status: 400 },
       );
     }
+
+    const { status } = result.data;
 
     // 检查预约是否存在
     const existing = await prisma.booking.findUnique({ where: { id } });

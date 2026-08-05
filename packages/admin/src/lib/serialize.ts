@@ -103,10 +103,12 @@ export function serializeMembership(
 }
 
 /** 序列化提现数据 */
-export function serializeWithdrawal(w: Withdrawal) {
+export function serializeWithdrawal(
+  w: Withdrawal & { teacher?: Teacher | null },
+) {
   return {
     id: w.id,
-    teacherName: w.teacherName,
+    teacherName: w.teacher?.name || "",
     amount: w.amount,
     status: w.status,
     createdAt: w.createdAt.toISOString(),
