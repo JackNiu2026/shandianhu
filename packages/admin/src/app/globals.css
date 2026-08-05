@@ -6,7 +6,6 @@
   --color-ink-muted: #756E69;
   --color-growth: #967AE9;
   --color-growth-soft: #E8E4F8;
-  --color-growth-deep: #7057C4;
   --color-action: #FFBE98;
   --color-action-soft: #FFF1E8;
   --color-surface-base: #F5F2F0;
@@ -17,7 +16,6 @@
   --color-notice: #D7A820;
   --color-notice-soft: #FFF7D9;
   --color-danger: #EF4444;
-  --color-danger-soft: #FEE2E2;
 
   /* Neo-brutalism 硬阴影 */
   --shadow-nb-sm: 2px 2px 0px 0px #151617;
@@ -26,57 +24,22 @@
 
   /* 字体 */
   --font-sans: "Noto Sans SC", system-ui, sans-serif;
-  --font-mono: ui-monospace, monospace;
+  --font-mono: monospace;
 }
 
-/* 全局重置 */
-* {
-  box-sizing: border-box;
+/* Neo-brutalism 交互态工具类 */
+@utility nb-press {
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+@utility nb-press-hover {
+  hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-nb-sm;
+}
+@utility nb-press-active {
+  active:translate-x-[4px] active:translate-y-[4px] active:shadow-none;
 }
 
 body {
-  font-family: var(--font-sans);
-  background: var(--color-surface-base);
+  background-color: var(--color-surface-base);
   color: var(--color-ink);
-}
-
-/* 滚动条样式 */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #D8D0C5;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #BEB4A8;
-}
-
-/* 动画 */
-@keyframes dialog-pop {
-  from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes rise {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-.animate-dialog-pop {
-  animation: dialog-pop 0.22s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+  font-family: var(--font-sans);
 }

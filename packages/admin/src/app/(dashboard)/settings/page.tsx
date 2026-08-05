@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,9 +44,11 @@ function ShieldIcon() {
 }
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [newPassword, setNewPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [pwdMsg, setPwdMsg] = React.useState<{ type: "error" | "success"; text: string } | null>(null);
+  const [loggingOut, setLoggingOut] = React.useState(false);
 
   const [platformName, setPlatformName] = React.useState("闪电虎");
   const [contact, setContact] = React.useState("contact@lightning-tiger.com");
@@ -73,6 +75,19 @@ export default function SettingsPage() {
   const handleSavePlatform = () => {
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/login");
+      router.refresh();
+    } catch {
+      router.push("/login");
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   return (
@@ -202,12 +217,14 @@ export default function SettingsPage() {
               退出当前管理员会话，返回登录页
             </p>
           </div>
-          <Link href="/login">
-            <Button variant="danger">
-              <LogOutIcon />
-              登出
-            </Button>
-          </Link>
+          <Button
+            variant="danger"
+            onClick={handleLogout}
+            disabled={loggingOut}
+          >
+            <LogOutIcon />
+            {loggingOut ? "登出中..." : "登出"}
+          </Button>
         </div>
       </Card>
     </div>

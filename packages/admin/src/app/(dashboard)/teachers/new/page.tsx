@@ -2,255 +2,140 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import Card from "@/components/ui/card";
-import Button from "@/components/ui/button";
-import Input from "@/components/ui/input";
-import Select from "@/components/ui/select";
-import Checkbox from "@/components/ui/checkbox";
-import { createTeacher } from "@/lib/data";
+import { Breadcrumb } from "@/components/dashboard/breadcrumb";
+import { Card, CardHeader, Button, Input, Select, Checkbox } from "@/components/ui";
 import { subjects, grades } from "@lightning-tiger/shared";
-import type { Grade } from "@lightning-tiger/shared";
-
-interface TeacherFormData {
-  name: string;
-  age: string;
-  school: string;
-  subject: string;
-  grades: Grade[];
-  mode: string;
-  price: number;
-  years: string;
-  tags: string;
-  note: string;
-  color: string;
-  checks: string[];
-}
-
-const checkOptions = [
-  "身份证已核验",
-  "学历已核验",
-  "教师资格证已核验",
-  "无犯罪记录已核验",
-];
 
 export default function NewTeacherPage() {
   const router = useRouter();
-  const [submitting, setSubmitting] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors },
-  } = useForm<TeacherFormData>({
-    defaultValues: {
-      name: "",
-      age: "",
-      school: "",
-      subject: subjects[0],
-      grades: [],
-      mode: "线上",
-      price: 100,
-      years: "",
-      tags: "",
-      note: "",
-      color: "#f2cabc",
-      checks: [],
-    },
+  const [form, setForm] = useState({
+    name: "",
+    age: "",
+    school: "",
+    subject: "数学",
+    grades: [] as string[],
+    mode: "线上",
+    tags: [] as string[],
+    price: 100,
+    years: "1年",
+    note: "",
+    slots: [] as string[],
+    checks: ["身份证已核验", "学历已核验", "教师资格证", "无犯罪记录已核验"],
   });
 
-  const selectedGrades = watch("grades");
-  const selectedChecks = watch("checks");
-  const selectedColor = watch("color");
+  const [tagInput, setTagInput] = useState("");
+  const [slotInput, setSlotInput] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  const toggleGrade = (grade: Grade) => {
-    const current = watch("grades");
-    const next = current.includes(grade)
-      ? current.filter((g) => g !== grade)
-      : [...current, grade];
-    setValue("grades", next);
-  };
+  function toggleGrade(grade: string) {
+    setForm((f) => ({
+      ...f,
+      grades: f.grades.includes(grade)
+        ? f.grades.filter((g) => g !== grade)
+        : [...f.grades, grade],
+    }));
+  }
 
-  const toggleCheck = (check: string) => {
-    const current = watch("checks");
-    const next = current.includes(check)
-      ? current.filter((c) => c !== check)
-      : [...current, check];
-    setValue("checks", next);
-  };
+  function addTag() {
+    if (tagInput && !form.tags.includes(tagInput)) {
+      setForm((f) => ({ ...f, tags: [...f.tags, tagInput] }));
+      setTagInput("");
+    }
+  }
 
-  const onSubmit = async (data: TeacherFormData) => {
+  function addSlot() {
+    if (slotInput && !form.slots.includes(slotInput)) {
+      setForm((f) => ({ ...f, slots: [...f.slots, slotInput] }));
+      setSlotInput("");
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
     setSubmitting(true);
     try {
-      await createTeacher({
-        name: data.name,
-        age: data.age,
-        school: data.school,
-        subject: data.subject,
-        grades: data.grades,
-        mode: data.mode,
-        price: Number(data.price),
-        years: data.years,
-        tags: data.tags
-          .split(/[,，]/)
-          .map((t) => t.trim())
-          .filter(Boolean),
-        note: data.note,
-        color: data.color,
-        checks: data.checks,
+      const res = await fetch("/api/teachers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "创建失败");
+      }
       router.push("/teachers");
-    } catch (e) {
-      console.error("创建老师失败:", e);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "网络错误，请稍后重试");
       setSubmitting(false);
     }
-  };
+  }
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      {/* 标题 */}
-      <div>
-        <h1 className="text-2xl font-bold">新建老师</h1>
-        <p className="text-sm text-ink-muted mt-1">填写老师信息以创建新账号</p>
-      </div>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* 基本信息 */}
-        <Card title="基本信息">
+    <div>
+      <Breadcrumb />
+      <h2 className="text-xl font-bold text-ink mb-4">新建老师</h2>
+      <Card>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="姓名"
-              placeholder="请输入老师姓名"
-              error={errors.name?.message}
-              {...register("name", { required: "请输入姓名" })}
-            />
-            <Input
-              label="年龄"
-              placeholder="如：28 岁"
-              {...register("age")}
-            />
-            <Input
-              label="院校"
-              placeholder="如：复旦大学 · 数学与应用数学"
-              className="col-span-2"
-              {...register("school")}
-            />
-            <Select
-              label="科目"
-              options={subjects.map((s) => ({ value: s, label: s }))}
-              {...register("subject")}
-            />
-            <Input
-              label="教学模式"
-              placeholder="如：线上 / 上门"
-              {...register("mode")}
-            />
-            <Input
-              label="课时价格（元）"
-              type="number"
-              {...register("price", { valueAsNumber: true })}
-            />
-            <Input
-              label="教龄"
-              placeholder="如：6 年"
-              {...register("years")}
-            />
+            <Input label="姓名" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            <Input label="年龄" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} />
+            <Input label="院校" value={form.school} onChange={(e) => setForm({ ...form, school: e.target.value })} />
+            <Select label="科目" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })}
+              options={subjects.map((s) => ({ value: s, label: s }))} />
+            <Input label="价格" type="number" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
+            <Input label="教龄" value={form.years} onChange={(e) => setForm({ ...form, years: e.target.value })} />
           </div>
-        </Card>
 
-        {/* 学段多选 */}
-        <Card title="教学学段">
-          <div className="flex items-center gap-6">
-            {grades.map((grade) => (
-              <Checkbox
-                key={grade}
-                label={grade}
-                checked={selectedGrades.includes(grade)}
-                onChange={() => toggleGrade(grade)}
-              />
-            ))}
-          </div>
-        </Card>
-
-        {/* 标签与理念 */}
-        <Card title="标签与教学理念">
-          <div className="space-y-4">
-            <Input
-              label="标签"
-              placeholder="多个标签用逗号分隔，如：985, 中考数学, 竞赛启蒙"
-              {...register("tags")}
-            />
-            <div>
-              <label className="block mb-1.5 text-sm font-semibold text-ink">
-                教学理念
-              </label>
-              <textarea
-                rows={3}
-                placeholder="请输入教学理念..."
-                className="w-full rounded-lg border-2 border-ink bg-surface-paper px-4 py-2 shadow-nb-sm outline-none transition-all focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-none resize-none"
-                {...register("note")}
-              />
+          <div>
+            <label className="block text-sm font-medium text-ink mb-2">学段</label>
+            <div className="flex gap-3">
+              {grades.map((g) => (
+                <Checkbox key={g} label={g} checked={form.grades.includes(g)} onChange={() => toggleGrade(g)} />
+              ))}
             </div>
           </div>
-        </Card>
 
-        {/* 卡片颜色与核验项 */}
-        <Card title="展示与核验">
-          <div className="space-y-4">
-            <div>
-              <label className="block mb-1.5 text-sm font-semibold text-ink">
-                卡片颜色
-              </label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  className="w-12 h-10 rounded-lg border-2 border-ink cursor-pointer bg-surface-paper shrink-0"
-                  value={selectedColor}
-                  onChange={(e) => setValue("color", e.target.value)}
-                />
-                <Input
-                  className="flex-1"
-                  placeholder="#f2cabc"
-                  {...register("color")}
-                />
-                <div
-                  className="w-10 h-10 rounded-lg border-2 border-ink shadow-nb-sm shrink-0"
-                  style={{ backgroundColor: selectedColor }}
-                />
-              </div>
+          <Input label="教学模式" value={form.mode} onChange={(e) => setForm({ ...form, mode: e.target.value })} />
+
+          <div>
+            <label className="block text-sm font-medium text-ink mb-1">标签</label>
+            <div className="flex gap-2">
+              <Input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="输入标签后回车" />
+              <Button type="button" size="sm" onClick={addTag}>添加</Button>
             </div>
-
-            <div>
-              <label className="block mb-2 text-sm font-semibold text-ink">
-                核验项
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                {checkOptions.map((check) => (
-                  <Checkbox
-                    key={check}
-                    label={check}
-                    checked={selectedChecks.includes(check)}
-                    onChange={() => toggleCheck(check)}
-                  />
-                ))}
-              </div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {form.tags.map((tag) => (
+                <span key={tag} className="px-2 py-0.5 text-xs bg-growth-soft text-growth rounded-full">{tag}</span>
+              ))}
             </div>
           </div>
-        </Card>
 
-        {/* 底部操作按钮 */}
-        <div className="flex items-center gap-3">
-          <Button type="submit" variant="primary" size="lg" disabled={submitting}>
-            {submitting ? "提交中..." : "提交创建"}
-          </Button>
-          <Button asChild href="/teachers" variant="default" size="lg">
-            取消
-          </Button>
-        </div>
-      </form>
+          <Input label="简介" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
+
+          <div>
+            <label className="block text-sm font-medium text-ink mb-1">可约时段</label>
+            <div className="flex gap-2">
+              <Input value={slotInput} onChange={(e) => setSlotInput(e.target.value)} placeholder="如：周六 14:00" />
+              <Button type="button" size="sm" onClick={addSlot}>添加</Button>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {form.slots.map((slot) => (
+                <span key={slot} className="px-2 py-0.5 text-xs border-2 border-ink rounded">{slot}</span>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <Button type="submit" variant="primary" disabled={submitting}>
+              {submitting ? "创建中..." : "创建"}
+            </Button>
+            <Button type="button" onClick={() => router.push("/teachers")}>取消</Button>
+          </div>
+          {error && <p className="text-sm text-danger">{error}</p>}
+        </form>
+      </Card>
     </div>
   );
 }

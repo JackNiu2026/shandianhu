@@ -47,7 +47,7 @@ export default defineConfig(async (merge, { command }) => {
       data: "",
     },
     mini: {
-      webpackChain(chain) {
+      webpackChain(chain: { module: { rule: (name: string) => { include: { add: (path: string) => { end: () => void } } } } }) {
         chain.module.rule("script").include.add(sharedPath).end();
       },
       postcss: {

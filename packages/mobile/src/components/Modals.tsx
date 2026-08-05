@@ -23,7 +23,7 @@ export function NeedsSheet({
   const availableSubjects = grade === "小学" ? subjects.slice(0, 3) : subjects;
   const chooseGrade = (nextGrade: Grade) => {
     setGrade(nextGrade);
-    if (nextGrade === "小学" && !subjects.slice(0, 3).includes(subject)) setSubject("数学");
+    if (nextGrade === "小学" && !(subjects.slice(0, 3) as readonly string[]).includes(subject)) setSubject("数学");
   };
 
   return (

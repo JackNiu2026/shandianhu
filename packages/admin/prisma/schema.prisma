@@ -1,0 +1,108 @@
+// 闪电虎管理后台 — Prisma Schema
+// SQLite 数据库（开发环境）
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String   // bcrypt hashed
+  role      String   @default("superadmin") // superadmin | editor
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Teacher {
+  id        String   @id @default(cuid())
+  name      String
+  age       String
+  school    String
+  subject   String
+  grades    String   // JSON string of array
+  mode      String
+  tags      String   // JSON string of array
+  color     String   @default("#f2cabc")
+  note      String   @default("")
+  rating    String   @default("0.0")
+  students  String   @default("0")
+  years     String   @default("1年")
+  price     Int      @default(100)
+  slots     String   // JSON string of array
+  video     String   @default("")
+  checks    String   // JSON string of array
+  status    String   @default("pending") // active | pending | blocked
+  totalRevenue     Int @default(0)
+  pendingRevenue   Int @default(0)
+  availableRevenue Int @default(0)
+  totalLessons     Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  reviews   Review[]
+  bookings  Booking[]
+}
+
+model Parent {
+  id        String   @id @default(cuid())
+  name      String
+  avatar    String   @default("")
+  phone     String
+  childGrade String
+  prefs     String?  // JSON string of Prefs or null
+  mbtiResult String? // JSON string of MBTIResult or null
+  likedTeachers String @default("[]") // JSON string of string array
+  bookingCount  Int  @default(0)
+  status    String   @default("active") // active | blocked
+  createdAt DateTime @default(now())
+  bookings  Booking[]
+  memberships Membership[]
+}
+
+model Booking {
+  id          String   @id @default(cuid())
+  parent      Parent   @relation(fields: [parentId], references: [id])
+  parentId    String
+  teacher     Teacher  @relation(fields: [teacherId], references: [id])
+  teacherId   String
+  subject     String
+  slot        String
+  status      String   @default("pending") // pending | confirmed | completed | cancelled
+  createdAt   DateTime @default(now())
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  teacher     Teacher  @relation(fields: [teacherId], references: [id])
+  teacherId   String
+  author      String
+  text        String
+  rating      Int      @default(5)
+  status      String   @default("pending") // pending | approved | rejected
+  createdAt   DateTime @default(now())
+}
+
+model Membership {
+  id        String   @id @default(cuid())
+  parent    Parent   @relation(fields: [parentId], references: [id])
+  parentId  String
+  duration  String
+  amount    Float
+  startDate String
+  endDate   String
+  status    String   @default("active") // active | expired | cancelled
+  createdAt DateTime @default(now())
+}
+
+model Withdrawal {
+  id          String   @id @default(cuid())
+  teacherName String
+  amount      Int
+  status      String   @default("pending") // pending | processed
+  createdAt   DateTime @default(now())
+}

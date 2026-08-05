@@ -1,50 +1,43 @@
-import * as React from "react";
 import { cn } from "@/lib/utils";
 
 interface CardProps {
-  title?: React.ReactNode;
-  description?: React.ReactNode;
-  action?: React.ReactNode;
   className?: string;
-  bodyClassName?: string;
-  children?: React.ReactNode;
+  children: React.ReactNode;
+  title?: string;
+  description?: string;
 }
 
-/**
- * Neo-brutalism 卡片
- * - border-2 border-ink rounded-xl bg-surface-paper shadow-nb
- */
-export default function Card({
-  title,
-  description,
-  action,
-  className,
-  bodyClassName,
-  children,
-}: CardProps) {
+export function Card({ className, children, title, description }: CardProps) {
   return (
     <div
       className={cn(
-        "border-2 border-ink rounded-xl bg-surface-paper shadow-nb",
+        "bg-surface-paper border-2 border-ink rounded-xl shadow-nb p-5",
         className,
       )}
     >
-      {(title || action) && (
-        <div className="flex items-center justify-between gap-3 border-b-2 border-ink px-5 py-4">
-          <div>
-            {title && (
-              <h3 className="text-base font-bold text-ink">{title}</h3>
-            )}
-            {description && (
-              <p className="mt-0.5 text-xs text-ink-muted">{description}</p>
-            )}
-          </div>
-          {action && <div className="shrink-0">{action}</div>}
+      {title && (
+        <div className="mb-4">
+          <h3 className="text-base font-bold text-ink">{title}</h3>
+          {description && (
+            <p className="mt-0.5 text-xs text-ink-muted">{description}</p>
+          )}
         </div>
       )}
-      <div className={cn("p-5", bodyClassName)}>{children}</div>
+      {children}
     </div>
   );
 }
 
-export { Card };
+interface CardHeaderProps {
+  title: string;
+  action?: React.ReactNode;
+}
+
+export function CardHeader({ title, action }: CardHeaderProps) {
+  return (
+    <div className="flex items-center justify-between mb-4">
+      <h3 className="text-base font-bold text-ink">{title}</h3>
+      {action}
+    </div>
+  );
+}

@@ -6,10 +6,17 @@
   ],
   "scripts": {
     "dev:weapp": "npm run dev:weapp --workspace mobile",
-    "build:weapp": "npm run build:weapp --workspace mobile"
+    "build:weapp": "npm run build:weapp --workspace mobile",
+    "dev:admin": "npm run dev --workspace admin",
+    "build:admin": "npm run build --workspace admin",
+    "lint:admin": "npm run lint --workspace admin",
+    "db:push": "npm run db:push --workspace admin",
+    "db:seed": "npm run db:seed --workspace admin"
   },
   "packageManager": "pnpm@11.20.0+sha512.9a6f330a95b66446ea088faf1521405a8a01f07fde7124cc9958dfed52d4bb436737e65b08f85f37b46fcba375092558ac51262b816844b22f63406ed166bfee",
   "devDependencies": {
-    "@types/react": "^19.2.18"
+    "@prisma/client": "^6.19.3",
+    "@types/react": "^19.2.18",
+    "prisma": "^6.19.3"
   }
 }

@@ -1,12 +1,9 @@
 "use client";
 
-import * as React from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 
-/**
- * 路径分段到中文标签的映射
- */
-const pathLabelMap: Record<string, string> = {
+const routeNames: Record<string, string> = {
   dashboard: "数据看板",
   teachers: "老师管理",
   parents: "家长管理",
@@ -17,45 +14,32 @@ const pathLabelMap: Record<string, string> = {
   memberships: "会员管理",
   content: "内容配置",
   settings: "系统设置",
-  login: "登录",
 };
 
-/**
- * Neo-brutalism 面包屑
- * - 使用 usePathname 获取路径
- * - 将路径分段映射为中文标签
- * - 用 "/" 分隔，最后一项加粗
- */
-export default function Breadcrumb() {
+export function Breadcrumb() {
   const pathname = usePathname();
-
-  // 拆分路径并过滤空段
   const segments = pathname.split("/").filter(Boolean);
 
-  if (segments.length === 0) {
-    return (
-      <nav className="flex items-center text-sm">
-        <span className="font-bold text-ink">首页</span>
-      </nav>
-    );
-  }
-
   return (
-    <nav className="flex items-center gap-1.5 text-sm">
-      <span className="text-ink-muted">首页</span>
-      {segments.map((seg, index) => {
-        const isLast = index === segments.length - 1;
-        const label = pathLabelMap[seg] || seg;
-
+    <nav className="flex items-center gap-2 text-sm text-ink-muted mb-4">
+      <Link href="/dashboard" className="hover:text-ink transition-colors">
+        首页
+      </Link>
+      {segments.map((seg, i) => {
+        const path = "/" + segments.slice(0, i + 1).join("/");
+        const name = routeNames[seg] || seg;
+        const isLast = i === segments.length - 1;
         return (
-          <React.Fragment key={`${seg}-${index}`}>
+          <span key={path} className="flex items-center gap-2">
             <span className="text-ink-muted">/</span>
             {isLast ? (
-              <span className="font-bold text-ink">{label}</span>
+              <span className="text-ink font-medium">{name}</span>
             ) : (
-              <span className="text-ink-muted">{label}</span>
+              <Link href={path} className="hover:text-ink transition-colors">
+                {name}
+              </Link>
             )}
-          </React.Fragment>
+          </span>
         );
       })}
     </nav>

@@ -2,16 +2,12 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Input from "@/components/ui/input";
-import Button from "@/components/ui/button";
-import {
-  validateCredentials,
-  generateToken,
-  AUTH_COOKIE_NAME,
-} from "@/lib/auth";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 /**
  * 登录表单内容（使用 useSearchParams，需要 Suspense 包裹）
+ * 通过 /api/auth/login API Route 设置 HttpOnly Cookie
  */
 function LoginForm() {
   const router = useRouter();
@@ -22,26 +18,33 @@ function LoginForm() {
   const [error, setError] = React.useState("");
   const [loading, setLoading] = React.useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    // 验证凭据
-    if (!validateCredentials(username, password)) {
-      setError("用户名或密码错误");
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: "登录失败" }));
+        setError(data.error || "用户名或密码错误");
+        setLoading(false);
+        return;
+      }
+
+      // Cookie 已由服务端通过 HttpOnly 设置
+      const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+      router.push(callbackUrl);
+      router.refresh();
+    } catch {
+      setError("网络错误，请稍后重试");
       setLoading(false);
-      return;
     }
-
-    // 设置 admin-token Cookie
-    const token = generateToken();
-    const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString();
-    document.cookie = `${AUTH_COOKIE_NAME}=${token}; path=/; expires=${expires}; SameSite=Lax`;
-
-    // 获取回调 URL，默认跳转到 /dashboard
-    const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
-    router.push(callbackUrl);
   };
 
   return (
@@ -104,12 +107,8 @@ function LoginForm() {
 
 /**
  * 登录页
- * - 居中登录卡片：max-w-md w-full bg-surface-paper border-2 border-ink rounded-2xl shadow-nb-lg p-8
- * - 标题 "⚡ 闪电虎管理后台"
- * - 用户名 input + 密码 input
- * - 登录按钮（primary variant, w-full）
- * - 默认凭据提示
- * - 提交后验证，成功则 document.cookie 设置 admin-token，然后 router.push('/dashboard')
+ * - 通过 /api/auth/login API 设置 HttpOnly Cookie（安全）
+ * - 不再使用 document.cookie 明文写入
  */
 export default function LoginPage() {
   return (

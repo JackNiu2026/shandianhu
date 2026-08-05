@@ -1,44 +1,31 @@
-import * as React from "react";
 import { cn } from "@/lib/utils";
 
-type BadgeVariant =
-  | "default"
-  | "success"
-  | "notice"
-  | "danger"
-  | "primary";
+type BadgeVariant = "success" | "notice" | "danger" | "default" | "primary";
 
-export interface BadgeProps
-  extends React.HTMLAttributes<HTMLSpanElement> {
+interface BadgeProps {
   variant?: BadgeVariant;
+  children: React.ReactNode;
+  className?: string;
 }
 
-const variantClasses: Record<BadgeVariant, string> = {
-  default: "bg-surface-soft text-ink-muted border-ink-muted/30",
-  success: "bg-success-soft text-success border-success/40",
-  notice: "bg-notice-soft text-notice border-notice/40",
-  danger: "bg-danger-soft text-danger border-danger/40",
-  primary: "bg-growth-soft text-growth border-growth/40",
+const variants: Record<BadgeVariant, string> = {
+  success: "bg-success-soft text-success border-success",
+  notice: "bg-notice-soft text-notice border-notice",
+  danger: "bg-danger/10 text-danger border-danger",
+  default: "bg-surface-soft text-ink-muted border-ink-muted",
+  primary: "bg-growth/10 text-growth border-growth",
 };
 
-export default function Badge({
-  variant = "default",
-  className,
-  children,
-  ...props
-}: BadgeProps) {
+export function Badge({ variant = "default", children, className }: BadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold",
-        variantClasses[variant],
+        "inline-flex items-center px-2 py-0.5 text-xs font-medium border rounded-full",
+        variants[variant],
         className,
       )}
-      {...props}
     >
       {children}
     </span>
   );
 }
-
-export { Badge };

@@ -28,7 +28,7 @@
     "@babel/runtime": "^8.0.0",
     "@tarojs/cli": "4.x",
     "@tarojs/webpack5-runner": "4.x",
-    "@types/react": "^19.0.0",
+    "@types/react": "^18.0.0",
     "@types/webpack": "5.x",
     "babel-preset-taro": "4.x",
     "react-refresh": "^0.14.0",
