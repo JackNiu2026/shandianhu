@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@theme {
+  /* 色彩令牌 — 与 C 端 app.scss 语义色系一致 */
+  --color-ink: #151617;
+  --color-ink-muted: #756E69;
+  --color-growth: #967AE9;
+  --color-growth-soft: #E8E4F8;
+  --color-growth-deep: #7057C4;
+  --color-action: #FFBE98;
+  --color-action-soft: #FFF1E8;
+  --color-surface-base: #F5F2F0;
+  --color-surface-paper: #FFFCF9;
+  --color-surface-soft: #F8F5F1;
+  --color-success: #4ECB71;
+  --color-success-soft: #E6F7EC;
+  --color-notice: #D7A820;
+  --color-notice-soft: #FFF7D9;
+  --color-danger: #EF4444;
+  --color-danger-soft: #FEE2E2;
+
+  /* Neo-brutalism 硬阴影 */
+  --shadow-nb-sm: 2px 2px 0px 0px #151617;
+  --shadow-nb: 4px 4px 0px 0px #151617;
+  --shadow-nb-lg: 6px 6px 0px 0px #151617;
+
+  /* 字体 */
+  --font-sans: "Noto Sans SC", system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
+}
+
+/* 全局重置 */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-surface-base);
+  color: var(--color-ink);
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #D8D0C5;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #BEB4A8;
+}
+
+/* 动画 */
+@keyframes dialog-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-dialog-pop {
+  animation: dialog-pop 0.22s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+}

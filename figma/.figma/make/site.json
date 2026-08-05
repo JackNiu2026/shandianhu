@@ -1,0 +1,10 @@
+{
+  "description": "This app connects parents with tutors through a swipe-based matching system, offers personalized MBTI assessments, and facilitates direct communication.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

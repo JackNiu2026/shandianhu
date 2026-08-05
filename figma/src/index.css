@@ -1,0 +1,1695 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@600;700&display=swap');
+@import 'tailwindcss';
+
+:root { font-family: "Noto Sans SC", sans-serif; color: #263334; background: #e9e7e1; }
+* { box-sizing: border-box; }
+button { font: inherit; cursor: pointer; }
+.app-shell { min-height: 100vh; display: grid; place-items: center; padding: 28px; background: radial-gradient(circle at 15% 20%, #f5d6bd 0 6%, transparent 25%), radial-gradient(circle at 90% 85%, #c9ded3 0 5%, transparent 25%), #e9e7e1; }
+.phone-frame { width: min(100%, 430px); height: min(900px, calc(100vh - 56px)); min-height: 680px; overflow: hidden; position: relative; background: #fffdf9; border: 8px solid #263334; border-radius: 36px; box-shadow: 12px 14px 0 #263334; }
+.topbar { height: 73px; padding: 24px 22px 8px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }
+.wordmark { font-family: "Ma Shan Zheng", cursive; font-size: 29px; line-height: 1; letter-spacing: 2px; color: #263334; }.wordmark span { color: #ec6c4b; }.filter-btn,.setting-btn { border: 0; background: #f3f0e9; width: 34px; height: 34px; border-radius: 50%; color: #263334; font-size: 18px; }.top-caption { font-size: 13px; color: #7b8381; letter-spacing: .16em; }
+.screen-content { height: calc(100% - 139px); overflow: auto; scrollbar-width: none; }.screen-content::-webkit-scrollbar { display: none; }.match-screen,.test-screen,.me-screen { padding: 18px 20px 28px; }.intro-row,.dashboard-head,.matched-title { display: flex; justify-content: space-between; align-items: center; }.eyebrow,.tiny-label { margin: 0; color: #ed7358; font: 500 10px "DM Mono", monospace; letter-spacing: .12em; }.intro-row h1,.test-hero h1,.chat-list-title h1 { margin: 4px 0 0; font-size: 24px; line-height: 1.25; letter-spacing: -.06em; }.progress-ring { height: 48px; width: 48px; display: grid; place-content: center; text-align: center; border-radius: 50%; background: conic-gradient(#ed7358 76%, #ece9e1 0); position: relative; }.progress-ring::before { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: #fffdf9; }.progress-ring b,.progress-ring span { z-index: 1; line-height: 1; }.progress-ring b { font-size: 13px; }.progress-ring span { font-size: 7px; color: #77807d; }
+.teacher-card { margin-top: 18px; overflow: hidden; border: 1.5px solid #263334; border-radius: 20px; background: #fff; box-shadow: 5px 6px 0 #263334; transition: transform .25s ease, opacity .25s ease; }.swipe-left { transform: translateX(-110%) rotate(-9deg); opacity: 0; }.swipe-right { transform: translateX(110%) rotate(9deg); opacity: 0; }.portrait { height: 224px; position: relative; overflow: hidden; display: grid; place-items: center; }.sun { position: absolute; top: 15px; right: 20px; font-size: 36px; color: rgba(255,255,255,.9); }.portrait-figure { width: 116px; height: 116px; display: grid; place-items: center; border: 7px solid rgba(255,255,255,.75); background: rgba(255,255,255,.30); border-radius: 48% 52% 45% 55%; font-size: 58px; color: #fffdf9; font-family: "Ma Shan Zheng", cursive; transform: rotate(-4deg); }.portrait-sub { position: absolute; bottom: 14px; left: 14px; padding: 6px 10px; border-radius: 20px; background: rgba(38,51,52,.82); color: white; font-size: 10px; }.card-body { padding: 17px; }.name-line { display: flex; gap: 7px; align-items: center; }.name-line h2 { margin: 0; font-size: 22px; letter-spacing: -.06em; }.name-line>span { font-size: 12px; color: #7d8581; }.verified,.mini-teacher i,.connected-teacher i,.chat-contact i { display: inline-grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: #2d7c75; color: #fff; font-style: normal; font-size: 10px; }.school { margin: 5px 0 12px; color: #68716e; font-size: 11px; }.tags { display: flex; flex-wrap: wrap; gap: 6px; }.tags span { border: 1px solid #dfe2d9; color: #4d5d58; padding: 4px 8px; border-radius: 20px; font-size: 10px; }.teacher-note { margin: 15px 0; font-size: 13px; font-weight: 600; color: #344440; }.teacher-meta { display: flex; align-items: center; gap: 7px; color: #82908b; font: 10px "DM Mono", monospace; }.teacher-meta i { width: 2px; height: 2px; border-radius: 50%; background: #82908b; }.swipe-actions { margin: 20px 10px 14px; display: flex; align-items: center; justify-content: space-between; }.swipe-actions button { display: grid; place-items: center; border-radius: 50%; width: 50px; height: 50px; font-size: 29px; }.pass { border: 1.5px solid #e3ded5; color: #c1bcb4; background: white; }.like { border: 0; background: #ed7358; color: white; box-shadow: 0 5px 0 #b94b35; }.swipe-actions span { color: #92958f; font-size: 9px; }.contact-lock { width: 100%; border: 1px solid #d8ddd3; background: #f5f5ed; padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 7px; color: #344440; font-size: 12px; font-weight: 700; }.contact-lock small { color: #9aa09a; font-weight: 400; }
+.bottom-nav { height: 66px; position: absolute; inset: auto 0 0; background: rgba(255,253,249,.96); border-top: 1px solid #ece8df; display: flex; justify-content: space-around; z-index: 3; }.bottom-nav button { width: 25%; border: 0; background: transparent; color: #a5aaa4; display: grid; place-content: center; gap: 2px; font-size: 10px; }.bottom-nav .selected { color: #ed7358; font-weight: 700; }.icon { font-size: 20px; line-height: 1; }
+.test-hero { padding-top: 8px; }.test-hero h1 { font-size: 32px; margin: 10px 0; }.test-hero em { font-family: "Ma Shan Zheng", cursive; font-size: 44px; font-style: normal; color: #ed7358; }.test-hero>p { font-size: 12px; color: #75807b; line-height: 1.8; }.stepper { display: flex; gap: 6px; margin: 32px 0 18px; }.stepper span { height: 4px; flex: 1; border-radius: 6px; background: #ebe8de; }.stepper .active { background: #ed7358; }.question-card { background: #f0f4ed; border-radius: 18px; padding: 22px 18px; }.question-no { color: #73877b; margin: 0; font: 10px "DM Mono", monospace; }.question-card h2 { font-size: 20px; letter-spacing: -.04em; line-height: 1.55; margin: 14px 0 20px; }.option-list { display: grid; gap: 10px; }.option-list button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 12px; text-align: left; border: 1px solid #d5ddd2; border-radius: 12px; background: #fffdf9; font-size: 13px; color: #35413e; }.option-list b { color: #ed7358; font: 12px "DM Mono", monospace; }.option-list span { margin-left: auto; color: #aab2aa; }.result-card { background: #dce7dd; padding: 20px; border-radius: 18px; position: relative; }.result-card>div:nth-child(2) { padding-left: 98px; }.result-orbit { width: 82px; height: 82px; position: absolute; left: 18px; top: 20px; display: grid; place-items: center; border: 1px dashed #688878; border-radius: 50%; color: #2d6754; font: 500 16px "DM Mono", monospace; }.result-card h1 { margin: 5px 0; font-size: 18px; }.result-card p:not(.eyebrow) { margin: 0; color: #557064; font-size: 11px; line-height: 1.6; }.result-card>button { margin-top: 17px; width: 100%; padding: 9px; background: #fffdf9; border: 0; border-radius: 8px; color: #456255; font-size: 11px; }.matched-title { margin: 22px 0 12px; }.matched-title h2,.dashboard h2 { margin: 4px 0 0; font-size: 18px; }.matched-title>span,.dashboard-head button { font-size: 10px; color: #8a928c; }.match-list { display: grid; gap: 10px; }.mini-teacher,.connected-teacher { display: flex; gap: 11px; align-items: center; padding: 12px; border: 1px solid #e5e3da; border-radius: 13px; }.mini-avatar,.chat-avatar,.my-avatar { width: 47px; height: 47px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 15px; background: #bcd4c7; color: white; font: 26px "Ma Shan Zheng", cursive; }.mini-teacher h3,.connected-teacher h3 { margin: 0 0 3px; font-size: 14px; }.mini-teacher p,.connected-teacher p { margin: 0; color: #7d8781; font-size: 10px; }.mini-teacher span { color: #e27c4e; font-size: 10px; }.mini-teacher button { margin-left: auto; border: 1px solid #ed7358; background: white; color: #dc684a; border-radius: 20px; padding: 5px 10px; font-size: 10px; }
+.chat-screen { padding: 10px 16px 0; }.chat-list-title { display: flex; justify-content: space-between; align-items: center; margin: 2px 4px 15px; }.chat-list-title span { background: #ed7358; color: white; padding: 3px 7px; border-radius: 12px; font-size: 9px; }.chat-contact { width: 100%; border: 0; background: transparent; text-align: left; display: flex; gap: 10px; align-items: center; padding: 9px 4px 15px; border-bottom: 1px solid #eee9df; }.chat-contact h3 { margin: 0; font-size: 13px; }.chat-contact p { margin: 4px 0 0; width: 230px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #8b928c; font-size: 11px; }.chat-contact time { margin-left: auto; align-self: flex-start; color: #a4aaa5; font-size: 9px; }.conversation { height: 390px; display: flex; flex-direction: column; margin: 12px -16px 0; background: #f5f4ee; }.conversation-head { display: flex; gap: 8px; align-items: center; padding: 11px 16px; background: #fffdf9; font-size: 13px; }.conversation-head button { border: 0; background: transparent; font-size: 25px; }.conversation-head span { margin-left: auto; }.small { width: 26px; height: 26px; border-radius: 9px; font-size: 16px; }.date-label { margin: 13px auto; color: #a2aaa5; font-size: 9px; }.message-stack { flex: 1; padding: 0 15px; overflow: auto; }.bubble-row { display: flex; gap: 7px; margin-bottom: 13px; align-items: flex-end; }.bubble-row.mine { justify-content: flex-end; }.tiny { width: 27px; height: 27px; border-radius: 9px; font-size: 16px; }.bubble { max-width: 255px; margin: 0; padding: 10px 12px; border-radius: 4px 13px 13px 13px; background: white; color: #3c4945; font-size: 12px; line-height: 1.55; }.mine .bubble { border-radius: 13px 4px 13px 13px; background: #cde1d4; }.bubble-row time { display: block; margin-top: 3px; color: #9ba39d; font-size: 8px; }.mine time { text-align: right; }.message-input { display: flex; gap: 7px; padding: 8px 12px; background: white; }.message-input button { border: 0; background: transparent; color: #7d8a83; }.message-input input { flex: 1; border: 0; outline: 0; background: #f4f4ef; border-radius: 6px; padding: 8px; font-size: 11px; }.message-input .send { color: #ed7358; font-size: 11px; }
+.profile-banner { display: flex; align-items: center; gap: 12px; padding: 9px 0 21px; }.my-avatar { width: 62px; height: 62px; border-radius: 22px; background: #ecad94; font-size: 33px; }.profile-banner p { margin: 0; color: #858d87; font-size: 11px; }.profile-banner h1 { margin: 3px 0; font-size: 22px; }.profile-banner h1 span { font-size: 10px; vertical-align: middle; background: #f6e7cf; color: #b97935; padding: 2px 5px; border-radius: 4px; }.profile-banner small { color: #9aa29c; font-size: 9px; }.profile-banner>button { margin-left: auto; border: 0; background: transparent; font-size: 28px; color: #9ea59f; }.dashboard { border-top: 1px solid #eae6dc; padding-top: 19px; }.dashboard-head button { border: 0; background: transparent; }.connected-teacher { margin-top: 12px; }.orange { background: #e3b18d; }.connected-teacher>div:nth-child(2) { flex: 1; }.connected-teacher>div>div { display: flex; justify-content: space-between; margin-top: 9px; }.connected-teacher span { color: #e27655; font-size: 10px; }.connected-teacher button { background: #f1f4ed; border: 0; border-radius: 5px; color: #647269; padding: 4px 7px; font-size: 9px; }.compact { margin-top: 25px; }.note-card { display: flex; gap: 10px; padding: 13px 0; color: #69746e; font-size: 11px; line-height: 1.7; }.note-card span { color: #e57855; font: 10px "DM Mono", monospace; }.note-card p { margin: 0; }.teacher-stat { display: flex; gap: 10px; margin-bottom: 20px; }.teacher-stat span { flex: 1; padding: 12px; background: #eff4ed; border-radius: 11px; color: #77847b; font-size: 10px; }.teacher-stat b { display: block; color: #3a5148; font-size: 20px; }.teacher-tools { margin-top: 12px; display: grid; gap: 8px; }.teacher-tools button { display: flex; align-items: center; gap: 11px; padding: 13px; text-align: left; border: 1px solid #e5e4db; border-radius: 11px; background: #fff; color: #45534e; font-size: 12px; }.teacher-tools b { color: #ed7358; font-size: 16px; }.teacher-tools span { margin-left: auto; color: #98a19a; }
+.modal-backdrop { position: absolute; inset: 0; z-index: 10; display: flex; align-items: flex-end; padding: 0; background: rgba(28,37,35,.42); }.subscribe-modal,.role-modal { width: 100%; background: #fffdf9; border-radius: 25px 25px 0 0; padding: 27px 24px 25px; text-align: center; animation: rise .24s ease-out; }.subscribe-modal { padding-top: 22px; }.close { float: right; border: 0; background: #f0eee7; border-radius: 50%; width: 27px; height: 27px; font-size: 18px; color: #6f7772; }.lock-art { width: 62px; height: 62px; display: grid; place-items: center; margin: 4px auto 14px; border-radius: 50%; background: #f6dfd5; color: #ed7358; font-size: 28px; }.subscribe-modal h2,.role-modal h2 { margin: 7px 0; letter-spacing: -.05em; font-size: 24px; }.subscribe-modal>p:not(.eyebrow) { margin: 0 auto 18px; max-width: 250px; color: #818981; font-size: 12px; line-height: 1.8; }.subscribe-btn { width: 100%; padding: 13px; border: 0; background: #ed7358; border-radius: 10px; box-shadow: 0 4px #be5039; color: white; font-size: 13px; font-weight: 700; }.subscribe-modal small { display: block; margin-top: 12px; color: #a5aaa5; font-size: 9px; }.handle { width: 35px; height: 4px; margin: -15px auto 18px; background: #dfddd5; border-radius: 3px; }.role-modal { text-align: left; padding-bottom: 35px; }.role-modal h2 { margin-bottom: 21px; }.role-modal>button { width: 100%; display: flex; align-items: center; gap: 12px; border: 1px solid #e8e5dc; background: white; border-radius: 14px; padding: 12px; margin-top: 10px; text-align: left; }.role-icon { display: grid; place-items: center; width: 45px; height: 45px; border-radius: 13px; font-size: 23px; }.peach { background: #f8e1d7; color: #de7051; }.green { background: #dceade; color: #4e7b67; }.role-modal button b,.role-modal button small { display: block; }.role-modal button b { color: #34413e; font-size: 13px; }.role-modal button small { margin-top: 3px; color: #8d958e; font-size: 10px; }.role-modal button i { margin-left: auto; color: #adb4ae; font-size: 21px; font-style: normal; }@keyframes rise { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@media (max-width: 520px) { .app-shell { padding: 0; background: #fffdf9; }.phone-frame { width: 100%; height: 100vh; min-height: 0; border: 0; border-radius: 0; box-shadow: none; } }
+/* Lightning Tiger — immersive teacher video card */
+.wordmark { font-family: "Noto Sans SC", sans-serif; font-size: 22px; letter-spacing: -.1em; font-weight: 800; font-style: italic; }
+.wordmark span { display: inline-block; transform: skew(-12deg); color: #f2633e; }
+.match-screen { padding-top: 11px; }
+.intro-row h1 { font-size: 25px; }
+.hero-card { margin-top: 14px; border-radius: 22px; box-shadow: 6px 7px 0 #263334; }
+.hero-card .portrait { height: 290px; background: #d6ddd5; }
+.video-cover img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; filter: saturate(.82) contrast(1.04); }
+.video-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(13,27,25,.04) 28%, rgba(13,27,25,.7) 100%); }
+.play-video { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 61px; height: 61px; display: grid; place-items: center; padding-left: 3px; border: 2px solid #fff; border-radius: 50%; background: rgba(255,255,255,.17); color: #fff; backdrop-filter: blur(7px); transition: transform .18s ease, background .18s ease; }
+.play-video:hover { transform: translate(-50%, -50%) scale(1.08); background: #ed7358; }
+.play-video span { font-size: 19px; }
+.video-label { position: absolute; left: 17px; bottom: 16px; display: grid; gap: 3px; color: #fff; }
+.video-label b { font-size: 15px; letter-spacing: -.04em; }.video-label span { font-size: 10px; opacity: .9; }
+.credential-tags { margin-top: 2px; }.tags .credential { border-color: #ecc3af; color: #c3593d; background: #fff7f2; font-weight: 700; }
+.hero-card .card-body { padding: 16px 17px 15px; }.hero-card .teacher-note { margin: 13px 0 10px; }
+.hero-card .school { margin-bottom: 10px; }.hero-card .teacher-meta { padding-top: 10px; border-top: 1px solid #f0eee8; }
+.swipe-actions { margin-top: 15px; margin-bottom: 12px; }.swipe-actions button { width: 45px; height: 45px; }
+/* Contact remains private but lives in the teacher card */
+.contact-row { display: flex; align-items: center; justify-content: space-between; margin-top: 13px; padding: 11px 0 0; border-top: 1px solid #ede9e1; }
+.contact-row small { display: block; margin-bottom: 2px; color: #949a94; font-size: 9px; }.contact-row b { color: #53615b; font: 500 12px "DM Mono", monospace; letter-spacing: .04em; }
+.contact-row button { border: 0; border-radius: 8px; padding: 8px 9px 8px 11px; background: #263334; color: white; font-size: 10px; font-weight: 700; }.contact-row button span { color: #ed9b83; font-size: 15px; vertical-align: -1px; }
+.like-count { color: #ed7358; font: 10px "DM Mono", monospace; }.liked-list { display: grid; gap: 8px; margin-top: 11px; }.liked-teacher { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; background: #f3f5ef; }.liked-teacher h3 { margin: 0 0 3px; color: #3b4944; font-size: 12px; }.liked-teacher p { margin: 0; color: #7d8781; font-size: 9px; }.liked-teacher .mini-avatar { width: 37px; height: 37px; border-radius: 12px; font-size: 20px; }.liked-teacher button { margin-left: auto; border: 1px solid #d2ddd4; border-radius: 20px; padding: 5px 8px; background: white; color: #537063; font-size: 9px; }.empty-likes { margin-top: 10px; padding: 15px 12px; border: 1px dashed #d8ded6; border-radius: 12px; color: #9ba39d; text-align: center; }.empty-likes span { color: #ed9b83; font-size: 17px; }.empty-likes p { margin: 4px 0 0; font-size: 10px; }
+/* Reflowed profile-first matching card */
+.hero-card { overflow: hidden; }
+.teacher-identity { padding: 13px 16px 15px; position: relative; overflow: hidden; }.teacher-identity::after { content: "✦"; position: absolute; right: 13px; bottom: -28px; color: rgba(255,255,255,.36); font-size: 100px; line-height: 1; }
+.identity-top,.identity-main { position: relative; z-index: 1; }.identity-top { display: flex; justify-content: space-between; align-items: center; color: #fff; font-size: 9px; }.identity-top span { background: rgba(38,51,52,.6); padding: 5px 7px; border-radius: 20px; }.identity-top b { font-weight: 500; }.identity-main { display: flex; align-items: center; gap: 11px; margin-top: 14px; }.teacher-avatar { display: grid; place-items: center; width: 59px; height: 59px; border: 3px solid rgba(255,255,255,.9); border-radius: 20px; background: rgba(255,255,255,.3); color: #fff; font: 34px "Ma Shan Zheng", cursive; }.teacher-identity .name-line h2 { color: #fff; font-size: 22px; }.teacher-identity .name-line>span { color: rgba(255,255,255,.85); }.teacher-identity .verified { background: rgba(41,92,77,.85); }.teacher-identity .school { margin: 3px 0 0; color: rgba(255,255,255,.92); }.teacher-identity .tags { position: relative; z-index: 1; margin-top: 13px; }.teacher-identity .tags span { background: rgba(255,255,255,.83); border-color: transparent; color: #47564f; }.teacher-identity .tags .credential { background: #fff4e7; color: #b55237; }
+.hero-card .compact-body { padding: 12px 14px 14px; }.compact-body .teacher-meta { padding-top: 0; border: 0; }.compact-body .teacher-note { margin: 9px 0; font-size: 11px; }.lesson-video { border-radius: 11px; overflow: hidden; }.lesson-video .video-label { left: 12px; bottom: 10px; }.lesson-video .video-label b { font-size: 12px; }.lesson-video .video-label span { font-size: 9px; }.lesson-video .play-video { width: 47px; height: 47px; }.lesson-video .play-video span { font-size: 14px; }.hero-card .contact-row { margin-top: 10px; }
+/* Card-led parent dashboard */
+.card-dashboard { border: 0; padding-top: 2px; }.dashboard-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }.dashboard-title h2 { margin: 4px 0 0; font-size: 19px; }.dashboard-title>span { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #f1f2ec; color: #8b948e; font-size: 20px; }.dashboard-card { width: 100%; display: flex; align-items: center; gap: 11px; padding: 13px; border: 1px solid #e4e7df; border-radius: 15px; background: #fff; text-align: left; box-shadow: 0 3px 0 rgba(38,51,52,.025); }.dashboard-card + .interest-card,.interest-card + .dashboard-card { margin-top: 10px; }.card-icon { display: grid; place-items: center; width: 39px; height: 39px; flex: 0 0 auto; border-radius: 12px; font-size: 19px; }.coral { background: #f8ddd4; color: #dc7052; }.blush { background: #fae6df; color: #df7254; }.mint { background: #dcebe1; color: #487767; }.dashboard-card small,.interest-card small { display: block; color: #96a099; font-size: 9px; }.dashboard-card h3,.interest-card h3 { margin: 3px 0; color: #3b4b45; font-size: 13px; }.dashboard-card p { margin: 0; color: #89928c; font-size: 9px; }.card-arrow { margin-left: auto; color: #a6ada7; font-size: 21px; }.interest-card { padding: 13px; border-radius: 15px; background: #f4f2ec; }.interest-title { display: flex; justify-content: space-between; align-items: center; }.interest-title>div { display: flex; align-items: center; gap: 10px; }.interest-title b { color: #e47354; font: 10px "DM Mono", monospace; }.liked-avatars { display: flex; margin-top: 10px; }.liked-avatar { width: 29px; height: 29px; margin-right: -4px; display: grid; place-items: center; border: 2px solid #f4f2ec; border-radius: 10px; color: white; font: 16px "Ma Shan Zheng", cursive; }.likes-hint { margin: 9px 0 0 49px; color: #969e98; font-size: 9px; }.quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 11px; }.quick-grid button { min-height: 66px; display: grid; place-content: center; gap: 4px; border: 1px solid #e7e5dd; border-radius: 13px; background: #fffdf9; color: #68736d; font-size: 9px; }.quick-grid b { color: #ed7358; font-size: 17px; }
+/* Full-height discovery card */
+.teaching-pills { display: flex; flex-wrap: wrap; gap: 5px; margin: 9px 0 10px; }.teaching-pills span { padding: 4px 6px; border-radius: 5px; background: #f5f4ec; color: #67736d; font-size: 11px; }
+/* MBTI personality lab */
+.test-screen { padding: 8px 20px 28px; }.mbti-constellation { height: 245px; position: relative; overflow: hidden; border-radius: 20px; background: #263b39; color: white; }.orbit { position: absolute; border: 1px solid rgba(230,241,224,.24); border-radius: 50%; }.orbit-one { width: 244px; height: 244px; left: -58px; top: -66px; }.orbit-two { width: 300px; height: 180px; left: 112px; top: 64px; transform: rotate(-29deg); }.star { position: absolute; color: #f4b57c; }.s1 { left: 45px; top: 34px; font-size: 20px; }.s2 { right: 31px; top: 50px; }.mbti-core { position: absolute; top: 28px; right: 28px; display: grid; width: 82px; height: 82px; place-content: center; text-align: center; border-radius: 50%; background: #e87a55; box-shadow: 0 0 0 8px rgba(232,122,85,.13); }.mbti-core small,.mbti-core span { font-size: 8px; opacity: .88; }.mbti-core b { font: 500 25px "DM Mono", monospace; line-height: 1.1; }.mbti-core b i { font-size: 11px; font-style: normal; }.test-copy { position: absolute; left: 19px; bottom: 19px; }.test-copy .tiny-label { color: #f0b38e; }.test-copy h1 { margin: 7px 0; font-size: 20px; line-height: 1.45; letter-spacing: -.05em; }.test-copy h1 em { color: #f3c8a9; font-family: "Ma Shan Zheng", cursive; font-size: 25px; font-style: normal; }.test-copy>p:last-child { margin: 0; color: #c9d4cc; font-size: 10px; }.magnetic-question { margin-top: -11px; position: relative; border-radius: 17px; background: #fffdf9; box-shadow: 0 9px 20px rgba(21,38,35,.10); }.question-head { display: flex; align-items: center; justify-content: space-between; }.question-head .stepper { width: 90px; margin: 0; }.magnetic-question h2 { margin: 13px 0 4px; }.choose-hint { margin: 0 0 14px; color: #89948d; font-size: 10px; }.magnetic-question .option-list button { padding: 13px 11px; }.magnetic-question .option-list button>span { flex: 1; }.magnetic-question .option-list button i { color: #ed7358; font-style: normal; font-size: 15px; }
+/* Personal hub and collapsed functional cards */
+.profile-hero { min-height: 175px; display: flex; align-items: flex-start; padding: 19px; border-radius: 20px; background: #2c5148; color: white; overflow: hidden; position: relative; }.profile-hero::before { content: ""; position: absolute; width: 210px; height: 210px; right: -50px; top: -122px; border-radius: 50%; border: 1px solid rgba(255,255,255,.16); }.profile-hero .profile-decoration { position: absolute; right: 18px; top: 17px; color: #f3af75; font-size: 25px; }.profile-hero .my-avatar { background: #f0b28c; border: 3px solid rgba(255,255,255,.72); }.profile-hero p { color: #d9e5dc; }.profile-hero h1 { color: white; font-size: 20px; }.profile-hero h1 span { background: #456c60; color: #dce9dd; }.profile-hero small { color: #c5d6cc; }.profile-hero>button { position: absolute; right: 17px; bottom: 70px; color: #dbe8df; }.profile-stats { position: absolute; left: 19px; right: 19px; bottom: 13px; display: flex; justify-content: space-between; }.profile-stats span { border-right: 1px solid rgba(255,255,255,.17); padding-right: 19px; color: #c7d8ce; font-size: 8px; }.profile-stats span:last-child { border: 0; padding: 0; }.profile-stats b { display: block; color: white; font-size: 15px; }.card-dashboard { padding-top: 19px; }.function-card { width: 100%; display: block; margin-top: 10px; overflow: hidden; border: 1px solid #e4e7df; border-radius: 15px; background: #fff; text-align: left; }.function-trigger { width: 100%; display: flex; align-items: center; gap: 11px; border: 0; background: transparent; padding: 13px; text-align: left; }.function-trigger>span:nth-child(2) { display: grid; gap: 2px; }.function-trigger small { color: #99a39c; font-size: 9px; }.function-trigger b { color: #3d4e47; font-size: 13px; }.function-trigger em { color: #89938d; font-size: 9px; font-style: normal; }.function-trigger>i { margin-left: auto; color: #a4aca5; font-size: 19px; font-style: normal; }.lilac { color: #685f9c; background: #e7e4f5; }.teacher-expand { padding: 0 13px 13px; border-top: 1px solid #eeece5; }.teacher-expand article { display: flex; align-items: center; gap: 10px; padding: 11px 0; }.teacher-expand h3 { margin: 0 0 3px; font-size: 12px; }.teacher-expand p { margin: 0; color: #838c86; font-size: 9px; }.teacher-expand-actions { display: flex; gap: 7px; }.teacher-expand-actions button { flex: 1; border: 0; padding: 7px 4px; border-radius: 7px; background: #f2f4ef; color: #66736c; font-size: 9px; }.teacher-expand-actions button:nth-child(2) { background: #f9e5dc; color: #d46748; }
+/* Teacher-specific identity and multi-student workbench */
+.teacher-profile-card { position: relative; overflow: hidden; min-height: 203px; padding: 16px 17px 14px; border-radius: 20px; background: #355c70; color: white; }.teacher-profile-card::after { content: "∿"; position: absolute; right: -14px; bottom: -45px; color: rgba(255,255,255,.11); font-size: 172px; line-height: 1; }.teacher-profile-top { display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; }.teacher-profile-top span { padding: 4px 7px; border-radius: 20px; background: rgba(255,255,255,.13); font-size: 9px; }.teacher-profile-top button { border: 0; background: transparent; color: #d9e9ed; }.teacher-profile-main { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; margin-top: 13px; }.teacher-big-avatar { display: grid; place-items: center; width: 60px; height: 60px; border: 3px solid rgba(255,255,255,.7); border-radius: 19px; background: #e9b38f; color: white; font: 34px "Ma Shan Zheng", cursive; }.teacher-profile-main p { margin: 0; color: #c9dfdf; font-size: 9px; }.teacher-profile-main h1 { margin: 3px 0; font-size: 22px; letter-spacing: -.06em; }.teacher-profile-main h1 i { display: inline-grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: #6bc0b4; font-size: 9px; font-style: normal; vertical-align: 2px; }.teacher-profile-main small { color: #d7e5e4; font-size: 10px; }.teacher-profile-tags { position: relative; z-index: 1; display: flex; gap: 5px; margin-top: 12px; }.teacher-profile-tags span { padding: 4px 6px; border-radius: 5px; background: rgba(255,255,255,.14); color: #eff8f4; font-size: 8px; }.teacher-profile-stats { position: relative; z-index: 1; display: flex; justify-content: space-between; margin-top: 13px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.17); }.teacher-profile-stats span { color: #cce0df; font-size: 8px; }.teacher-profile-stats b { display: block; color: white; font-size: 15px; }.teacher-dashboard { padding-top: 19px; }
+/* Parent decision support */
+.decision-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0 7px; }.decision-grid span { display: grid; gap: 2px; padding: 7px 5px; border-radius: 7px; background: #f3f5f0; color: #75817a; font-size: 8px; text-align: center; }.decision-grid b { color: #35473f; font-size: 11px; }.match-explainer { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; padding: 12px; border-radius: 12px; background: #fff4eb; }.match-explainer>span { color: #ed7358; font-size: 20px; }.match-explainer b { color: #884b38; font-size: 11px; }.match-explainer p { margin: 3px 0 0; color: #8f6b5d; font-size: 10px; line-height: 1.55; }
+.membership-benefits { display: grid; gap: 7px; margin: 0 0 17px; padding: 12px; border-radius: 10px; background: #f5f5ee; text-align: left; color: #50645a; font-size: 10px; }.membership-benefits span { display: block; }.subscribe-modal>p:not(.eyebrow) { margin-bottom: 12px; }
+
+/* ── Readability, touch targets & parent-decision flow (consolidated) ── */
+/* Minimum type size is 11px; anything a parent must actually read is 12px+. */
+.decision-grid span { padding: 9px 5px; font-size: 11px; }
+.decision-grid b { font-size: 14px; }
+.teacher-meta { font-size: 11px; }
+.tags span { font-size: 11px; padding: 5px 9px; }
+.teacher-identity .tags span { color: #3c4a44; }
+.school { font-size: 12px; }
+.compact-body .teacher-note { font-size: 13px; line-height: 1.6; }
+.identity-top { font-size: 11px; }
+.swipe-actions span { font-size: 11px; color: #7c837d; }
+.swipe-actions button { width: 56px; height: 56px; font-size: 30px; }
+.bottom-nav button { font-size: 11px; gap: 4px; }
+.contact-row small { font-size: 11px; color: #7f867f; }
+.contact-row b { font-size: 13px; color: #3f4c46; }
+.contact-row button { padding: 11px 13px; font-size: 12px; }
+.function-trigger { padding: 15px 14px; }
+.function-trigger small { font-size: 11px; color: #7f8983; }
+.function-trigger b { font-size: 15px; }
+.function-trigger em { font-size: 12px; color: #767f79; }
+.profile-stats span { font-size: 11px; color: #d3e3d9; }
+.profile-stats b { font-size: 18px; }
+.profile-banner small, .profile-banner p { font-size: 12px; }
+.teacher-expand-actions button { padding: 11px 6px; font-size: 12px; }
+.teacher-expand h3 { font-size: 14px; }
+.teacher-expand p { font-size: 12px; }
+.mini-teacher p, .mini-teacher span { font-size: 12px; }
+.mini-teacher h3 { font-size: 15px; }
+.mini-teacher button { padding: 9px 14px; font-size: 12px; }
+.chat-contact h3 { font-size: 15px; }
+.chat-contact p { font-size: 12px; }
+.chat-contact time { font-size: 11px; }
+.bubble { font-size: 14px; }
+.bubble-row time { font-size: 10px; }
+.message-input input { font-size: 14px; padding: 11px; }
+.message-input .send { font-size: 13px; padding: 0 4px; }
+.eyebrow, .tiny-label { font-size: 11px; }
+.teacher-profile-tags span, .teacher-profile-stats span { font-size: 11px; }
+.teacher-profile-stats b { font-size: 18px; }
+.role-modal button b { font-size: 15px; }
+.role-modal button small { font-size: 12px; }
+.subscribe-modal small { font-size: 11px; }
+.membership-benefits { font-size: 12px; gap: 9px; padding: 14px; line-height: 1.5; }
+.subscribe-modal > p:not(.eyebrow) { font-size: 13px; max-width: none; }
+
+.hero-card { min-height: 556px; }
+.hero-card .lesson-video { height: 150px; }
+.filter-btn, .setting-btn { width: auto; height: 32px; padding: 0 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #4b564f; }
+
+/* Supply confidence + filters */
+.supply-badge { flex: 0 0 auto; text-align: right; }
+.supply-badge b { display: block; color: #ed7358; font: 500 18px "DM Mono", monospace; line-height: 1.1; }
+.supply-badge span { color: #7d857f; font-size: 11px; }
+.filter-row { display: flex; gap: 7px; margin-top: 13px; }
+.filter-row button { border: 1px solid #dfe0d7; border-radius: 20px; padding: 7px 12px; background: #f6f5ef; color: #4c5852; font-size: 12px; font-weight: 600; }
+.relax-note { margin: 10px 0 0; padding: 9px 11px; border-radius: 9px; background: #fdf1e6; color: #96603f; font-size: 12px; }
+
+/* Trust strip is now a real, tappable entry to evidence */
+.trust-line { width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 11px; padding: 10px 11px; border: 1px solid #dde6de; border-radius: 9px; background: #f4f7f3; color: #3f6a54; font-size: 12px; text-align: left; }
+.trust-line span { white-space: nowrap; }
+.trust-line span:last-child { margin-left: auto; color: #d1663f; font-weight: 700; }
+
+/* Deck end state — no more silent looping */
+.deck-end { margin-top: 44px; padding: 30px 22px; border: 1px dashed #d6dbd4; border-radius: 20px; text-align: center; }
+.deck-end > span { color: #ed9b83; font-size: 30px; }
+.deck-end b { display: block; margin: 12px 0 7px; font-size: 17px; color: #34413d; }
+.deck-end p { margin: 0 auto; max-width: 260px; color: #7c847e; font-size: 12px; line-height: 1.7; }
+.deck-end-actions { display: flex; gap: 9px; margin-top: 19px; }
+.deck-end-actions button { flex: 1; padding: 12px; border: 1px solid #dcded4; border-radius: 10px; background: #fff; color: #55625b; font-size: 13px; font-weight: 600; }
+.deck-end-actions .primary { border: 0; background: #ed7358; color: #fff; }
+
+/* Shared bottom sheet */
+.sheet { width: 100%; max-height: 92%; overflow: auto; background: #fffdf9; border-radius: 25px 25px 0 0; padding: 26px 22px 24px; animation: rise .24s ease-out; scrollbar-width: none; }
+.sheet::-webkit-scrollbar { display: none; }
+.sheet h2 { margin: 7px 0 0; font-size: 23px; letter-spacing: -.05em; }
+.sheet-note { margin: 9px 0 4px; color: #7d857f; font-size: 12px; line-height: 1.7; }
+.sheet-btn { width: 100%; margin-top: 20px; padding: 14px; border: 0; border-radius: 11px; background: #ed7358; box-shadow: 0 4px #be5039; color: #fff; font-size: 14px; font-weight: 700; }
+.sheet-foot { display: block; margin-top: 13px; color: #99a09a; font-size: 11px; text-align: center; }
+.text-btn { width: 100%; margin-top: 11px; padding: 9px; border: 0; background: transparent; color: #929a94; font-size: 12px; }
+
+/* Needs-first onboarding */
+.needs-sheet .needs-group { margin-top: 17px; }
+.needs-sheet label { display: block; margin-bottom: 8px; color: #5a635d; font-size: 12px; font-weight: 600; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip-row button { padding: 10px 14px; border: 1px solid #dfe1d8; border-radius: 10px; background: #fff; color: #4f5b55; font-size: 13px; }
+.chip-row .on { border-color: #ed7358; background: #fdf1ec; color: #c9522f; font-weight: 700; }
+
+/* Trust evidence sheet */
+.trust-sheet h3 { margin: 21px 0 9px; font-size: 14px; color: #3b4842; }
+.check-list { display: grid; gap: 8px; margin-top: 15px; padding: 13px; border-radius: 11px; background: #f1f6f1; color: #3d6952; font-size: 12px; }
+.trust-sheet blockquote { margin: 0 0 10px; padding: 12px 13px; border-left: 3px solid #ecc3af; border-radius: 0 10px 10px 0; background: #fbf7f2; }
+.trust-sheet blockquote p { margin: 0; color: #4a5650; font-size: 13px; line-height: 1.65; }
+.trust-sheet cite { display: block; margin-top: 7px; color: #96938c; font-size: 11px; font-style: normal; }
+.rule-list { margin: 0; padding-left: 18px; color: #5c665f; font-size: 12px; line-height: 1.9; }
+
+/* Free-trial booking */
+.slot-grid { display: grid; gap: 8px; margin-top: 16px; }
+.slot-grid button { padding: 14px; border: 1px solid #dde0d6; border-radius: 11px; background: #fff; color: #3f4c46; font-size: 14px; font-weight: 600; text-align: left; }
+.slot-grid button::after { content: "预约 ›"; float: right; color: #d1663f; font-size: 12px; }
+
+/* Lesson-clip player */
+.modal-backdrop.center { align-items: center; padding: 20px; }
+.player { position: relative; width: 100%; aspect-ratio: 16 / 10; overflow: hidden; border-radius: 16px; background: #1b2624; }
+.player img { width: 100%; height: 100%; object-fit: cover; }
+.player-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(13,27,25,.15) 40%, rgba(13,27,25,.8) 100%); }
+.player-info { position: absolute; left: 15px; bottom: 26px; color: #fff; }
+.player-info b { display: block; font-size: 14px; }
+.player-info span { font-size: 11px; opacity: .85; }
+.player-bar { position: absolute; left: 15px; right: 15px; bottom: 14px; height: 3px; border-radius: 3px; background: rgba(255,255,255,.28); overflow: hidden; }
+.player-bar i { display: block; height: 100%; background: #ed7358; animation: playhead 8s linear forwards; }
+.player-close { position: absolute; top: 11px; right: 11px; width: 30px; height: 30px; border: 0; border-radius: 50%; background: rgba(20,30,28,.55); color: #fff; font-size: 18px; }
+@keyframes playhead { from { width: 4%; } to { width: 100%; } }
+
+/* Test flow */
+.back-question { margin-top: 14px; border: 0; background: transparent; color: #8d958e; font-size: 12px; padding: 4px 0; }
+.disclaimer { margin: 11px 0 0; color: #8b938d; font-size: 11px; line-height: 1.7; }
+.result-card p:not(.eyebrow) { font-size: 13px; }
+.result-card > button { padding: 12px; font-size: 13px; }
+.match-explainer ul { margin: 6px 0 0; padding-left: 16px; color: #8f6b5d; font-size: 12px; line-height: 1.85; }
+.match-explainer li::marker { color: #e79c7f; }
+
+/* Collections & comparison */
+.compare-row { display: flex; align-items: center; gap: 11px; padding: 11px 0; border-bottom: 1px solid #f1efe8; }
+.compare-row:last-of-type { border-bottom: 0; }
+.compare-row > div:nth-child(2) { flex: 1; }
+.compare-row .mini-avatar { width: 40px; height: 40px; border-radius: 13px; font-size: 21px; }
+.compare-row button { border: 1px solid #ed7358; border-radius: 20px; padding: 8px 13px; background: #fff; color: #d1663f; font-size: 12px; font-weight: 600; }
+.expand-empty { margin: 13px 0 4px; color: #868f89; font-size: 12px; line-height: 1.7; }
+.compare-more { width: 100%; margin-top: 11px; padding: 11px; border: 1px dashed #dcd9d0; border-radius: 10px; background: transparent; color: #7d857f; font-size: 12px; }
+
+/* Chat as two layers */
+.chat-empty { margin-top: 30px; padding: 26px 22px; border: 1px dashed #e2e0d7; border-radius: 16px; text-align: center; color: #8d948e; }
+.chat-empty span { font-size: 26px; color: #c7cdc6; }
+.chat-empty p { margin: 10px 0 0; font-size: 12px; line-height: 1.75; }
+.chat-screen .conversation { height: calc(100vh - 260px); min-height: 430px; margin: 0 -16px; }
+
+
+/* Home matching view: a fixed, centered one-screen composition */
+.screen-content:has(.match-screen) { overflow: hidden; }
+.match-screen {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.platform-stat { flex: 0 0 auto; gap: 12px; }
+.platform-stat h1 {
+  margin: 0;
+  color: #42514b;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -.035em;
+}
+.platform-stat h1 strong {
+  display: inline-block;
+  margin: 0 2px;
+  color: #ed7358;
+  font-family: "DM Mono", monospace;
+  font-size: 25px;
+  font-weight: 500;
+  letter-spacing: -.08em;
+  vertical-align: -2px;
+}
+.match-screen .hero-card {
+  flex: 0 0 556px;
+  min-height: 556px;
+  margin-top: auto;
+  margin-bottom: 0;
+}
+.match-screen .swipe-actions { flex: 0 0 auto; margin-bottom: auto; }
+.platform-filter { flex: 0 0 auto; }
+
+
+/* Compact the card vertically so the contact action stays fully visible. */
+.hero-card .teacher-identity { padding-top: 10px; padding-bottom: 12px; }
+.hero-card .identity-top { justify-content: flex-end; }
+.hero-card .identity-main { margin-top: 8px; }
+.hero-card .teacher-identity .tags { margin-top: 10px; }
+.hero-card .lesson-video { height: 138px; }
+.hero-card .contact-row { margin-top: 8px; padding-top: 8px; }
+
+
+/* A tighter decision summary and a clearer contact-access state. */
+.hero-card .decision-grid { margin: 9px 0 6px; }
+.hero-card .decision-grid span { min-height: 44px; padding: 7px 5px; }
+.contact-status { display: grid; gap: 2px; }
+.contact-row .contact-status small { margin: 0; color: #9A8678; font-size: 10px; letter-spacing: .03em; }
+.contact-row .contact-status b {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #B95B38;
+  font-family: "Noto Sans SC", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.contact-row .contact-status b span {
+  display: inline-grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #FFF0E7;
+  color: #D96A3F;
+  font-size: 13px;
+  line-height: 1;
+}
+
+
+/* One-time directional nudge after onboarding. */
+.hero-card.swipe-hint {
+  animation: swipe-discovery-nudge 1.55s cubic-bezier(.36,.01,.22,1) both;
+  transform-origin: center center;
+}
+@keyframes swipe-discovery-nudge {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  18% { transform: translateX(-13px) rotate(-1.2deg); }
+  39% { transform: translateX(11px) rotate(1deg); }
+  60% { transform: translateX(-7px) rotate(-.65deg); }
+  79% { transform: translateX(5px) rotate(.4deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-card.swipe-hint { animation: none; }
+}
+
+/* A slow, restrained pulse keeps the swipe instruction discoverable. */
+.swipe-actions > span {
+  animation: swipe-instruction-pulse 2.8s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes swipe-instruction-pulse {
+  0%, 100% { opacity: .72; transform: scale(1); }
+  42% { opacity: 1; transform: scale(1.045); }
+  52% { opacity: .88; transform: scale(1.015); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .swipe-actions > span { animation: none; }
+}
+
+
+/* MBTI assessment: parent-facing purpose and a richer learning-lab visual system. */
+.test-screen { padding-top: 16px; background: radial-gradient(circle at 92% 4%, rgba(244,181,124,.18), transparent 26%), transparent; }
+.mbti-constellation {
+  height: 264px;
+  border: 1px solid rgba(54,82,75,.18);
+  background:
+    radial-gradient(circle at 78% 22%, rgba(255,211,157,.25), transparent 26%),
+    radial-gradient(circle at 14% 84%, rgba(111,174,146,.22), transparent 35%),
+    linear-gradient(135deg, #24403B 0%, #315A51 54%, #456F61 100%);
+  box-shadow: 0 15px 30px rgba(38,72,63,.16);
+}
+.mbti-constellation::before { content: ""; position: absolute; width: 152px; height: 152px; right: -35px; bottom: -69px; border: 1px solid rgba(255,245,226,.18); border-radius: 50%; }
+.mbti-core { background: linear-gradient(145deg, #F29A66, #E66E50); box-shadow: 0 0 0 9px rgba(255,225,187,.14), 0 9px 18px rgba(22,48,41,.22); }
+.test-copy { bottom: 22px; }.test-copy h1 { font-size: 22px; line-height: 1.38; }.test-copy h1 em { color: #FFE1B9; }
+.assessment-purpose {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 11px;
+  margin: -18px 10px 14px;
+  padding: 15px 14px 12px;
+  border: 1px solid #E9D9BC;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #FFFDF7, #FFF6E7);
+  box-shadow: 0 10px 22px rgba(105,78,46,.1);
+}
+.purpose-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 13px; background: #FDE4CD; color: #D97046; font: 700 22px "DM Mono", monospace; }
+.purpose-copy p { margin: 1px 0 3px; color: #CF7650; font: 500 10px "DM Mono", monospace; letter-spacing: .08em; }
+.purpose-copy h2 { margin: 0; color: #3D4A44; font-size: 14px; line-height: 1.42; letter-spacing: -.03em; }
+.purpose-copy span { display: block; margin-top: 6px; color: #718078; font-size: 11px; line-height: 1.65; }
+.purpose-notes { grid-column: 1 / -1; display: flex; align-items: center; gap: 7px; margin-top: 1px; padding-top: 9px; border-top: 1px solid #F0E2CE; color: #84796E; font-size: 10px; }
+.purpose-notes b { color: #CF704B; font: 500 11px "DM Mono", monospace; }.purpose-notes i { font-style: normal; }.purpose-notes em { margin-left: auto; color: #5C8B78; font-style: normal; }
+.magnetic-question { margin-top: 0; border: 1px solid #E7E0D3; border-radius: 18px; box-shadow: 0 13px 26px rgba(54,67,58,.1); }
+.question-head { padding-bottom: 11px; border-bottom: 1px solid #F0E9DC; }.question-no { color: #C67251; }.magnetic-question h2 { margin-top: 16px; font-size: 19px; }.choose-hint { font-size: 11px; }
+.magnetic-question .option-list button { position: relative; min-height: 58px; border-color: #E7DED0; border-radius: 14px; background: #FFFEFB; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+.magnetic-question .option-list button:hover { transform: translateY(-1px); border-color: #E99872; box-shadow: 0 5px 12px rgba(200,107,75,.12); }
+.magnetic-question .option-list b { display: grid; place-items: center; width: 23px; height: 23px; border-radius: 8px; background: #FFF0E5; color: #D66C45; }
+
+/* Keep the assessment hero compact: information-rich, never more than 40% of the viewport. */
+.mbti-constellation { height: 188px; }
+.mbti-constellation::before { width: 112px; height: 112px; right: -24px; bottom: -48px; }
+.orbit-one { width: 190px; height: 190px; left: -50px; top: -48px; }
+.orbit-two { width: 228px; height: 138px; left: 116px; top: 42px; }
+.s1 { left: 34px; top: 23px; font-size: 16px; }.s2 { right: 23px; top: 37px; }
+.mbti-core { top: 20px; right: 21px; width: 66px; height: 66px; }
+.mbti-core b { font-size: 21px; }.mbti-core small, .mbti-core span { font-size: 7px; }.mbti-core b i { font-size: 9px; }
+.test-copy { left: 17px; bottom: 15px; }.test-copy h1 { margin: 4px 0; font-size: 17px; line-height: 1.38; }.test-copy h1 em { font-size: 21px; }.test-copy > p:last-child { font-size: 9px; }
+.assessment-purpose { margin-top: -12px; }
+
+
+/* Single-card MBTI layout: purpose stays in the hero, answering becomes the primary action. */
+.mbti-constellation {
+  height: 196px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #2D564C 0%, #3F7464 100%);
+}
+.mbti-purpose-chip { position: absolute; top: 15px; left: 16px; display: inline-flex; align-items: center; gap: 5px; padding: 5px 8px; border: 1px solid rgba(255,236,204,.26); border-radius: 20px; background: rgba(24,55,47,.22); color: #FFE3BF; font-size: 9px; font-weight: 700; letter-spacing: .04em; }.mbti-purpose-chip span { font-size: 14px; }
+.mbti-core { top: 17px; right: 17px; width: 61px; height: 61px; background: #F19A67; box-shadow: 0 0 0 6px rgba(255,226,184,.13); }.mbti-core b { font-size: 20px; }.mbti-core small,.mbti-core span { font-size: 7px; }
+.test-copy { left: 16px; right: 80px; bottom: 49px; }.test-copy .tiny-label { color: #FAD1A9; font-size: 8px; }.test-copy h1 { margin: 4px 0; font-size: 18px; line-height: 1.36; }.test-copy h1 em { display: block; color: #FFF0D5; font-size: 19px; }.test-copy > p:last-child { font-size: 9px; line-height: 1.45; color: #D6E5DC; }
+.purpose-quick-points { position: absolute; right: 14px; bottom: 12px; left: 14px; display: flex; align-items: center; gap: 5px; }.purpose-quick-points span { padding: 4px 6px; border: 1px solid rgba(255,255,255,.13); border-radius: 7px; background: rgba(255,255,255,.1); color: #E8F3EA; font-size: 8px; }.purpose-quick-points b { margin-left: auto; color: #FFE0BB; font: 500 9px "DM Mono", monospace; white-space: nowrap; }
+.assessment-purpose { display: none; }
+.magnetic-question { margin-top: 14px; padding: 18px 16px 17px; border: 2px solid #E9DFD0; background: #FFFDF9; box-shadow: 0 15px 26px rgba(53,70,61,.12); }
+.question-head { padding-bottom: 13px; }.question-no { font-size: 10px; font-weight: 700; }.magnetic-question h2 { margin: 16px 0 7px; color: #33433D; font-size: 20px; line-height: 1.46; }.choose-hint { margin-bottom: 16px; padding: 8px 10px; border-radius: 9px; background: #FFF4E8; color: #8E735F; font-size: 11px; }.choose-hint strong { color: #C85E3F; }
+.magnetic-question .option-list { gap: 11px; }.magnetic-question .option-list button { min-height: 66px; padding: 14px 13px; border: 2px solid #E7DCCD; border-radius: 15px; color: #384942; font-size: 14px; font-weight: 600; }.magnetic-question .option-list button:hover { border-color: #E77950; background: #FFF9F4; transform: translateY(-2px); box-shadow: 0 7px 14px rgba(200,107,75,.14); }.magnetic-question .option-list b { width: 27px; height: 27px; border-radius: 9px; font-size: 12px; }.magnetic-question .option-list i { font-size: 18px; }
+
+/* Refine teacher-card emphasis and breathing room. */
+.hero-card .identity-top b { font-size: 12px; }
+.hero-card .contact-row { margin-top: 13px; padding-top: 10px; }
+
+
+/* In-app assessment start state: provides informed consent before any question. */
+.assessment-welcome { position: relative; overflow: hidden; padding: 22px 18px 17px; border: 1px solid #D8E4D9; border-radius: 22px; background: radial-gradient(circle at 88% 9%, rgba(242,154,103,.24), transparent 26%), linear-gradient(145deg, #F8FCF6, #EEF6EE); box-shadow: 0 15px 30px rgba(43,89,73,.11); }
+.assessment-welcome::after { content: ""; position: absolute; width: 190px; height: 190px; right: -92px; top: 28px; border: 1px solid rgba(65,122,101,.14); border-radius: 50%; box-shadow: 0 0 0 21px rgba(65,122,101,.04), 0 0 0 43px rgba(65,122,101,.03); pointer-events: none; }
+.assessment-welcome-top { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; }.welcome-kicker { color: #C76A47; font: 500 10px "DM Mono", monospace; letter-spacing: .1em; }.welcome-badge { padding: 5px 8px; border-radius: 20px; background: #E1F0E5; color: #3E7C64; font-size: 10px; font-weight: 700; }
+.welcome-orbit { position: relative; z-index: 1; display: grid; place-content: center; width: 68px; height: 68px; margin: 21px 0 13px; border: 1px dashed #72A08B; border-radius: 50%; background: #FFFDF8; color: #42765F; text-align: center; }.welcome-orbit span { position: absolute; top: -11px; right: -4px; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: #F19464; color: #fff; font-size: 16px; }.welcome-orbit b { font: 500 22px "DM Mono", monospace; line-height: .9; }.welcome-orbit small { font-size: 9px; }
+.assessment-welcome h1 { position: relative; z-index: 1; max-width: 290px; margin: 0; color: #35483F; font-size: 23px; line-height: 1.35; letter-spacing: -.055em; }.assessment-welcome h1 em { display: block; color: #D36D48; font-style: normal; }.assessment-welcome > p { position: relative; z-index: 1; margin: 10px 0 15px; color: #687B70; font-size: 12px; line-height: 1.7; }
+.welcome-benefits { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }.welcome-benefits span { padding: 10px 7px; border: 1px solid #DCE9DD; border-radius: 12px; background: rgba(255,255,255,.75); text-align: center; }.welcome-benefits b,.welcome-benefits small { display: block; }.welcome-benefits b { color: #3D594C; font-size: 10px; }.welcome-benefits small { margin-top: 3px; color: #87968D; font-size: 9px; }
+.welcome-notice { position: relative; z-index: 1; display: flex; gap: 7px; margin-top: 13px; padding: 10px; border-radius: 11px; background: #FFF7EC; color: #8B725C; font-size: 10px; line-height: 1.55; }.welcome-notice i { display: grid; place-items: center; width: 16px; height: 16px; flex: 0 0 16px; border-radius: 50%; background: #F4C99D; color: #9B5B32; font-style: normal; font-size: 9px; font-weight: 800; }
+.start-assessment { position: relative; z-index: 1; width: 100%; margin-top: 15px; padding: 14px; border-radius: 13px; background: #315F51; box-shadow: 0 4px 0 #23473C; color: #fff; font-size: 14px; font-weight: 700; }.start-assessment span { margin-left: 8px; color: #FFCFAD; font-size: 17px; }.welcome-foot { position: relative; z-index: 1; display: block; margin-top: 13px; color: #89968F; font-size: 10px; text-align: center; }
+
+
+/* Brief directional overlay paired with the first-card nudge. */
+.swipe-overlay { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; pointer-events: none; background: linear-gradient(90deg, rgba(38,51,52,.28), transparent 34%, transparent 66%, rgba(38,51,52,.28)); animation: swipe-overlay-fade 1.55s ease both; }
+.swipe-arrow { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid rgba(255,255,255,.62); border-radius: 50%; background: rgba(255,253,249,.86); box-shadow: 0 5px 12px rgba(25,42,37,.16); color: #E1714A; font: 400 38px/1 "Noto Sans SC", sans-serif; }.swipe-arrow.left { animation: swipe-arrow-left 1.15s ease-in-out infinite; }.swipe-arrow.right { animation: swipe-arrow-right 1.15s ease-in-out infinite; }
+.swipe-guide { padding: 7px 10px; border-radius: 12px; background: rgba(38,51,52,.78); box-shadow: 0 5px 12px rgba(25,42,37,.14); color: #fff; font-size: 10px; font-weight: 700; line-height: 1.45; text-align: center; }
+@keyframes swipe-overlay-fade { 0%, 100% { opacity: 0; } 16%, 84% { opacity: 1; } }
+@keyframes swipe-arrow-left { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-6px); } }
+@keyframes swipe-arrow-right { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
+@media (prefers-reduced-motion: reduce) { .swipe-overlay, .swipe-arrow.left, .swipe-arrow.right { animation: none; } }
+
+/* Lightweight, elongated directional arrows — no circular control chrome. */
+.swipe-arrow {
+  width: 54px;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #FFF9EF;
+  font: 300 60px/.7 "Noto Sans SC", sans-serif;
+  text-shadow: 0 3px 9px rgba(25,42,37,.32);
+}
+
+/* ── Creem-inspired palette: warm bone canvas, ink structure, lavender energy ── */
+:root { color: #151617; background: #F5F0EB; }
+.app-shell { background: radial-gradient(circle at 14% 13%, rgba(255,190,152,.58) 0 5%, transparent 24%), radial-gradient(circle at 88% 82%, rgba(176,156,251,.4) 0 7%, transparent 26%), #F5F0EB; }
+.phone-frame { background: #FFFCF9; border-color: #151617; box-shadow: 10px 11px 0 #151617; }
+.topbar { background: #FFFCF9; border-bottom: 2px solid #151617; }.wordmark { color: #151617; }.wordmark span { color: #967AE9; }
+.filter-btn,.setting-btn { border: 2px solid #151617; border-radius: 10px; background: #FFBE98; color: #151617; box-shadow: 2px 2px 0 #151617; }.filter-btn:hover,.setting-btn:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 #151617; }
+.bottom-nav { background: rgba(255,252,249,.98); border-top: 2px solid #151617; }.bottom-nav .selected { color: #7D62D3; }.eyebrow,.tiny-label { color: #7D62D3; }
+.teacher-card { border: 2px solid #151617; border-radius: 18px; background: #FFFCF9; box-shadow: 5px 6px 0 #151617; }.hero-card { box-shadow: 5px 6px 0 #151617; }
+.teacher-identity { background-image: linear-gradient(135deg, rgba(255,255,255,.18), transparent); }.teacher-identity .tags .credential { background: #FFBE98; color: #151617; }.teacher-identity .tags span { border: 1px solid #151617; color: #151617; }
+.decision-grid span { border: 1.5px solid #151617; background: #F5F0EB; color: #5C5760; }.decision-grid b { color: #151617; }
+.trust-line { border-color: #151617; background: #E8E4F8; color: #312C45; }.trust-line span:last-child { color: #6D55BD; }
+.contact-row { border-color: #151617; }.contact-row .contact-status b { color: #7D62D3; }.contact-row .contact-status b span { background: #E8E4F8; color: #7D62D3; }.contact-row button,.like,.sheet-btn,.subscribe-btn,.start-assessment,.deck-end-actions .primary { background: #FFBE98; color: #151617; box-shadow: 3px 4px 0 #151617; border: 2px solid #151617; }.contact-row button span,.start-assessment span { color: #7D62D3; }.pass { border: 2px solid #151617; color: #151617; background: #FFFCF9; }
+.platform-stat h1 strong { color: #7D62D3; }.platform-filter { background: #FFBE98; border-color: #151617; color: #151617; box-shadow: 2px 2px 0 #151617; }
+/* Measurement / learning flow uses lavender as its distinct domain color. */
+.mbti-constellation { border: 2px solid #151617; background: linear-gradient(135deg, #B09CFB 0%, #967AE9 58%, #9084E8 100%); box-shadow: 5px 6px 0 #151617; }.mbti-purpose-chip { border-color: #151617; background: #FFFCF9; color: #151617; }.mbti-core { background: #FFBE98; color: #151617; box-shadow: 0 0 0 5px rgba(21,22,23,.18); }.test-copy .tiny-label,.test-copy h1 em,.test-copy > p:last-child { color: #FFFCF9; }.purpose-quick-points span { border-color: #151617; background: rgba(255,252,249,.4); color: #151617; }.purpose-quick-points b { color: #151617; }
+.magnetic-question { border: 2px solid #151617; background: #FFFCF9; box-shadow: 5px 6px 0 #151617; }.question-head { border-color: #151617; }.question-no,.choose-hint strong { color: #7D62D3; }.choose-hint { background: #F5F0EB; color: #514C48; }.magnetic-question .option-list button { border: 2px solid #151617; background: #FFFCF9; color: #151617; }.magnetic-question .option-list button:hover { border-color: #151617; background: #FFF3EC; box-shadow: 3px 3px 0 #151617; }.magnetic-question .option-list b { background: #FFBE98; color: #151617; }
+.assessment-welcome { border: 2px solid #151617; background: radial-gradient(circle at 88% 9%, rgba(255,190,152,.6), transparent 27%), #E8E4F8; box-shadow: 6px 7px 0 #151617; }.assessment-welcome::after { border-color: rgba(21,22,23,.16); }.welcome-kicker,.assessment-welcome h1 em { color: #7D62D3; }.welcome-badge { border: 1px solid #151617; background: #FFBE98; color: #151617; }.welcome-orbit { border-color: #151617; background: #FFFCF9; color: #151617; }.welcome-orbit span { background: #FFBE98; color: #151617; }.assessment-welcome h1 { color: #151617; }.assessment-welcome > p { color: #4B4745; }.welcome-benefits span { border: 1.5px solid #151617; background: #FFFCF9; }.welcome-benefits b { color: #151617; }.welcome-notice { border: 1.5px solid #151617; background: #FFF3EC; color: #514C48; }.welcome-notice i { background: #FFBE98; color: #151617; }.welcome-foot { color: #625D5A; }
+/* Supporting cards retain the same reliable ink-outline language. */
+.mini-teacher,.connected-teacher,.function-card,.sheet,.role-modal,.subscribe-modal { border-color: #151617; }.mini-teacher button,.compare-row button { border-color: #151617; background: #FFFCF9; color: #151617; box-shadow: 2px 2px 0 #151617; }.sheet { background: #FFFCF9; }.chip-row .on { border-color: #151617; background: #FFBE98; color: #151617; box-shadow: 2px 2px 0 #151617; }
+@media (max-width: 520px) { .app-shell { background: #F5F0EB; }.phone-frame { background: #FFFCF9; } }
+
+/* ── Global lavender system: purple cards across every tab, not only discovery ── */
+:root { --creem-ink: #151617; --creem-bone: #F5F0EB; --creem-paper: #FFFCF9; --creem-lavender: #B09CFB; --creem-purple: #967AE9; --creem-purple-deep: #7057C4; --creem-lilac: #E8E4F8; --creem-peach: #FFBE98; }
+.screen-content,.match-screen,.test-screen,.chat-screen,.me-screen { background: var(--creem-bone); }
+/* Reusable app cards use lavender as their dominant surface. */
+.teacher-card,.function-card,.mini-teacher,.connected-teacher,.liked-teacher,.compare-row,.dashboard-card,.result-card,.match-explainer,.interest-card,.note-card,.quick-grid > * { border: 2px solid var(--creem-ink); background: var(--creem-lilac); color: var(--creem-ink); box-shadow: 3px 4px 0 var(--creem-ink); }
+.teacher-card { background: var(--creem-purple); }.teacher-card .compact-body { background: var(--creem-lilac); }.teacher-card .teacher-identity { background: linear-gradient(135deg, #B09CFB, #967AE9) !important; }.teacher-card .teacher-identity::after { color: rgba(255,252,249,.28); }.teacher-card .name-line h2,.teacher-card .school,.teacher-card .identity-top { color: var(--creem-ink); }.teacher-card .name-line > span { color: rgba(21,22,23,.68); }.teacher-card .verified { background: var(--creem-ink); color: var(--creem-peach); }.teacher-card .teacher-identity .tags span { background: rgba(255,252,249,.75); }.teacher-card .teacher-identity .tags .credential { background: var(--creem-peach); }
+.teacher-avatar,.mini-avatar,.chat-avatar,.my-avatar { border: 2px solid var(--creem-ink); background-color: var(--creem-peach); color: var(--creem-ink); }.teacher-meta,.teacher-note,.school { color: #443F4B; }.decision-grid span { background: var(--creem-paper); }
+/* Purple now carries dashboard, chat, and profile surfaces. */
+.profile-banner,.profile-hero,.teacher-profile-card,.teacher-dashboard { border: 2px solid var(--creem-ink); background: linear-gradient(135deg, #B09CFB, #967AE9); color: var(--creem-ink); box-shadow: 4px 5px 0 var(--creem-ink); }.profile-banner *, .profile-hero *, .teacher-profile-card *, .teacher-dashboard * { color: inherit; }.profile-banner i,.teacher-profile-card i { background: var(--creem-ink); color: var(--creem-peach); }
+.chat-contact,.conversation,.chat-empty { border-color: var(--creem-ink); }.chat-contact { background: var(--creem-lilac); }.bubble { border: 1.5px solid var(--creem-ink); background: var(--creem-paper); color: var(--creem-ink); }.bubble.mine { background: var(--creem-purple); }.message-input { border-color: var(--creem-ink); background: var(--creem-paper); }.message-input .send { background: var(--creem-peach); color: var(--creem-ink); }
+/* All in-app controls follow the same inky outline and lavender selection state. */
+.chip-row button,.slot-grid button,.compare-more,.text-btn,.back-question,.close { border: 1.5px solid var(--creem-ink); background: var(--creem-paper); color: var(--creem-ink); }.chip-row .on,.slot-grid button:hover { background: var(--creem-purple); color: var(--creem-ink); box-shadow: 2px 2px 0 var(--creem-ink); }.role-modal,.subscribe-modal,.sheet { border: 2px solid var(--creem-ink); background: var(--creem-paper); }.role-icon.peach,.card-icon.peach,.lock-art { background: var(--creem-peach); color: var(--creem-ink); }.role-icon.green,.card-icon.green,.card-icon.lilac { background: var(--creem-lavender); color: var(--creem-ink); }
+/* Trust and outcome states remain distinct but are rooted in the lavender palette. */
+.check-list,.trust-line { border-color: var(--creem-ink); background: #E8E4F8; color: #332B52; }.result-orbit { border-color: var(--creem-ink); background: var(--creem-paper); color: var(--creem-purple-deep); }.result-card { background: linear-gradient(135deg, #C1B3FF, #A593F5); }.result-card > button { border: 2px solid var(--creem-ink); background: var(--creem-peach); color: var(--creem-ink); box-shadow: 2px 2px 0 var(--creem-ink); }
+/* Secondary information remains warm-white so card nesting never feels monotonous. */
+.decision-grid span,.option-list button,.welcome-benefits span,.membership-benefits,.teacher-expand,.liked-list > *, .check-list > *, .rule-list { background-color: var(--creem-paper); }
+
+/* Refined component tones: peach decision metrics and a calm, paper-led messaging space. */
+.hero-card .decision-grid span { background: var(--creem-peach); border-color: var(--creem-ink); color: #5A4137; }.hero-card .decision-grid b { color: var(--creem-ink); }
+/* Messages intentionally step away from lavender: warm paper improves readability and emotional calm. */
+.chat-screen { background: #F5F0EB; }.chat-list-title h1,.conversation-head b { color: var(--creem-ink); }.chat-contact { border: 1.5px solid #D8D0C5; background: #FFFCF9; box-shadow: none; }.chat-contact:hover { border-color: var(--creem-ink); box-shadow: 2px 2px 0 var(--creem-ink); }.chat-contact p,.chat-contact time { color: #756F68; }.chat-contact i { background: var(--creem-peach); color: var(--creem-ink); }
+.chat-empty { border: 1.5px dashed #BEB4A8; background: #FFFCF9; color: #716A63; }.conversation { border: 0; background: #F5F0EB; }.conversation-head { border-bottom: 1.5px solid #D7CEC2; background: #FFFCF9; }.bubble { border: 1.5px solid #D1C8BC; background: #FFFCF9; box-shadow: none; }.bubble-row.mine .bubble,.bubble.mine { border-color: var(--creem-ink); background: var(--creem-peach); color: var(--creem-ink); box-shadow: 2px 2px 0 var(--creem-ink); }.bubble-row time { color: #91887F; }.message-input { border-top: 1.5px solid #D7CEC2; background: #FFFCF9; }.message-input input { background: #F5F0EB; color: var(--creem-ink); }.message-input .send { border: 1.5px solid var(--creem-ink); background: var(--creem-peach); box-shadow: 2px 2px 0 var(--creem-ink); }
+/* Teacher and parent dashboards now share the same hierarchy: purple profile lead, lilac function cards. */
+.teacher-dashboard { border: 0; background: transparent; box-shadow: none; color: var(--creem-ink); }.teacher-profile-card { background: linear-gradient(135deg, #B09CFB, #967AE9); color: var(--creem-ink); }.teacher-profile-card .teacher-profile-main p,.teacher-profile-card .teacher-profile-main small,.teacher-profile-card .teacher-profile-stats span { color: rgba(21,22,23,.7); }.teacher-profile-card .teacher-profile-tags span,.teacher-profile-card .teacher-profile-top span { border: 1px solid var(--creem-ink); background: rgba(255,252,249,.52); color: var(--creem-ink); }.teacher-profile-card .teacher-profile-main h1 i { background: var(--creem-ink); color: var(--creem-peach); }.teacher-profile-card .teacher-profile-stats { border-color: rgba(21,22,23,.28); }.teacher-profile-card .teacher-profile-stats b { color: var(--creem-ink); }.teacher-dashboard .function-card,.card-dashboard .function-card { background: var(--creem-lilac); border-color: var(--creem-ink); box-shadow: 3px 4px 0 var(--creem-ink); }.teacher-dashboard .function-card .card-icon,.card-dashboard .function-card .card-icon { border: 1.5px solid var(--creem-ink); background: var(--creem-peach); color: var(--creem-ink); }
+
+/* Unified navigation: an explicit, tactile Creem-style control system. */
+.topbar { height: 68px; padding: 17px 20px 10px; background: #FFFCF9; }.wordmark { font-size: 27px; }.top-caption { padding: 5px 8px; border: 1.5px solid var(--creem-ink); border-radius: 7px; background: var(--creem-lilac); color: var(--creem-ink); font: 500 10px "DM Mono", monospace; letter-spacing: .08em; }
+.bottom-nav { height: 72px; padding: 8px 10px 9px; gap: 4px; background: #FFFCF9; }.bottom-nav button { width: auto; flex: 1; min-height: 53px; border-radius: 12px; color: #756E69; transition: transform .16s ease, background .16s ease; }.bottom-nav button .icon { font-size: 18px; }.bottom-nav .selected { background: var(--creem-purple); color: var(--creem-ink); font-weight: 800; box-shadow: 2px 3px 0 var(--creem-ink); }.bottom-nav button:active { transform: translateY(1px); }
+/* Parent profile uses the same settings affordance as the teacher profile. */
+.profile-decoration { display: none; }.profile-setting,.teacher-profile-top button { position: relative; z-index: 2; display: grid; place-items: center; width: 29px; height: 29px; margin-left: auto; border: 1.5px solid var(--creem-ink); border-radius: 8px; background: #FFFCF9; color: var(--creem-ink); font-size: 15px; box-shadow: 2px 2px 0 var(--creem-ink); }
+/* With the certification pill removed, the teacher profile is shorter and its identity shifts upward. */
+.teacher-profile-card { min-height: 176px; padding: 11px 15px 12px; }.teacher-profile-top { height: 29px; }.teacher-profile-main { margin-top: 5px; }.teacher-profile-tags { margin-top: 8px; }.teacher-profile-stats { margin-top: 9px; padding-top: 7px; }.teacher-dashboard { padding-top: 14px; }
+
+/* Navigation uses four distinct active colors; no selected background or pill. */
+.bottom-nav { gap: 0; padding: 7px 8px 8px; }.bottom-nav button { min-height: 54px; border-radius: 0; color: #8A827A; box-shadow: none; }.bottom-nav button .nav-symbol { width: 21px; height: 21px; }.bottom-nav .selected { background: transparent; box-shadow: none; font-weight: 800; }.bottom-nav button:nth-child(1).selected { color: #7D62D3; }.bottom-nav button:nth-child(2).selected { color: #D36D48; }.bottom-nav button:nth-child(3).selected { color: #3E8B75; }.bottom-nav button:nth-child(4).selected { color: #5478B8; }.bottom-nav button:active { transform: none; }
+
+/* Bottom-navigation active colors sampled from the supplied visual swatches. */
+.bottom-nav button:nth-child(3).selected { color: #FFD519; }
+.bottom-nav button:nth-child(4).selected { color: #55C878; }
+
+/* Profile-card alignment: settings share a single top-right anchor; teacher identity starts at the parent-card rhythm. */
+.profile-hero .profile-setting { position: absolute; top: 11px; right: 15px; margin: 0; }
+.teacher-profile-top { position: absolute; z-index: 3; top: 11px; right: 15px; width: auto; height: auto; }.teacher-profile-top button { margin: 0; }
+.teacher-profile-card { padding-top: 11px; }.teacher-profile-main { margin-top: 8px; align-items: center; }.teacher-profile-main h1 { margin-top: 0; }.teacher-profile-tags { margin-top: 7px; }.teacher-profile-stats { margin-top: 8px; }
+
+/* Only the existing workbench functions change shape; profile information cards stay untouched. */
+.workbench-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-top: 12px; }.workbench-grid > .function-card { min-width: 0; margin: 0; border: 1.5px solid var(--creem-ink); border-radius: 14px; background: #FFFCF9; box-shadow: 2px 3px 0 var(--creem-ink); overflow: hidden; }.workbench-grid > .function-card.expanded { grid-column: 1 / -1; }.workbench-grid .function-trigger { display: grid; justify-items: center; align-content: center; min-height: 102px; padding: 10px 4px; text-align: center; }.workbench-grid .function-trigger .card-icon { display: grid; place-items: center; width: 31px; height: 31px; margin: 0 0 7px; border: 1.5px solid var(--creem-ink); border-radius: 10px; font-size: 16px; }.workbench-grid .function-trigger > span:nth-child(2) { display: block; min-width: 0; }.workbench-grid .function-trigger small,.workbench-grid .function-trigger em,.workbench-grid .function-trigger > i { display: none; }.workbench-grid .function-trigger b { display: block; color: var(--creem-ink); font-size: 11px; line-height: 1.25; }.workbench-grid .teacher-expand { text-align: left; }.workbench-grid .function-card.expanded .function-trigger { grid-template-columns: 31px 1fr auto; justify-items: start; align-items: center; min-height: 64px; padding: 11px 12px; text-align: left; }.workbench-grid .function-card.expanded .function-trigger .card-icon { margin: 0; }.workbench-grid .function-card.expanded .function-trigger small,.workbench-grid .function-card.expanded .function-trigger em,.workbench-grid .function-card.expanded .function-trigger > i { display: block; }.workbench-grid .function-card.expanded .function-trigger > i { justify-self: end; }
+
+/* Teacher earnings overview. */
+.revenue-card { position: relative; margin-top: 13px; padding: 14px; overflow: hidden; border: 2px solid var(--creem-ink); border-radius: 18px; background: linear-gradient(135deg, #E8E4F8, #DCD4FC); box-shadow: 4px 5px 0 var(--creem-ink); }.revenue-card::after { content: "¥"; position: absolute; right: -7px; top: -28px; color: rgba(112,87,196,.12); font: 800 112px "DM Mono", monospace; line-height: 1; pointer-events: none; }.revenue-head { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; }.revenue-head p { margin: 0 0 2px; color: #7057C4; font: 500 10px "DM Mono", monospace; letter-spacing: .08em; }.revenue-head b { color: var(--creem-ink); font-size: 14px; }.revenue-head button { display: grid; place-items: center; width: 27px; height: 27px; border: 1.5px solid var(--creem-ink); border-radius: 8px; background: #FFBE98; color: var(--creem-ink); font-size: 20px; line-height: 1; box-shadow: 2px 2px 0 var(--creem-ink); }.revenue-grid { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 13px; }.revenue-grid span { min-width: 0; padding: 9px 7px; border: 1.5px solid var(--creem-ink); border-radius: 10px; background: #FFFCF9; }.revenue-grid small,.revenue-grid b,.revenue-grid i { display: block; }.revenue-grid small { color: #776F68; font-size: 9px; }.revenue-grid b { margin: 4px 0 2px; color: var(--creem-ink); font: 500 14px "DM Mono", monospace; letter-spacing: -.06em; }.revenue-grid i { overflow: hidden; color: #7057C4; font-size: 8px; font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Earnings values take visual priority once status microcopy is removed. */
+.revenue-card { padding: 16px; background: linear-gradient(135deg, #EDE9FF 0%, #D7CAFF 100%); }.revenue-head b { font-size: 16px; }.revenue-head p { color: #6249B4; }.revenue-grid { gap: 8px; margin-top: 15px; }.revenue-grid span { min-height: 64px; display: grid; align-content: center; padding: 10px 8px; background: rgba(255,252,249,.92); }.revenue-grid small { color: #665E69; font-size: 10px; font-weight: 600; }.revenue-grid b { margin: 5px 0 0; color: #2D2440; font-size: 16px; letter-spacing: -.08em; }.revenue-grid i { display: none; }
+
+/* My-page refinements: stronger workbench icons and fully matched parent profile treatment. */
+.workbench-grid .function-trigger { min-height: 112px; }.workbench-grid .function-trigger .card-icon { width: 40px; height: 40px; margin-bottom: 8px; border-radius: 12px; font-size: 21px; }
+.profile-hero { border: 2px solid var(--creem-ink); background: linear-gradient(135deg, #B09CFB, #967AE9); color: var(--creem-ink); box-shadow: 4px 5px 0 var(--creem-ink); }.profile-hero .profile-setting { top: 11px; right: 15px; width: 29px; height: 29px; border: 1.5px solid var(--creem-ink); border-radius: 8px; background: #FFFCF9; color: var(--creem-ink); box-shadow: 2px 2px 0 var(--creem-ink); }
+.profile-hero .profile-stats { left: 19px; right: 19px; bottom: 13px; display: grid; grid-template-columns: repeat(3, 1fr); align-items: start; text-align: center; }.profile-hero .profile-stats span { min-width: 0; padding: 0 6px; border-right: 1px solid rgba(21,22,23,.25); color: rgba(21,22,23,.68); font-size: 10px; }.profile-hero .profile-stats span:last-child { border-right: 0; }.profile-hero .profile-stats b { margin-bottom: 3px; color: var(--creem-ink); font-size: 18px; line-height: 1; }
+
+/* Real teacher portraits supplied by the user. */
+.teacher-avatar,.mini-avatar,.teacher-big-avatar,.chat-avatar { overflow: hidden; }.teacher-avatar img,.mini-avatar img,.teacher-big-avatar img,.chat-avatar img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center top; }.teacher-avatar img { transform: scale(1.1); }.teacher-big-avatar img { transform: scale(1.08); }.mini-avatar img,.chat-avatar img { transform: scale(1.12); }
+
+/* ── Semantic color system: warm information layer + restrained color meaning ── */
+:root { --surface-base: #F5F2F0; --surface-paper: #FFFCF9; --surface-soft: #F8F5F1; --ink: #151617; --ink-muted: #756E69; --growth: #967AE9; --growth-soft: #E8E4F8; --action: #FFBE98; --action-soft: #FFF1E8; --success: #4ECB71; --success-soft: #E6F7EC; --notice: #D7A820; --notice-soft: #FFF7D9; }
+.app-shell,.screen-content,.match-screen,.test-screen,.chat-screen,.me-screen { background: var(--surface-base); }.phone-frame,.topbar,.bottom-nav { background: var(--surface-paper); }
+/* Default reading surfaces are intentionally neutral. */
+.teacher-card,.mini-teacher,.connected-teacher,.liked-teacher,.compare-row,.function-card,.chat-contact,.dashboard-detail,.sheet,.role-modal,.subscribe-modal { background: var(--surface-paper); color: var(--ink); }.teacher-card,.mini-teacher,.connected-teacher,.liked-teacher,.compare-row,.function-card { box-shadow: 2px 3px 0 var(--ink); }
+/* Discovery: purple is a quiet identity band, not the entire reading card. */
+.teacher-card { background: var(--surface-paper); }.teacher-card .teacher-identity { background: linear-gradient(135deg, #EEEAFE, #DED5FA) !important; }.teacher-card .teacher-identity::after { color: rgba(112,87,196,.13); }.teacher-card .identity-top,.teacher-card .name-line h2,.teacher-card .school { color: var(--ink); }.teacher-card .name-line > span { color: var(--ink-muted); }.teacher-card .teacher-identity .tags span { border-color: rgba(21,22,23,.32); background: rgba(255,252,249,.82); color: var(--ink); }.teacher-card .teacher-identity .tags .credential { background: var(--growth-soft); color: #5E48A9; }.teacher-card .compact-body { background: var(--surface-paper); }.teacher-meta,.teacher-note { color: #514B47; }.hero-card .decision-grid span { background: var(--action-soft); border-color: #E5A982; color: #6D493C; }.hero-card .decision-grid b { color: var(--ink); }.trust-line { border-color: #A9DDB9; background: var(--success-soft); color: #236341; }.trust-line span:last-child { color: #287B45; }
+/* Action color remains reserved for the next meaningful step. */
+.contact-row button,.like,.sheet-btn,.subscribe-btn,.start-assessment,.deck-end-actions .primary { background: var(--action); color: var(--ink); border-color: var(--ink); }.filter-btn,.setting-btn,.platform-filter { background: var(--surface-paper); color: var(--ink); }.platform-stat h1 strong { color: var(--growth); }
+/* Growth / personalisation is the one strong lavender domain. */
+.mbti-constellation { background: linear-gradient(135deg, #B09CFB, #967AE9 60%, #9084E8); }.mbti-core { background: var(--action); color: var(--ink); }.magnetic-question { background: var(--surface-paper); }.magnetic-question .option-list button { background: var(--surface-paper); border-color: #D9D1EB; }.magnetic-question .option-list button:hover { border-color: var(--growth); background: #FAF8FF; }.magnetic-question .option-list b { background: var(--growth-soft); color: #6049AD; }.choose-hint { background: var(--growth-soft); color: #514673; }.choose-hint strong,.question-no { color: #6049AD; }
+/* Messages are deliberately calm, with color used only for sender and notice status. */
+.chat-screen,.conversation { background: var(--surface-base); }.chat-contact { border-color: #DED6CE; box-shadow: none; }.chat-contact:hover { border-color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }.chat-contact i { background: var(--success); color: var(--ink); }.chat-empty { background: var(--surface-paper); border-color: #D8D0C8; }.conversation-head,.message-input { background: var(--surface-paper); border-color: #DDD5CD; }.bubble { background: var(--surface-paper); border-color: #D9D1C9; color: var(--ink); box-shadow: none; }.bubble-row.mine .bubble,.bubble.mine { background: var(--action-soft); border-color: #E6AF8A; color: var(--ink); box-shadow: none; }.message-input input { background: var(--surface-soft); }.message-input .send { background: var(--action); color: var(--ink); }
+/* Account pages: neutral profile cards, color only as a slim lavender signal. */
+.profile-banner,.profile-hero,.teacher-profile-card { background: var(--surface-paper); color: var(--ink); }.profile-banner::before,.profile-hero::before,.teacher-profile-card::before { background: var(--growth); }.profile-banner p,.profile-banner small,.profile-hero p,.profile-hero small,.teacher-profile-card .teacher-profile-main small,.teacher-profile-card .teacher-profile-stats span { color: var(--ink-muted); }.profile-banner h1,.profile-hero h1,.teacher-profile-card .teacher-profile-main h1,.teacher-profile-card .teacher-profile-stats b { color: var(--ink); }.profile-hero .my-avatar,.teacher-big-avatar { border-color: var(--ink); background: var(--action); color: var(--ink); }.profile-hero h1 span { background: var(--growth-soft); color: #6049AD; }.teacher-profile-card .teacher-profile-tags span { background: var(--growth-soft); color: #6049AD; border-color: #C6B8F5; }.teacher-profile-card .teacher-profile-main h1 i { background: var(--success); color: var(--ink); }
+/* Workbench color coding is intentionally small: icon tile only. */
+.workbench-grid > .function-card { background: var(--surface-paper); }.workbench-grid .function-trigger .card-icon { background: var(--growth-soft); color: #6049AD; }.workbench-grid .function-card:nth-child(2) .card-icon { background: var(--action-soft); color: #BE6844; }.workbench-grid .function-card:nth-child(3) .card-icon { background: var(--success-soft); color: #287B45; }.workbench-grid .function-card:nth-child(4) .card-icon { background: var(--notice-soft); color: #A7770B; }
+/* Revenue stays a compact lavender exception, with green reserved for available funds. */
+.revenue-card { background: linear-gradient(135deg, #F0ECFF, #E3DBFC); }.revenue-grid span { background: var(--surface-paper); }.revenue-grid span:nth-child(3) { border-color: #9BD8AD; background: var(--success-soft); }.revenue-grid span:nth-child(3) small,.revenue-grid span:nth-child(3) b { color: #236341; }
+/* Low-saturation semantic navigation. */
+.bottom-nav button:nth-child(1).selected { color: #7D62D3; }.bottom-nav button:nth-child(2).selected { color: #D36D48; }.bottom-nav button:nth-child(3).selected { color: #D7A820; }.bottom-nav button:nth-child(4).selected { color: #3E9B62; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CONVERGENCE PASS — fixes three systemic issues:
+   1. Orange fragmentation → semantic tokens only
+   2. Profile heroes → unified lavender identity card
+   3. MBTI lavender system → fully saturated purple domain
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* 1 ── Stray orange values not covered by earlier overrides */
+.supply-badge b { color: var(--growth); }
+.note-card span { color: var(--growth); }
+.mini-teacher span { color: var(--growth); }
+.mini-teacher button { border-color: var(--ink); color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+.mini-teacher button:hover { background: var(--action); }
+.like-count { color: var(--growth); font-family: "DM Mono", monospace; }
+.lock-art { background: var(--growth-soft); color: var(--growth); }
+.interest-title b { color: var(--growth); }
+.quick-grid b { color: var(--growth); }
+.relax-note { background: var(--notice-soft); color: #6B5807; border: 1px solid #E8C84A; }
+.deck-end > span { color: var(--growth); }
+.match-explainer > span { color: var(--growth); }
+.teacher-tools b { color: var(--growth); }
+/* Action shadow uses a consistent dark value, not a hardcoded brown */
+.contact-row button,
+.like,
+.sheet-btn,
+.subscribe-btn,
+.start-assessment,
+.deck-end-actions .primary { box-shadow: 3px 4px 0 var(--ink); }
+
+/* 2 ── Profile heroes: both roles share one lavender identity card */
+.profile-hero {
+  background: linear-gradient(135deg, #C4B6FF 0%, #A896F0 55%, #967AE9 100%);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 4px 5px 0 var(--ink);
+}
+.profile-hero h1,
+.profile-hero h1 span,
+.profile-hero .profile-stats b { color: var(--ink); }
+.profile-hero p,
+.profile-hero small,
+.profile-hero .profile-stats span { color: rgba(21,22,23,.62); }
+.profile-hero h1 span { background: rgba(255,252,249,.35); border: 1px solid rgba(21,22,23,.22); }
+.profile-hero .my-avatar { border: 2px solid var(--ink); background: var(--action); color: var(--ink); }
+.profile-hero .profile-stats { border-top: 1px solid rgba(21,22,23,.2); }
+.profile-hero .profile-stats span { border-right-color: rgba(21,22,23,.2); }
+
+.teacher-profile-card {
+  background: linear-gradient(135deg, #C4B6FF 0%, #A896F0 55%, #967AE9 100%);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 4px 5px 0 var(--ink);
+}
+.teacher-profile-card .teacher-profile-main p,
+.teacher-profile-card .teacher-profile-main small,
+.teacher-profile-card .teacher-profile-stats span { color: rgba(21,22,23,.62); }
+.teacher-profile-card .teacher-profile-main h1,
+.teacher-profile-card .teacher-profile-stats b { color: var(--ink); }
+/* Tags on lavender need a white-tinted background */
+.teacher-profile-card .teacher-profile-tags span {
+  border: 1px solid rgba(21,22,23,.3);
+  background: rgba(255,252,249,.52);
+  color: var(--ink);
+}
+.teacher-profile-card .teacher-profile-top span {
+  border: 1px solid rgba(21,22,23,.3);
+  background: rgba(255,252,249,.35);
+  color: var(--ink);
+}
+.teacher-profile-card .teacher-profile-stats { border-color: rgba(21,22,23,.22); }
+.teacher-profile-card .teacher-profile-main h1 i { background: var(--ink); color: var(--action); }
+.teacher-big-avatar { border: 2px solid var(--ink); background: var(--action); color: var(--ink); }
+
+/* 3 ── MBTI: lavender is the singular strong domain, fully saturated */
+/* Hero banner */
+.mbti-constellation {
+  background:
+    radial-gradient(circle at 80% 18%, rgba(255,220,170,.28), transparent 30%),
+    linear-gradient(135deg, #7E66D8 0%, #967AE9 50%, #B09CFB 100%);
+  border: 2px solid var(--ink);
+  box-shadow: 5px 6px 0 var(--ink);
+}
+.mbti-core { background: var(--action); color: var(--ink); box-shadow: 0 0 0 5px rgba(21,22,23,.14); }
+.mbti-purpose-chip { background: rgba(255,252,249,.22); border-color: rgba(255,252,249,.4); color: #FFFCF9; }
+.test-copy .tiny-label { color: #FFECCC; }
+.test-copy h1 em { color: #FFE8C0; }
+
+/* Question card */
+.magnetic-question {
+  border: 2px solid var(--ink);
+  background: var(--surface-paper);
+  box-shadow: 5px 6px 0 var(--ink);
+}
+.question-head { border-color: #DDD4F0; }
+.question-no { color: #6049AD; font-weight: 700; }
+.choose-hint { background: var(--growth-soft); color: #4A3F7A; border-radius: 9px; }
+.choose-hint strong { color: #6049AD; }
+.magnetic-question .option-list button {
+  border: 2px solid #DDD4F0;
+  background: var(--surface-paper);
+  color: var(--ink);
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.magnetic-question .option-list button:hover {
+  border-color: var(--growth);
+  background: #F5F1FF;
+  transform: translateY(-2px);
+  box-shadow: 3px 4px 0 var(--ink);
+}
+.magnetic-question .option-list b {
+  background: var(--growth-soft);
+  color: #5E48A9;
+  border-radius: 9px;
+}
+.magnetic-question .option-list i { color: var(--growth); }
+
+/* Assessment welcome card */
+.assessment-welcome {
+  background:
+    radial-gradient(circle at 90% 8%, rgba(255,190,152,.35), transparent 28%),
+    linear-gradient(145deg, #EDE9FF 0%, #DDD6FF 100%);
+  border: 2px solid var(--ink);
+  box-shadow: 5px 6px 0 var(--ink);
+}
+.welcome-kicker,
+.assessment-welcome h1 em { color: #5E48A9; }
+.assessment-welcome h1 { color: var(--ink); }
+.assessment-welcome > p { color: #4A4362; }
+.welcome-badge { background: var(--action); color: var(--ink); border: 1.5px solid var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+.welcome-orbit { border-color: #8B72D4; background: var(--surface-paper); color: #5E48A9; }
+.welcome-orbit span { background: var(--action); color: var(--ink); }
+.welcome-benefits span { border: 1.5px solid rgba(21,22,23,.25); background: rgba(255,252,249,.72); }
+.welcome-benefits b { color: var(--ink); }
+.welcome-benefits small { color: #5E548A; }
+.welcome-notice { background: rgba(255,252,249,.55); border: 1.5px solid rgba(21,22,23,.2); color: #4A4362; }
+.welcome-notice i { background: var(--action); color: var(--ink); }
+.start-assessment { background: var(--action); color: var(--ink); border: 2px solid var(--ink); box-shadow: 3px 4px 0 var(--ink); }
+.start-assessment span { color: var(--growth); }
+.welcome-foot { color: #6E6590; }
+
+/* Result card stays lavender, outcome is celebratory */
+.result-card {
+  background: linear-gradient(135deg, #C8BAFF 0%, #AE9EF8 55%, #9B8AEF 100%);
+  border: 2px solid var(--ink);
+  box-shadow: 4px 5px 0 var(--ink);
+}
+.result-orbit { border-color: var(--ink); background: var(--surface-paper); color: #5E48A9; }
+.result-card > button { background: var(--action); color: var(--ink); border: 2px solid var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+
+/* Chat refinement — soft, friendly conversation surfaces instead of square message blocks. */
+.chat-list-title {
+  align-items: center;
+  margin-bottom: 12px;
+}
+.chat-list-title > span {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--notice-soft);
+  color: #8B6609;
+  font: 500 10px "DM Mono", monospace;
+}
+.chat-contact {
+  width: 100%;
+  min-height: 76px;
+  padding: 12px;
+  border: 1.5px solid #DED6CE;
+  border-radius: 19px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.chat-contact:hover {
+  transform: translateY(-1px);
+  border-color: #BFB5AA;
+  box-shadow: 0 5px 14px rgba(70, 57, 45, .08);
+}
+.chat-contact:active { transform: translateY(0) scale(.99); }
+.chat-contact .chat-avatar {
+  flex: 0 0 auto;
+  border-radius: 14px;
+  box-shadow: 0 3px 8px rgba(54, 43, 35, .12);
+}
+.chat-contact p { width: auto; max-width: 218px; }
+.chat-empty {
+  border-radius: 20px;
+  border-style: dashed;
+}
+.conversation {
+  overflow: hidden;
+  border-radius: 23px 23px 0 0;
+}
+.conversation-head {
+  min-height: 58px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #E4DDD6;
+}
+.conversation-head button {
+  width: 33px;
+  height: 33px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--ink);
+  transition: background .18s ease;
+}
+.conversation-head button:hover { background: var(--growth-soft); }
+.date-label {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(214, 205, 195, .45);
+  color: #827970;
+}
+.message-stack {
+  padding: 4px 15px 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #DCD3CB transparent;
+}
+.bubble-row { margin-bottom: 16px; }
+.bubble-row > div:last-child { max-width: calc(100% - 35px); }
+.bubble {
+  max-width: 255px;
+  padding: 10px 13px;
+  border: 1px solid #DED6CE;
+  border-radius: 19px 19px 19px 8px;
+  background: var(--surface-paper);
+  line-height: 1.6;
+  box-shadow: 0 2px 5px rgba(72, 59, 47, .045);
+}
+.bubble-row.mine .bubble,
+.bubble.mine {
+  border-color: #E9B995;
+  border-radius: 19px 19px 8px 19px;
+  background: var(--action-soft);
+  box-shadow: 0 2px 5px rgba(174, 103, 65, .08);
+}
+.bubble-row time {
+  margin: 5px 4px 0;
+  color: #948A80;
+}
+.message-input {
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid #E4DDD6;
+}
+.message-input > button:first-child {
+  width: 31px;
+  height: 31px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--growth-soft);
+  color: #684EBA;
+  font-size: 20px;
+  line-height: 1;
+}
+.message-input input {
+  min-width: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+}
+.message-input .send {
+  min-width: 45px;
+  min-height: 32px;
+  border: 0;
+  border-radius: 999px;
+  box-shadow: none;
+}
+
+/* Teacher portraits stay personable: no heavy ink ring around real faces. */
+.teacher-avatar,
+.mini-avatar,
+.teacher-big-avatar,
+.chat-avatar {
+  border: 1px solid #EEE5DC;
+  box-shadow: 0 3px 9px rgba(71, 57, 44, .12);
+}
+.teacher-avatar,
+.mini-avatar,
+.teacher-big-avatar { background-color: var(--surface-paper); }
+
+/* Trial-to-chat is a calm access cue, not a separate lock-shaped control. */
+.hero-card .contact-row {
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 11px;
+  border: 1px solid #E6DDD5;
+  border-radius: 16px;
+  background: #FFF9F4;
+}
+.contact-status {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.contact-icon {
+  width: 29px;
+  height: 29px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--growth-soft);
+  color: #694FBD;
+  font-size: 19px;
+  line-height: 1;
+}
+.contact-status > span:last-child { min-width: 0; }
+.contact-row .contact-status small {
+  margin: 0 0 2px;
+  color: #8B8178;
+  font: 500 10px "DM Mono", monospace;
+  letter-spacing: .04em;
+}
+.contact-row .contact-status b {
+  display: block;
+  overflow: hidden;
+  color: #514B47;
+  font-family: "Noto Sans SC", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hero-card .contact-row button {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  box-shadow: none;
+  font-size: 11px;
+}
+.hero-card .contact-row button span { color: var(--ink); }
+
+/* Teacher tags — compact credential badges with a more deliberate hierarchy. */
+.teacher-card .credential-tags {
+  gap: 7px;
+  margin-top: 14px;
+}
+.teacher-card .teacher-identity .tags span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 27px;
+  padding: 5px 10px;
+  border: 1px solid rgba(77, 57, 143, .16);
+  border-radius: 10px;
+  background: rgba(255, 252, 249, .82);
+  color: #4B4643;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .7) inset;
+}
+.teacher-card .teacher-identity .tags .credential {
+  position: relative;
+  border-color: rgba(100, 76, 183, .38);
+  background: linear-gradient(135deg, #F8F5FF, #EAE3FF);
+  color: #5D47AC;
+  font-family: "DM Mono", "Noto Sans SC", sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .035em;
+  box-shadow: 0 2px 5px rgba(91, 69, 170, .11);
+}
+.teacher-card .teacher-identity .tags .credential::before {
+  content: "✦";
+  margin-right: 5px;
+  color: #8B70DD;
+  font-family: "Noto Sans SC", sans-serif;
+  font-size: 10px;
+}
+.teacher-card .teacher-identity .tags span:nth-child(n + 3)::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--action);
+  box-shadow: 0 0 0 2px rgba(255, 190, 152, .28);
+}
+
+/* One unified badge language for every teacher tag. */
+.teacher-card .teacher-identity .tags span,
+.teacher-card .teacher-identity .tags .credential {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 10px;
+  border: 1px solid #CBBDF5;
+  border-radius: 10px;
+  background: #F8F5FF;
+  color: #55438F;
+  font-family: "Noto Sans SC", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  box-shadow: 0 2px 5px rgba(91, 69, 170, .08);
+}
+.teacher-card .teacher-identity .tags span::before,
+.teacher-card .teacher-identity .tags .credential::before,
+.teacher-card .teacher-identity .tags span:nth-child(n + 3)::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--action);
+  box-shadow: 0 0 0 2px rgba(255, 190, 152, .35);
+}
+
+/* MBTI answers use decisive ink panels; purple stays as the learning-flow signal. */
+.magnetic-question .option-list button {
+  min-height: 64px;
+  border: 1.5px solid #151617;
+  border-radius: 16px;
+  background: #151617;
+  color: #FFFDF9;
+  box-shadow: 0 3px 0 rgba(21, 22, 23, .2);
+}
+.magnetic-question .option-list button:hover {
+  border-color: #151617;
+  background: #29252B;
+  box-shadow: 0 5px 0 #151617;
+}
+.magnetic-question .option-list b {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border-radius: 9px;
+  background: var(--action);
+  color: #151617;
+  font-family: "DM Mono", monospace;
+}
+.magnetic-question .option-list i { color: #D3C5FF; }
+.back-question {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  padding: 3px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #6049AD;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: none;
+}
+.back-question span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--growth-soft);
+  color: #6049AD;
+  font-size: 14px;
+  transition: transform .18s ease, background .18s ease;
+}
+.back-question:hover { background: transparent; color: #4C388E; }
+.back-question:hover span { transform: translateX(-2px); background: #DDD2FF; }
+
+/* Keep the established MBTI answer cards; only ensure answer text is ink-black. */
+.magnetic-question .option-list button {
+  border-color: #D9D1EB;
+  background: var(--surface-paper);
+  color: var(--ink);
+  box-shadow: none;
+}
+.magnetic-question .option-list button:hover {
+  border-color: var(--growth);
+  background: #FAF8FF;
+  box-shadow: 3px 4px 0 var(--ink);
+}
+.magnetic-question .option-list b {
+  background: var(--growth-soft);
+  color: #6049AD;
+}
+.magnetic-question .option-list i { color: var(--growth); }
+
+/* The assessment card reads in clear ink, not muted gray. */
+.magnetic-question,
+.magnetic-question h2,
+.magnetic-question .choose-hint,
+.magnetic-question .choose-hint strong,
+.magnetic-question .option-list button > span {
+  color: #151617;
+}
+/* A restrained serif gives the matching promise a warmer, more considered voice. */
+.test-copy h1 em {
+  font-family: "Noto Serif SC", serif;
+  font-weight: 700;
+  letter-spacing: -.08em;
+}
+
+/* Parent profile aligns with the teacher header: one shared settings treatment. */
+.profile-hero .profile-setting {
+  position: absolute;
+  top: 11px;
+  right: 15px;
+  bottom: auto;
+  margin: 0;
+}
+/* Parent summary stays open and airy—no vertical separators between metrics. */
+.profile-hero .profile-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+}
+.profile-hero .profile-stats span,
+.profile-hero .profile-stats span:last-child {
+  padding: 0;
+  border-right: 0;
+}
+
+.contact-icon { font-size: 16px; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   降低全局描边密度
+   强调卡（.teacher-card / .revenue-card / .sheet /
+   .role-modal / .subscribe-modal / .magnetic-question /
+   .assessment-welcome / .result-card / .mbti-constellation）
+   → 继续使用粗黑描边，以下规则不触碰它们
+
+   信息卡（function-card / mini list / compare / expand）
+   → 1px 柔边 + 轻浮阴影
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* 工作台功能格：柔边 + 浮起阴影 */
+.function-card {
+  border: 1px solid #E3DBD2 !important;
+  box-shadow: 0 2px 8px rgba(28,20,14,.07) !important;
+}
+.workbench-grid > .function-card:not(.expanded) {
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.workbench-grid > .function-card:not(.expanded):hover {
+  border-color: #C3B9AF !important;
+  box-shadow: 0 7px 18px rgba(28,20,14,.11) !important;
+  transform: translateY(-2px);
+}
+.workbench-grid > .function-card:active { transform: translateY(0); }
+
+/* card-icon：去掉硬黑框，用淡灰边 */
+.workbench-grid .function-trigger .card-icon {
+  border: 1px solid rgba(28,20,14,.1) !important;
+}
+
+/* mini 老师列表 / 已对接老师 / 收藏列表 */
+.mini-teacher,
+.connected-teacher,
+.liked-teacher {
+  border: 1px solid #EAE2D9 !important;
+  box-shadow: 0 1px 5px rgba(28,20,14,.045) !important;
+}
+
+/* 对比行：只保留底部细线 */
+.compare-row {
+  border-bottom: 1px solid #EBE3DA !important;
+  box-shadow: none !important;
+}
+
+/* 列表内次级操作按钮 */
+.mini-teacher button,
+.compare-row button {
+  border: 1px solid #D5CCC3 !important;
+  box-shadow: none !important;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.mini-teacher button:hover,
+.compare-row button:hover {
+  border-color: var(--ink) !important;
+  box-shadow: 2px 2px 0 var(--ink) !important;
+}
+
+/* 展开区内部按钮 */
+.teacher-expand-actions button {
+  border: 1px solid #E4DDD6 !important;
+  box-shadow: none !important;
+}
+.teacher-expand-actions button:nth-child(2) { border-color: #F2C4AC !important; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   我的页面精准调优 — 家长 & 老师
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Workbench icon SVGs */
+.work-icon-svg { width: 20px; height: 20px; display: block; }
+.workbench-grid .function-trigger .card-icon { display: grid; place-items: center; }
+
+/* Workbench card hover */
+.workbench-grid > .function-card:not(.expanded) {
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.workbench-grid > .function-card:not(.expanded):hover {
+  transform: translateY(-2px);
+  box-shadow: 3px 6px 0 var(--ink);
+}
+.workbench-grid > .function-card:active { transform: translateY(0); }
+
+/* Workbench label: slightly more weight */
+.workbench-grid .function-trigger b {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+/* Profile stats: stacked number + label */
+.profile-hero .profile-stats span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px;
+}
+.profile-hero .profile-stats b {
+  font: 700 21px "DM Mono", monospace;
+  letter-spacing: -.06em;
+  line-height: 1;
+  color: var(--ink);
+}
+.profile-hero .profile-stats span > small {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .02em;
+  color: rgba(21,22,23,.58);
+}
+
+/* Parent profile text hierarchy */
+.profile-banner p {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(21,22,23,.62);
+  letter-spacing: .01em;
+}
+.profile-banner h1 {
+  margin: 4px 0 5px;
+  font-size: 20px;
+  letter-spacing: -.055em;
+  line-height: 1.2;
+}
+.profile-banner h1 span {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 5px;
+  vertical-align: middle;
+  letter-spacing: 0;
+}
+.profile-banner small {
+  font-size: 10px;
+  color: rgba(21,22,23,.5);
+  letter-spacing: -.005em;
+}
+
+/* Teacher profile: larger name, refined school line */
+.teacher-profile-main h1 {
+  font-size: 24px;
+  letter-spacing: -.075em;
+  line-height: 1;
+}
+.teacher-profile-main small {
+  font-size: 11px;
+  letter-spacing: -.01em;
+}
+.teacher-big-avatar {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  border-radius: 20px;
+}
+
+/* Teacher stats: stacked with monospace numbers */
+.teacher-profile-stats span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.teacher-profile-stats b {
+  font: 700 20px "DM Mono", monospace;
+  letter-spacing: -.06em;
+  line-height: 1;
+  color: var(--ink);
+}
+.teacher-profile-stats span > small {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .02em;
+  color: rgba(21,22,23,.58);
+}
+
+/* Revenue numbers: monospace prominence */
+.revenue-grid b {
+  font: 600 17px "DM Mono", monospace;
+  letter-spacing: -.07em;
+  line-height: 1;
+}
+.revenue-grid small { font-size: 10px; font-weight: 600; }
+
+/* Section headers */
+.card-dashboard .dashboard-title h2,
+.teacher-dashboard .dashboard-title h2 {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -.04em;
+}
+
+/* Settings gear alignment */
+.profile-setting svg, .teacher-profile-top button svg { display: block; }
+
+/* Settings holds account details and role switching without adding workspace functions. */
+.settings-modal { padding: 18px 18px 17px; }
+.settings-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.settings-head .eyebrow { margin-bottom: 4px; }
+.settings-head h2 { margin: 0; font-size: 22px; letter-spacing: -.055em; }
+.settings-head .close { margin: -2px -2px 0 0; }
+.settings-profile {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 18px 0 13px;
+  padding: 12px;
+  border: 1px solid #e3dbd2;
+  border-radius: 15px;
+  background: #fffdfa;
+  box-shadow: 0 2px 7px rgba(28,20,14,.045);
+}
+.settings-avatar {
+  display: grid;
+  width: 43px;
+  height: 43px;
+  place-items: center;
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  background: var(--action);
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 700;
+}
+.settings-profile > div:nth-child(2) { display: grid; gap: 3px; flex: 1; }
+.settings-profile b { color: var(--ink); font-size: 14px; }
+.settings-profile small, .setting-group > small { color: #8c857d; font-size: 10px; line-height: 1.45; }
+.avatar-edit {
+  padding: 6px 8px;
+  border: 1px solid #d9d0c7;
+  border-radius: 9px;
+  background: #fff;
+  color: #645d55;
+  font-size: 11px;
+  transition: border-color .15s ease, transform .15s ease;
+}
+.avatar-edit:hover { border-color: #b6aaa0; transform: translateY(-1px); }
+.setting-field { display: grid; gap: 7px; color: #696159; font-size: 11px; font-weight: 700; }
+.setting-field input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 12px;
+  border: 1px solid #ded6ce;
+  border-radius: 11px;
+  outline: none;
+  background: #fffdfa;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+.setting-field input:focus { border-color: #9d8be4; box-shadow: 0 0 0 3px rgba(157,139,228,.15); }
+.setting-group { margin-top: 17px; padding-top: 15px; border-top: 1px solid #eee7e0; }
+.setting-group > p { margin: 0 0 9px; color: #696159; font-size: 11px; font-weight: 700; }
+.role-switcher { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.role-switcher button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid #ded6ce;
+  border-radius: 11px;
+  background: #fffdfa;
+  color: #6e665f;
+  font-size: 12px;
+  font-weight: 700;
+  transition: transform .15s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.role-switcher button:hover { transform: translateY(-1px); border-color: #bfb4a9; }
+.role-switcher button.active { border-color: var(--ink); background: var(--growth-soft); color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+.role-switcher button span { font-size: 15px; }
+.settings-save { width: 100%; margin-top: 18px; }
+
+/* The onboarding brief and account controls are focused, centered floating dialogs. */
+.modal-backdrop.centered-modal {
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+.centered-modal .sheet {
+  width: min(100%, 370px);
+  max-height: calc(100% - 36px);
+  border-radius: 22px;
+  box-shadow: 0 18px 42px rgba(37, 29, 22, .24);
+  animation: dialog-pop .22s cubic-bezier(.2, .8, .25, 1) both;
+}
+.centered-modal .handle { display: none; }
+.centered-modal .needs-sheet { padding-top: 24px; }
+@keyframes dialog-pop {
+  from { opacity: 0; transform: translateY(10px) scale(.975); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .centered-modal .sheet { animation: none; }
+}
+
+/* Only the needs chips use the card's soft lavender selection tone. */
+.needs-sheet .chip-row .on {
+  border-color: #C6B8F5;
+  background: var(--growth-soft);
+  color: #6049AD;
+  box-shadow: none;
+}
+
+/* Settings deliberately contains one account-level action. */
+.settings-menu { min-height: 158px; }
+.settings-menu-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 11px;
+  margin-top: 18px;
+  padding: 13px;
+  border: 1px solid #e2dad2;
+  border-radius: 14px;
+  background: #fffdfa;
+  text-align: left;
+  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.settings-menu-item:hover { transform: translateY(-1px); border-color: #bdb2a8; box-shadow: 0 5px 12px rgba(28,20,14,.08); }
+.settings-menu-icon { display: grid; width: 35px; height: 35px; place-items: center; border-radius: 11px; background: var(--growth-soft); color: #6049AD; font-size: 20px; font-weight: 700; }
+.settings-menu-item > span:nth-child(2) { display: grid; flex: 1; gap: 3px; }
+.settings-menu-item b { color: var(--ink); font-size: 13px; }
+.settings-menu-item small { color: #8c857d; font-size: 10px; }
+.settings-menu-item > i { color: #a19a93; font-size: 21px; font-style: normal; }
+
+/* Remove the separator beneath the top navigation while preserving its layout. */
+.topbar { border-bottom: 0; }
+
+/* Floating navigation: a rounded, tactile control that sits above the canvas. */
+.bottom-nav {
+  position: absolute;
+  inset: auto 12px 12px;
+  width: auto;
+  height: 62px;
+  padding: 6px;
+  gap: 4px;
+  border: 1px solid rgba(21, 22, 23, .15);
+  border-radius: 21px;
+  background: rgba(255, 252, 249, .94);
+  box-shadow: 0 10px 24px rgba(53, 41, 31, .15), 0 2px 5px rgba(53, 41, 31, .07);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.bottom-nav button {
+  min-height: 50px;
+  border-radius: 15px;
+  color: #837B73;
+  transition: transform .16s ease, background .16s ease, color .16s ease, box-shadow .16s ease;
+}
+.bottom-nav button:hover { background: rgba(230, 224, 216, .6); }
+.bottom-nav button:active { transform: scale(.96); }
+.bottom-nav .selected { box-shadow: none; }
+.bottom-nav button:nth-child(1).selected { background: #EEE9FF; color: #7056BD; }
+.bottom-nav button:nth-child(2).selected { background: #FFF0E7; color: #C96542; }
+.bottom-nav button:nth-child(3).selected { background: #E8F4E9; color: #348052; }
+.bottom-nav button:nth-child(4).selected { background: #EAF0FF; color: #4E70AD; }
+.bottom-nav button .nav-symbol { width: 20px; height: 20px; }
+.bottom-nav button span { font-size: 10px; }
+
+/* Teacher business-card poster: a share-ready, focused artifact. */
+.teacher-poster-modal { width: min(100%, 348px); padding: 18px; }
+.teacher-poster-modal > .eyebrow { margin: 3px 0 12px; }
+.teacher-poster-modal .close { position: absolute; top: 15px; right: 15px; }
+.teacher-poster {
+  overflow: hidden;
+  padding: 17px;
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  background: linear-gradient(145deg, #CFC5FF 0%, #B5A5F5 53%, #9A87E7 100%);
+  box-shadow: 4px 5px 0 var(--ink);
+  color: var(--ink);
+}
+.poster-brand { display: flex; align-items: center; gap: 3px; font-size: 14px; font-weight: 800; }
+.poster-brand > span { color: #7057C4; }
+.poster-brand small { margin-left: auto; color: rgba(21,22,23,.63); font-size: 8px; font-weight: 600; }
+.poster-main { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
+.poster-avatar { width: 63px; height: 63px; overflow: hidden; flex: 0 0 auto; border: 2px solid var(--ink); border-radius: 18px; background: var(--action); }
+.poster-avatar img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.poster-main p { margin: 0; color: rgba(21,22,23,.66); font-size: 9px; }
+.poster-main h2 { margin: 3px 0 4px; font-size: 23px; letter-spacing: -.07em; }
+.poster-main h2 i { display: inline-grid; width: 15px; height: 15px; place-items: center; border-radius: 50%; background: var(--ink); color: var(--action); font-size: 9px; font-style: normal; vertical-align: 2px; }
+.poster-main span { padding: 3px 6px; border: 1px solid rgba(21,22,23,.28); border-radius: 6px; background: rgba(255,252,249,.45); font-size: 9px; }
+.poster-quote { margin: 18px 0 14px; padding: 11px 12px; border-radius: 11px; background: rgba(255,252,249,.48); color: #332B52; font-size: 12px; font-weight: 600; line-height: 1.6; }
+.poster-metrics { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid rgba(21,22,23,.23); border-bottom: 1px solid rgba(21,22,23,.23); }
+.poster-metrics span { display: grid; gap: 3px; padding: 10px 5px; text-align: center; }
+.poster-metrics span + span { border-left: 1px solid rgba(21,22,23,.2); }
+.poster-metrics b { font: 700 17px "DM Mono", monospace; letter-spacing: -.06em; }
+.poster-metrics small { color: rgba(21,22,23,.62); font-size: 8px; }
+.poster-footer { display: flex; align-items: center; gap: 9px; margin-top: 13px; }
+.poster-code { display: grid; width: 32px; height: 32px; place-items: center; border: 1.5px solid var(--ink); border-radius: 7px; background: #fffdfa; font-size: 22px; }
+.poster-footer p { margin: 0; color: rgba(21,22,23,.68); font-size: 9px; line-height: 1.5; }
+.teacher-poster-modal .sheet-btn { margin-top: 16px; }
+
+/* Imported brand assets: icon mark on the left, custom wordmark immediately beside it. */
+.wordmark {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 36px;
+  font-size: 0;
+  letter-spacing: 0;
+}
+.wordmark .brand-mark,
+.wordmark .brand-type {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+.wordmark .brand-mark { width: 34px; height: 34px; border-radius: 11px; }
+.wordmark .brand-mark img {
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  max-width: none;
+  object-fit: cover;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(1.13);
+}
+.wordmark .brand-type { width: 82px; height: 28px; }
+.wordmark .brand-type img {
+  position: absolute;
+  width: 112px;
+  height: 112px;
+  max-width: none;
+  object-fit: cover;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(1.55);
+}
+
+/* Compact the header brand substantially to a quiet app-bar scale. */
+.wordmark { height: 26px; gap: 3px; }
+.wordmark .brand-mark { width: 24px; height: 24px; border-radius: 8px; }
+.wordmark .brand-mark img { width: 34px; height: 34px; }
+.wordmark .brand-type { width: 60px; height: 20px; }
+.wordmark .brand-type img { width: 84px; height: 84px; }
+
+/* Cropped derivatives preserve every edge of both supplied logos at a compact size. */
+.wordmark { height: 25px; gap: 4px; }
+.wordmark .brand-mark { width: 23px; height: 23px; border-radius: 0; overflow: visible; }
+.wordmark .brand-type { width: 62px; height: 19px; overflow: visible; }
+.wordmark .brand-mark img,
+.wordmark .brand-type img {
+  position: static;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  transform: none;
+}
+
+/* The source PNGs include white margins: scale only enough to reveal their full artwork. */
+.wordmark .brand-mark { width: 23px; height: 23px; overflow: hidden; }
+.wordmark .brand-mark img {
+  position: absolute;
+  width: 33px;
+  height: 33px;
+  max-width: none;
+  left: 50%;
+  top: 50%;
+  object-fit: contain;
+  transform: translate(-50%, -50%);
+}
+.wordmark .brand-type { width: 60px; height: 18px; overflow: hidden; }
+.wordmark .brand-type img {
+  position: absolute;
+  width: 84px;
+  height: 84px;
+  max-width: none;
+  left: 50%;
+  top: 50%;
+  object-fit: contain;
+  transform: translate(-50%, -50%);
+}
+
+/* Imported assets must not inherit the legacy italic wordmark skew. */
+.wordmark .brand-mark,
+.wordmark .brand-type { transform: none; }
+
+/* Increase the complete, unskewed brand lockup by roughly 20%. */
+.wordmark { height: 30px; gap: 4px; }
+.wordmark .brand-mark { width: 28px; height: 28px; }
+.wordmark .brand-mark img { width: 40px; height: 40px; }
+.wordmark .brand-type { width: 72px; height: 22px; }
+.wordmark .brand-type img { width: 101px; height: 101px; }
+
+/* Keep a little more source-image breathing room so the tiger mark's top edge is never clipped. */
+.wordmark .brand-mark img { width: 36px; height: 36px; }
+
+/* Conversation owns the measured space above the floating navigation, never the viewport. */
+.screen-content:has(.chat-screen) {
+  height: calc(100% - 154px);
+  overflow: hidden;
+}
+.chat-screen { height: 100%; min-height: 0; }
+.chat-screen .conversation {
+  height: 100%;
+  min-height: 0;
+  margin: 0 -16px;
+}
+
+/* Let the floating navigation sit over the warm canvas rather than a white phone-frame base. */
+.phone-frame { background: var(--surface-base); }
+
+/* A focused, centered trial-booking decision dialog. */
+.book-sheet { width: min(100%, 356px); padding: 19px 18px 17px; }
+.book-sheet > .close { position: absolute; top: 15px; right: 15px; }
+.book-sheet .eyebrow { margin: 3px 0 5px; }
+.book-sheet h2 { max-width: 260px; margin-top: 0; font-size: 22px; line-height: 1.25; }
+.book-sheet .sheet-note { margin: 8px 0 14px; color: #756E69; }
+.trial-teacher { display: flex; align-items: center; gap: 10px; padding: 11px; border: 1px solid #DED6CE; border-radius: 14px; background: var(--surface-paper); box-shadow: 0 2px 6px rgba(50, 40, 31, .05); }
+.trial-avatar { width: 40px; height: 40px; overflow: hidden; flex: 0 0 auto; border-radius: 13px; background: var(--action); }
+.trial-avatar img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center top; }
+.trial-teacher > div:nth-child(2) { display: grid; flex: 1; gap: 3px; }
+.trial-teacher b { color: var(--ink); font-size: 13px; }
+.trial-teacher b i { display: inline-grid; width: 13px; height: 13px; place-items: center; border-radius: 50%; background: var(--success); color: var(--ink); font-size: 8px; font-style: normal; vertical-align: 1px; }
+.trial-teacher span { color: #817970; font-size: 10px; }
+.trial-teacher em { padding: 4px 6px; border-radius: 7px; background: var(--success-soft); color: #287B45; font-size: 10px; font-style: normal; font-weight: 700; }
+.trial-slot-label { margin: 17px 0 8px; color: #625B54; font-size: 11px; font-weight: 700; }
+.book-sheet .slot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 0; }
+.book-sheet .slot-grid button { display: grid; gap: 4px; padding: 11px 9px; border: 1px solid #DDD5CD; border-radius: 12px; background: #FFFCF9; color: var(--ink); font-size: 12px; text-align: left; transition: transform .15s ease, border-color .15s ease, background .15s ease, box-shadow .15s ease; }
+.book-sheet .slot-grid button::after { content: none; }
+.book-sheet .slot-grid button:hover { transform: translateY(-1px); border-color: var(--ink); background: var(--growth-soft); box-shadow: 2px 2px 0 var(--ink); }
+.book-sheet .slot-grid small { color: #8C847C; font-size: 9px; }
+.book-sheet .sheet-foot { margin-top: 13px; color: #857D75; }
+
+/* Match decisions: a centered three-button cluster with SVG-only symbols. */
+.action-icon { display: block; width: 22px; height: 22px; }
+.swipe-actions { justify-content: center; gap: 13px; }
+.swipe-actions button { display: grid; place-items: center; font-size: 0; }
+.swipe-actions .pass, .swipe-actions .like { width: 52px; height: 52px; }
+.swipe-actions .undo { display: grid; width: 38px; height: 38px; place-items: center; border: 1.5px solid var(--ink); border-radius: 12px; background: var(--surface-paper); color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+.swipe-actions .undo:disabled { cursor: not-allowed; opacity: .38; box-shadow: none; }
+.swipe-actions .undo .action-icon { width: 18px; height: 18px; }
+.swipe-actions .pass .action-icon, .swipe-actions .like .action-icon { width: 23px; height: 23px; }
+
+/* Refined spacing and hierarchy for the matching / assessment / profile details. */
+.swipe-actions { gap: 22px; }
+
+.test-screen .mbti-constellation {
+  height: 272px;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 87% 18%, rgba(255,224,180,.42) 0 10%, transparent 30%),
+    radial-gradient(circle at 10% 94%, rgba(255,252,249,.22) 0 8%, transparent 31%),
+    linear-gradient(135deg, #6951C7 0%, #967AE9 56%, #B6A5F4 100%);
+}
+.test-screen .mbti-constellation::after { content: ""; position: absolute; width: 200px; height: 200px; right: -94px; bottom: -122px; border: 1px solid rgba(255,252,249,.38); border-radius: 50%; }
+.test-screen .mbti-purpose-chip { top: 18px; left: 18px; padding: 7px 10px; border: 1.5px solid #151617; border-radius: 9px; background: #FFFCF9; color: #151617; font-size: 10px; font-weight: 800; letter-spacing: .02em; }
+.test-screen .mbti-core { top: 20px; right: 20px; width: 92px; height: 92px; border: 2px solid #151617; background: #FFBE98; box-shadow: 4px 4px 0 #151617; }
+.test-screen .mbti-core b { font-size: 31px; font-weight: 500; }
+.test-screen .test-copy { left: 20px; right: 20px; bottom: 49px; }
+.test-screen .test-copy .tiny-label { margin: 0 0 8px; color: #FFF5D9; font-family: "DM Mono", monospace; font-size: 10px; font-weight: 500; letter-spacing: .1em; }
+.test-screen .test-copy h1 { max-width: 270px; margin: 0; color: #FFFCF9; font-family: "Noto Serif SC", serif; font-size: 24px; font-weight: 700; line-height: 1.27; letter-spacing: -.09em; }
+.test-screen .test-copy h1 em { color: #FFE7BD; font-family: "Noto Serif SC", serif; font-size: inherit; font-style: normal; }
+.test-screen .test-copy > p:last-child { max-width: 250px; margin-top: 8px; color: rgba(255,252,249,.88); font-size: 11px; line-height: 1.55; }
+.test-screen .purpose-quick-points { left: 20px; right: 20px; bottom: 15px; display: flex; gap: 6px; align-items: center; }
+.test-screen .purpose-quick-points span { padding: 4px 7px; border: 1px solid rgba(255,252,249,.65); border-radius: 99px; background: rgba(255,252,249,.2); color: #FFFCF9; font-size: 9px; }
+.test-screen .purpose-quick-points b { margin-left: auto; color: #FFF2D5; font-family: "DM Mono", monospace; font-size: 9px; }
+
+.assessment-welcome { background: radial-gradient(circle at 89% 12%, rgba(255,190,152,.75), transparent 27%), linear-gradient(145deg, #EFEAFF, #DCD2FF); }
+.assessment-welcome h1 { font-family: "Noto Serif SC", serif; font-size: 26px; line-height: 1.34; letter-spacing: -.09em; }
+.assessment-welcome > p { font-size: 12px; line-height: 1.7; }
+
+.teacher-profile-stats,
+.profile-hero .profile-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  width: 100%;
+}
+.teacher-profile-stats span,
+.profile-hero .profile-stats span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.revenue-grid span { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 76px; }
+.revenue-grid small, .revenue-grid b { width: 100%; text-align: center; }
+
+/* Final spacing / modal refinements. */
+.swipe-actions { gap: 28px; }
+.chat-screen .conversation { border-radius: 0; }
+.centered-modal .role-modal { width: min(100%, 350px); padding: 24px 20px 22px; border-radius: 20px; text-align: center; }
+.centered-modal .role-modal .eyebrow { margin-bottom: 5px; }
+.centered-modal .role-modal h2 { margin: 0 0 18px; font-family: "Noto Serif SC", serif; font-size: 25px; letter-spacing: -.08em; }
+.centered-modal .role-modal > button { text-align: left; }
+
+/* Slightly wider breathing room between the three matching decisions. */
+.swipe-actions { gap: 34px; }
+
+/* A compact centered response for every workspace utility card. */
+.centered-modal .utility-modal { width: min(100%, 330px); padding: 27px 22px 22px; border-radius: 20px; text-align: center; }
+.utility-modal-mark { display: grid; width: 48px; height: 48px; margin: 0 auto 12px; place-items: center; border: 2px solid var(--ink); border-radius: 15px; background: var(--growth-soft); color: #6049AD; }
+.utility-modal-mark .work-icon-svg { width: 22px; height: 22px; }
+.utility-modal h2 { margin: 4px 0 8px; font-family: "Noto Serif SC", serif; font-size: 23px; letter-spacing: -.08em; }
+.utility-modal > p:not(.eyebrow) { margin: 0 auto 18px; color: var(--ink-muted); font-size: 12px; line-height: 1.7; }
+.utility-modal .sheet-btn { width: 100%; }
+
+/* Parent metrics reserve their own aligned row beneath the profile content. */
+.profile-hero { display: grid; grid-template-columns: 64px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 11px; }
+.profile-hero .my-avatar { grid-column: 1; grid-row: 1; }
+.profile-hero .profile-info { grid-column: 2; grid-row: 1; min-width: 0; }
+.profile-hero .profile-stats { position: static; grid-column: 1 / -1; grid-row: 2; margin-top: 13px; padding-top: 11px; border-top: 1px solid rgba(21,22,23,.2); }
+.profile-hero .profile-stats span { min-height: 34px; padding: 0 5px; }
+
+/* Wider outer spacing keeps pass / undo / favourite distinct at a glance. */
+.swipe-actions { gap: 42px; }
+
+/* Trial time choices are decision cards, centered for quick comparison. */
+.book-sheet .slot-grid button { place-items: center; text-align: center; }
+.book-sheet .slot-grid button small { text-align: center; }
+
+/* Revenue is intentionally quiet: no trailing affordance or one-off success tile. */
+.revenue-head { justify-content: flex-start; }
+.revenue-grid span:nth-child(3) { border-color: var(--ink); background: var(--surface-paper); }
+.revenue-grid span:nth-child(3) small, .revenue-grid span:nth-child(3) b { color: var(--ink); }
+
+/* Connected-teacher modal list: one teacher per calm, scannable row. */
+.connected-list { display: grid; gap: 8px; margin: 15px 0 17px; text-align: left; }
+.connected-row { display: grid; grid-template-columns: 39px minmax(0, 1fr) 30px; align-items: center; gap: 9px; padding: 9px; border: 1px solid #DED6CE; border-radius: 12px; background: var(--surface-paper); }
+.connected-row .mini-avatar { width: 39px; height: 39px; border-radius: 12px; overflow: hidden; }
+.connected-row .mini-avatar img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.connected-row b, .connected-row small { display: block; }
+.connected-row b { color: var(--ink); font-size: 12px; }
+.connected-row small { margin-top: 3px; color: var(--ink-muted); font-size: 10px; }
+.connected-row button { display: grid; width: 30px; height: 30px; place-items: center; border: 1.5px solid var(--ink); border-radius: 9px; background: var(--action); color: var(--ink); box-shadow: 1px 1px 0 var(--ink); }
+.connected-row .action-icon { width: 15px; height: 15px; }
+
+/* A brief, directional confirmation lands after each card leaves the deck. */
+.swipe-actions .decision-feedback { animation: decision-confirm .72s cubic-bezier(.2,.8,.2,1) both; }
+.swipe-actions .pass.decision-feedback { border-color: #151617; background: #E8E4F8; color: #6049AD; }
+.swipe-actions .like.decision-feedback { background: #FFBE98; color: #151617; }
+@keyframes decision-confirm {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(150,122,233,0); }
+  28% { transform: scale(1.18); box-shadow: 0 0 0 8px rgba(150,122,233,.22); }
+  52% { transform: scale(.97); box-shadow: 0 0 0 13px rgba(150,122,233,0); }
+  75% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) { .swipe-actions .decision-feedback { animation: none; } }
+
+/* Balanced decision controls: matching construction, softer favourite emphasis. */
+.swipe-actions .pass,
+.swipe-actions .like {
+  border: 2px solid var(--ink);
+  box-shadow: 2px 3px 0 var(--ink);
+}
+.swipe-actions .pass { background: var(--surface-paper); color: var(--ink); }
+.swipe-actions .like { background: var(--action); color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+.swipe-actions .pass:hover,
+.swipe-actions .like:hover { transform: translate(-1px, -1px); box-shadow: 3px 4px 0 var(--ink); }
+.swipe-actions .pass:active,
+.swipe-actions .like:active { transform: translate(0, 0); box-shadow: 1px 1px 0 var(--ink); }

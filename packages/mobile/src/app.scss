@@ -1,0 +1,338 @@
+/* ============================================================
+   app.scss — 全局样式
+   范围：reset、:root 变量、app-shell、phone-frame、topbar、
+   wordmark 品牌、共享原子类（eyebrow / tiny-label / 头像 /
+   mini-teacher / connected-teacher 通用结构）、以及所有弹窗与
+   抽屉通用样式（modal-backdrop / sheet / subscribe-modal /
+   role-modal / player / settings-modal / centered-modal /
+   teacher-poster-modal 等）。
+   注意：.bottom-nav 已由 custom-tab-bar/index.scss 单独处理，
+   本文件不包含任何 .bottom-nav 规则。
+   适配说明：
+   - 已移除 @import google fonts 与 @import 'tailwindcss'
+   - "DM Mono" → monospace；"Ma Shan Zheng" → "STKaiti"；
+     "Noto Serif SC" → serif；"Noto Sans SC" 保留作 fallback
+   - :hover 已全部移除
+   - 1px/2px 边框使用大写 PX 以避免 Taro pxtransform 转换
+   - 100vh 保留
+   ============================================================ */
+
+/* ---- reset / 根元素 ---- */
+:root { font-family: "Noto Sans SC", sans-serif; color: #263334; background: #e9e7e1; }
+* { box-sizing: border-box; }
+button { font: inherit; cursor: pointer; }
+
+/* ---- 应用外壳与手机框 ---- */
+.app-shell { min-height: 100vh; display: grid; place-items: center; padding: 28px; background: radial-gradient(circle at 15% 20%, #f5d6bd 0 6%, transparent 25%), radial-gradient(circle at 90% 85%, #c9ded3 0 5%, transparent 25%), #e9e7e1; }
+.phone-frame { width: min(100%, 430px); height: min(900px, calc(100vh - 56PX)); min-height: 680px; overflow: hidden; position: relative; background: #fffdf9; border: 8px solid #263334; border-radius: 36px; box-shadow: 12px 14px 0 #263334; }
+
+/* ---- 顶部栏 / 品牌字标 / 过滤与设置按钮 ---- */
+.topbar { height: 73px; padding: 24px 22px 8px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }
+.wordmark { font-family: "STKaiti", cursive; font-size: 29px; line-height: 1; letter-spacing: 2px; color: #263334; }
+.wordmark span { color: #ec6c4b; }
+.filter-btn, .setting-btn { border: 0; background: #f3f0e9; width: 34px; height: 34px; border-radius: 50%; color: #263334; font-size: 18px; }
+.top-caption { font-size: 13px; color: #7b8381; letter-spacing: .16em; }
+
+/* ---- 屏幕滚动容器与共享屏幕内边距 ---- */
+.screen-content { height: calc(100% - 139PX); overflow: auto; }
+/* scrollbar 相关属性已移除（小程序不支持） */
+.match-screen, .test-screen, .me-screen { padding: 18px 20px 28px; }
+
+/* ---- 共享布局辅助类 ---- */
+.intro-row, .dashboard-head, .matched-title { display: flex; justify-content: space-between; align-items: center; }
+.eyebrow, .tiny-label { margin: 0; color: #ed7358; font: 500 10px monospace; letter-spacing: .12em; }
+.intro-row h1, .test-hero h1, .chat-list-title h1 { margin: 4px 0 0; font-size: 24px; line-height: 1.25; letter-spacing: -.06em; }
+
+/* ---- 进度环（原 conic-gradient 简化为纯色） ---- */
+.progress-ring { height: 48px; width: 48px; display: grid; place-content: center; text-align: center; border-radius: 50%; background: #ed7358; position: relative; }
+.progress-ring::before { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: #fffdf9; }
+.progress-ring b, .progress-ring span { z-index: 1; line-height: 1; }
+.progress-ring b { font-size: 13px; }
+.progress-ring span { font-size: 7px; color: #77807d; }
+
+/* ---- 共享验证标记（跨页面复用：teacher-card / mini-teacher / connected-teacher / chat-contact） ---- */
+.verified, .mini-teacher i, .connected-teacher i, .chat-contact i { display: inline-grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: #2d7c75; color: #fff; font-style: normal; font-size: 10px; }
+
+/* ---- 共享头像基类（跨页面复用） ---- */
+.mini-avatar, .chat-avatar, .my-avatar { width: 47px; height: 47px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 15px; background: #bcd4c7; color: white; font: 26px "STKaiti", cursive; }
+
+/* ---- 共享老师列表项基类（mini-teacher / connected-teacher 通用结构） ---- */
+.mini-teacher, .connected-teacher { display: flex; gap: 11px; align-items: center; padding: 12px; border: 1PX solid #e5e3da; border-radius: 13px; }
+
+/* ---- 弹窗：订阅 / 角色选择 ---- */
+.modal-backdrop { position: absolute; inset: 0; z-index: 10; display: flex; align-items: flex-end; padding: 0; background: rgba(28,37,35,.42); }
+.subscribe-modal, .role-modal { width: 100%; background: #fffdf9; border-radius: 25px 25px 0 0; padding: 27px 24px 25px; text-align: center; animation: rise .24s ease-out; }
+.subscribe-modal { padding-top: 22px; }
+.close { float: right; border: 0; background: #f0eee7; border-radius: 50%; width: 27px; height: 27px; font-size: 18px; color: #6f7772; }
+.lock-art { width: 62px; height: 62px; display: grid; place-items: center; margin: 4px auto 14px; border-radius: 50%; background: #f6dfd5; color: #ed7358; font-size: 28px; }
+.subscribe-modal h2, .role-modal h2 { margin: 7px 0; letter-spacing: -.05em; font-size: 24px; }
+.subscribe-modal > p:not(.eyebrow) { margin: 0 auto 18px; max-width: 250px; color: #818981; font-size: 12px; line-height: 1.8; }
+.subscribe-btn { width: 100%; padding: 13px; border: 0; background: #ed7358; border-radius: 10px; box-shadow: 0 4px #be5039; color: white; font-size: 13px; font-weight: 700; }
+.subscribe-modal small { display: block; margin-top: 12px; color: #a5aaa5; font-size: 9px; }
+.handle { width: 35px; height: 4px; margin: -15px auto 18px; background: #dfddd5; border-radius: 3px; }
+.role-modal { text-align: left; padding-bottom: 35px; }
+.role-modal h2 { margin-bottom: 21px; }
+.role-modal > button { width: 100%; display: flex; align-items: center; gap: 12px; border: 1PX solid #e8e5dc; background: white; border-radius: 14px; padding: 12px; margin-top: 10px; text-align: left; }
+.role-icon { display: grid; place-items: center; width: 45px; height: 45px; border-radius: 13px; font-size: 23px; }
+.peach { background: #f8e1d7; color: #de7051; }
+.green { background: #dceade; color: #4e7b67; }
+.role-modal button b, .role-modal button small { display: block; }
+.role-modal button b { color: #34413e; }
+.role-modal button small { margin-top: 3px; color: #8d958e; font-size: 10px; }
+.role-modal button i { margin-left: auto; color: #adb4ae; font-size: 21px; font-style: normal; }
+@keyframes rise { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+/* ---- 字标第二组（覆盖为无衬线斜体） ---- */
+.wordmark { font-family: "Noto Sans SC", sans-serif; font-size: 22px; letter-spacing: -.1em; font-weight: 800; font-style: italic; }
+.wordmark span { display: inline-block; transform: skew(-12deg); color: #f2633e; }
+
+/* ---- 会员权益（订阅弹窗内） ---- */
+.membership-benefits { display: grid; gap: 7px; margin: 0 0 17px; padding: 12px; border-radius: 10px; background: #f5f5ee; text-align: left; color: #50645a; font-size: 10px; }
+.membership-benefits span { display: block; }
+.subscribe-modal > p:not(.eyebrow) { margin-bottom: 12px; }
+
+/* ---- 可读性调优：全局共享原子类 ---- */
+.eyebrow, .tiny-label { font-size: 11px; }
+.subscribe-modal small { font-size: 11px; }
+.membership-benefits { font-size: 12px; gap: 9px; padding: 14px; line-height: 1.5; }
+.subscribe-modal > p:not(.eyebrow) { font-size: 13px; max-width: none; }
+.filter-btn, .setting-btn { width: auto; height: 32px; padding: 0 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #4b564f; }
+
+/* ---- 共享底部抽屉（sheet） ---- */
+.sheet { width: 100%; max-height: 92%; overflow: auto; background: #fffdf9; border-radius: 25px 25px 0 0; padding: 26px 22px 24px; animation: rise .24s ease-out; }
+/* scrollbar 相关属性已移除 */
+.sheet h2 { margin: 7px 0 0; font-size: 23px; letter-spacing: -.05em; }
+.sheet-note { margin: 9px 0 4px; color: #7d857f; font-size: 12px; line-height: 1.7; }
+.sheet-btn { width: 100%; margin-top: 20px; padding: 14px; border: 0; border-radius: 11px; background: #ed7358; box-shadow: 0 4px #be5039; color: #fff; font-size: 14px; font-weight: 700; }
+.sheet-foot { display: block; margin-top: 13px; color: #99a09a; font-size: 11px; text-align: center; }
+.text-btn { width: 100%; margin-top: 11px; padding: 9px; border: 0; background: transparent; color: #929a94; font-size: 12px; }
+
+/* ---- 引导需求抽屉（needs-sheet） ---- */
+.needs-sheet .needs-group { margin-top: 17px; }
+.needs-sheet label { display: block; margin-bottom: 8px; color: #5a635d; font-size: 12px; font-weight: 600; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip-row button { padding: 10px 14px; border: 1PX solid #dfe1d8; border-radius: 10px; background: #fff; color: #4f5b55; font-size: 13px; }
+.chip-row .on { border-color: #ed7358; background: #fdf1ec; color: #c9522f; font-weight: 700; }
+
+/* ---- 信任证据抽屉（trust-sheet） ---- */
+.trust-sheet h3 { margin: 21px 0 9px; font-size: 14px; color: #3b4842; }
+.check-list { display: grid; gap: 8px; margin-top: 15px; padding: 13px; border-radius: 11px; background: #f1f6f1; color: #3d6952; font-size: 12px; }
+.trust-sheet blockquote { margin: 0 0 10px; padding: 12px 13px; border-left: 3px solid #ecc3af; border-radius: 0 10px 10px 0; background: #fbf7f2; }
+.trust-sheet blockquote p { margin: 0; color: #4a5650; font-size: 13px; line-height: 1.65; }
+.trust-sheet cite { display: block; margin-top: 7px; color: #96938c; font-size: 11px; font-style: normal; }
+.rule-list { margin: 0; padding-left: 18px; color: #5c665f; font-size: 12px; line-height: 1.9; }
+
+/* ---- 免费试听预约网格（slot-grid，抽屉内） ---- */
+.slot-grid { display: grid; gap: 8px; margin-top: 16px; }
+.slot-grid button { padding: 14px; border: 1PX solid #dde0d6; border-radius: 11px; background: #fff; color: #3f4c46; font-size: 14px; font-weight: 600; text-align: left; }
+.slot-grid button::after { content: "预约 ›"; float: right; color: #d1663f; font-size: 12px; }
+
+/* ---- 课程片段播放器弹窗（player，原 aspect-ratio 用 padding-bottom 替代） ---- */
+.modal-backdrop.center { align-items: center; padding: 20px; }
+.player { position: relative; width: 100%; padding-bottom: 62.5%; overflow: hidden; border-radius: 16px; background: #1b2624; }
+.player img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+.player-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(13,27,25,.15) 40%, rgba(13,27,25,.8) 100%); }
+.player-info { position: absolute; left: 15px; bottom: 26px; color: #fff; }
+.player-info b { display: block; font-size: 14px; }
+.player-info span { font-size: 11px; opacity: .85; }
+.player-bar { position: absolute; left: 15px; right: 15px; bottom: 14px; height: 3px; border-radius: 3px; background: rgba(255,255,255,.28); overflow: hidden; }
+.player-bar i { display: block; height: 100%; background: #ed7358; animation: playhead 8s linear forwards; }
+.player-close { position: absolute; top: 11px; right: 11px; width: 30px; height: 30px; border: 0; border-radius: 50%; background: rgba(20,30,28,.55); color: #fff; font-size: 18px; }
+@keyframes playhead { from { width: 4%; } to { width: 100%; } }
+
+/* ---- Creem 调色板：根变量与全局背景 ---- */
+:root { color: #151617; background: #F5F0EB; }
+.app-shell { background: radial-gradient(circle at 14% 13%, rgba(255,190,152,.58) 0 5%, transparent 24%), radial-gradient(circle at 88% 82%, rgba(176,156,251,.4) 0 7%, transparent 26%), #F5F0EB; }
+.phone-frame { background: #FFFCF9; border-color: #151617; box-shadow: 10px 11px 0 #151617; }
+.topbar { background: #FFFCF9; border-bottom: 2PX solid #151617; }
+.wordmark { color: #151617; }
+.wordmark span { color: #967AE9; }
+.filter-btn, .setting-btn { border: 2PX solid #151617; border-radius: 10px; background: #FFBE98; color: #151617; box-shadow: 2px 2px 0 #151617; }
+/* :hover 已移除 */
+.eyebrow, .tiny-label { color: #7D62D3; }
+
+/* ---- 共享列表项描边色（mini-teacher / connected-teacher / 弹窗类） ---- */
+.mini-teacher, .connected-teacher, .sheet, .role-modal, .subscribe-modal { border-color: #151617; }
+.chip-row .on { border-color: #151617; background: #FFBE98; color: #151617; box-shadow: 2px 2px 0 #151617; }
+
+/* ---- 全局 lavender 自定义属性 ---- */
+:root { --creem-ink: #151617; --creem-bone: #F5F0EB; --creem-paper: #FFFCF9; --creem-lavender: #B09CFB; --creem-purple: #967AE9; --creem-purple-deep: #7057C4; --creem-lilac: #E8E4F8; --creem-peach: #FFBE98; }
+/* 屏幕滚动容器背景（各页面 screen 背景在各自页面 scss 中覆盖） */
+.screen-content { background: var(--creem-bone); }
+
+/* ---- 共享列表项 lavender 卡片基底 ---- */
+.mini-teacher, .connected-teacher { border: 2PX solid var(--creem-ink); background: var(--creem-lilac); color: var(--creem-ink); box-shadow: 3px 4px 0 var(--creem-ink); }
+
+/* ---- 共享头像 lavender 描边 ---- */
+.teacher-avatar, .mini-avatar, .chat-avatar, .my-avatar { border: 2PX solid var(--creem-ink); background-color: var(--creem-peach); color: var(--creem-ink); }
+
+/* ---- 共享控件描边与选中态（chip / slot / text-btn / back-question / close） ---- */
+.chip-row button, .slot-grid button, .compare-more, .text-btn, .back-question, .close { border: 1.5px solid var(--creem-ink); background: var(--creem-paper); color: var(--creem-ink); }
+.chip-row .on, .slot-grid button { background: var(--creem-purple); color: var(--creem-ink); box-shadow: 2px 2px 0 var(--creem-ink); }
+/* :hover 已移除 */
+.role-modal, .subscribe-modal, .sheet { border: 2PX solid var(--creem-ink); background: var(--creem-paper); }
+.role-icon.peach, .card-icon.peach, .lock-art { background: var(--creem-peach); color: var(--creem-ink); }
+.role-icon.green, .card-icon.green, .card-icon.lilac { background: var(--creem-lavender); color: var(--creem-ink); }
+
+/* ---- 共享证据 / 信任列表底色 ---- */
+.check-list { border-color: var(--creem-ink); background: #E8E4F8; color: #332B52; }
+.membership-benefits { background-color: var(--creem-paper); }
+.check-list > * { background-color: var(--creem-paper); }
+.rule-list { background-color: var(--creem-paper); }
+
+/* ---- 语义色系根变量 ---- */
+:root { --surface-base: #F5F2F0; --surface-paper: #FFFCF9; --surface-soft: #F8F5F1; --ink: #151617; --ink-muted: #756E69; --growth: #967AE9; --growth-soft: #E8E4F8; --action: #FFBE98; --action-soft: #FFF1E8; --success: #4ECB71; --success-soft: #E6F7EC; --notice: #D7A820; --notice-soft: #FFF7D9; }
+.app-shell { background: var(--surface-base); }
+.screen-content { background: var(--surface-base); }
+.phone-frame, .topbar { background: var(--surface-paper); }
+
+/* ---- 共享卡片默认阅读面 ---- */
+.mini-teacher, .connected-teacher { background: var(--surface-paper); color: var(--ink); }
+.mini-teacher, .connected-teacher { box-shadow: 2px 3px 0 var(--ink); }
+
+/* ---- 共享头像真实肖像 ---- */
+.teacher-avatar, .mini-avatar, .teacher-big-avatar, .chat-avatar { overflow: hidden; }
+.teacher-avatar img, .mini-avatar img, .teacher-big-avatar img, .chat-avatar img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center top; }
+.mini-avatar img, .chat-avatar img { transform: scale(1.12); }
+.teacher-avatar, .mini-avatar, .teacher-big-avatar, .chat-avatar { border: 1PX solid #EEE5DC; box-shadow: 0 3px 9px rgba(71, 57, 44, .12); }
+.mini-avatar, .chat-avatar { background-color: var(--surface-paper); }
+
+/* ---- 收敛：共享控件动作阴影 ---- */
+.contact-row button,
+.like,
+.sheet-btn,
+.subscribe-btn,
+.start-assessment,
+.deck-end-actions .primary { box-shadow: 3px 4px 0 var(--ink); }
+
+/* ---- 锁图标收敛色 ---- */
+.lock-art { background: var(--growth-soft); color: var(--growth); }
+
+/* ---- 降低描边密度：共享列表项柔边 ---- */
+.mini-teacher,
+.connected-teacher { border: 1PX solid #EAE2D9 !important; box-shadow: 0 1px 5px rgba(28,20,14,.045) !important; }
+
+/* ---- 设置弹窗（settings-modal，全局账户控制） ---- */
+.settings-modal { padding: 18px 18px 17px; }
+.settings-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.settings-head .eyebrow { margin-bottom: 4px; }
+.settings-head h2 { margin: 0; font-size: 22px; letter-spacing: -.055em; }
+.settings-head .close { margin: -2px -2px 0 0; }
+.settings-profile { display: flex; align-items: center; gap: 11px; margin: 18px 0 13px; padding: 12px; border: 1PX solid #e3dbd2; border-radius: 15px; background: #fffdfa; box-shadow: 0 2px 7px rgba(28,20,14,.045); }
+.settings-avatar { display: grid; width: 43px; height: 43px; place-items: center; border: 1.5px solid var(--ink); border-radius: 14px; background: var(--action); color: var(--ink); font-size: 17px; font-weight: 700; }
+.settings-profile > div:nth-child(2) { display: grid; gap: 3px; flex: 1; }
+.settings-profile b { color: var(--ink); font-size: 14px; }
+.settings-profile small, .setting-group > small { color: #8c857d; font-size: 10px; line-height: 1.45; }
+.avatar-edit { padding: 6px 8px; border: 1PX solid #d9d0c7; border-radius: 9px; background: #fff; color: #645d55; font-size: 11px; transition: border-color .15s ease, transform .15s ease; }
+/* :hover 已移除 */
+.setting-field { display: grid; gap: 7px; color: #696159; font-size: 11px; font-weight: 700; }
+.setting-field input { width: 100%; box-sizing: border-box; padding: 11px 12px; border: 1PX solid #ded6ce; border-radius: 11px; outline: none; background: #fffdfa; color: var(--ink); font: inherit; font-size: 13px; }
+.setting-field input:focus { border-color: #9d8be4; box-shadow: 0 0 0 3px rgba(157,139,228,.15); }
+.setting-group { margin-top: 17px; padding-top: 15px; border-top: 1PX solid #eee7e0; }
+.setting-group > p { margin: 0 0 9px; color: #696159; font-size: 11px; font-weight: 700; }
+.role-switcher { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.role-switcher button { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border: 1PX solid #ded6ce; border-radius: 11px; background: #fffdfa; color: #6e665f; font-size: 12px; font-weight: 700; transition: transform .15s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease; }
+/* :hover 已移除 */
+.role-switcher button.active { border-color: var(--ink); background: var(--growth-soft); color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+.role-switcher button span { font-size: 15px; }
+.settings-save { width: 100%; margin-top: 18px; }
+.settings-save { background: var(--action); color: var(--ink); border-color: var(--ink); }
+
+/* ---- 居中浮层弹窗（centered-modal） ---- */
+.modal-backdrop.centered-modal { align-items: center; justify-content: center; padding: 18px; }
+.centered-modal .sheet { width: min(100%, 370px); max-height: calc(100% - 36PX); border-radius: 22px; box-shadow: 0 18px 42px rgba(37, 29, 22, .24); animation: dialog-pop .22s cubic-bezier(.2, .8, .25, 1) both; }
+.centered-modal .handle { display: none; }
+.centered-modal .needs-sheet { padding-top: 24px; }
+@keyframes dialog-pop { from { opacity: 0; transform: translateY(10px) scale(.975); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .centered-modal .sheet { animation: none; } }
+
+/* ---- 引导需求 chip 选中态 ---- */
+.needs-sheet .chip-row .on { border-color: #C6B8F5; background: var(--growth-soft); color: #6049AD; box-shadow: none; }
+
+/* ---- 设置菜单项 ---- */
+.settings-menu { min-height: 158px; }
+.settings-menu-item { display: flex; width: 100%; align-items: center; gap: 11px; margin-top: 18px; padding: 13px; border: 1PX solid #e2dad2; border-radius: 14px; background: #fffdfa; text-align: left; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
+/* :hover 已移除 */
+.settings-menu-icon { display: grid; width: 35px; height: 35px; place-items: center; border-radius: 11px; background: var(--growth-soft); color: #6049AD; font-size: 20px; font-weight: 700; }
+.settings-menu-item > span:nth-child(2) { display: grid; flex: 1; gap: 3px; }
+.settings-menu-item b { color: var(--ink); font-size: 13px; }
+.settings-menu-item small { color: #8c857d; font-size: 10px; }
+.settings-menu-item > i { color: #a19a93; font-size: 21px; font-style: normal; }
+
+/* ---- 顶部栏分隔线移除 ---- */
+.topbar { border-bottom: 0; }
+
+/* ---- 老师名片海报弹窗（teacher-poster-modal） ---- */
+.teacher-poster-modal { width: min(100%, 348px); padding: 18px; }
+.teacher-poster-modal > .eyebrow { margin: 3px 0 12px; }
+.teacher-poster-modal .close { position: absolute; top: 15px; right: 15px; }
+.teacher-poster { overflow: hidden; padding: 17px; border: 2PX solid var(--ink); border-radius: 18px; background: linear-gradient(145deg, #CFC5FF 0%, #B5A5F5 53%, #9A87E7 100%); box-shadow: 4px 5px 0 var(--ink); color: var(--ink); }
+.poster-brand { display: flex; align-items: center; gap: 3px; font-size: 14px; font-weight: 800; }
+.poster-brand > span { color: #7057C4; }
+.poster-brand small { margin-left: auto; color: rgba(21,22,23,.63); font-size: 8px; font-weight: 600; }
+.poster-main { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
+.poster-avatar { width: 63px; height: 63px; overflow: hidden; flex: 0 0 auto; border: 2PX solid var(--ink); border-radius: 18px; background: var(--action); }
+.poster-avatar img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.poster-main p { margin: 0; color: rgba(21,22,23,.66); font-size: 9px; }
+.poster-main h2 { margin: 3px 0 4px; font-size: 23px; letter-spacing: -.07em; }
+.poster-main h2 i { display: inline-grid; width: 15px; height: 15px; place-items: center; border-radius: 50%; background: var(--ink); color: var(--action); font-size: 9px; font-style: normal; vertical-align: 2px; }
+.poster-main span { padding: 3px 6px; border: 1PX solid rgba(21,22,23,.28); border-radius: 6px; background: rgba(255,252,249,.45); font-size: 9px; }
+.poster-quote { margin: 18px 0 14px; padding: 11px 12px; border-radius: 11px; background: rgba(255,252,249,.48); color: #332B52; font-size: 12px; font-weight: 600; line-height: 1.6; }
+.poster-metrics { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1PX solid rgba(21,22,23,.23); border-bottom: 1PX solid rgba(21,22,23,.23); }
+.poster-metrics span { display: grid; gap: 3px; padding: 10px 5px; text-align: center; }
+.poster-metrics span + span { border-left: 1PX solid rgba(21,22,23,.2); }
+.poster-metrics b { font: 700 17px monospace; letter-spacing: -.06em; }
+.poster-metrics small { color: rgba(21,22,23,.62); font-size: 8px; }
+.poster-footer { display: flex; align-items: center; gap: 9px; margin-top: 13px; }
+.poster-code { display: grid; width: 32px; height: 32px; place-items: center; border: 1.5px solid var(--ink); border-radius: 7px; background: #fffdfa; font-size: 22px; }
+.poster-footer p { margin: 0; color: rgba(21,22,23,.68); font-size: 9px; line-height: 1.5; }
+.teacher-poster-modal .sheet-btn { margin-top: 16px; }
+
+/* ---- 导入品牌资产：字标图标 + 文字标 ---- */
+.wordmark { display: flex; align-items: center; gap: 5px; height: 36px; font-size: 0; letter-spacing: 0; }
+.wordmark .brand-mark,
+.wordmark .brand-type { display: block; position: relative; overflow: hidden; flex: 0 0 auto; }
+.wordmark .brand-mark { width: 34px; height: 34px; border-radius: 11px; }
+.wordmark .brand-mark img { position: absolute; width: 46px; height: 46px; max-width: none; object-fit: cover; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(1.13); }
+.wordmark .brand-type { width: 82px; height: 28px; }
+.wordmark .brand-type img { position: absolute; width: 112px; height: 112px; max-width: none; object-fit: cover; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(1.55); }
+
+/* ---- 紧凑头部品牌 ---- */
+.wordmark { height: 26px; gap: 3px; }
+.wordmark .brand-mark { width: 24px; height: 24px; border-radius: 8px; }
+.wordmark .brand-mark img { width: 34px; height: 34px; }
+.wordmark .brand-type { width: 60px; height: 20px; }
+.wordmark .brand-type img { width: 84px; height: 84px; }
+
+/* ---- 裁剪派生保留全部边缘 ---- */
+.wordmark { height: 25px; gap: 4px; }
+.wordmark .brand-mark { width: 23px; height: 23px; border-radius: 0; overflow: visible; }
+.wordmark .brand-type { width: 62px; height: 19px; overflow: visible; }
+.wordmark .brand-mark img,
+.wordmark .brand-type img { position: static; display: block; width: 100%; height: 100%; max-width: 100%; object-fit: contain; transform: none; }
+
+/* ---- 源 PNG 含白边：仅适度放大以显示完整图案 ---- */
+.wordmark .brand-mark { width: 23px; height: 23px; overflow: hidden; }
+.wordmark .brand-mark img { position: absolute; width: 33px; height: 33px; max-width: none; left: 50%; top: 50%; object-fit: contain; transform: translate(-50%, -50%); }
+.wordmark .brand-type { width: 60px; height: 18px; overflow: hidden; }
+.wordmark .brand-type img { position: absolute; width: 84px; height: 84px; max-width: none; left: 50%; top: 50%; object-fit: contain; transform: translate(-50%, -50%); }
+
+/* ---- 导入资产不继承旧斜体 skew ---- */
+.wordmark .brand-mark,
+.wordmark .brand-type { transform: none; }
+
+/* ---- 完整未斜体品牌组合放大约 20% ---- */
+.wordmark { height: 30px; gap: 4px; }
+.wordmark .brand-mark { width: 28px; height: 28px; }
+.wordmark .brand-mark img { width: 40px; height: 40px; }
+.wordmark .brand-type { width: 72px; height: 22px; }
+.wordmark .brand-type img { width: 101px; height: 101px; }
+
+/* ---- 保留源图呼吸空间，虎标顶边不被裁切 ---- */
+.wordmark .brand-mark img { width: 36px; height: 36px; }
+
+/* ---- 手机框底色回归暖画布 ---- */
+.phone-frame { background: var(--surface-base); }
+
+/* ---- 设置图标 svg 对齐 ---- */
+.profile-setting svg, .teacher-profile-top button svg { display: block; }

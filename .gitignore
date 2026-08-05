@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+.swc/
+out/
+build/
+
+# Taro
+packages/mobile/.swc/
+packages/mobile/dist/
+
+# Next.js
+packages/admin/.next/
+packages/admin/out/
+
+# Prisma
+packages/admin/prisma/*.db
+packages/admin/prisma/*.db-journal
+packages/admin/prisma/migrations/dev.db*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.production.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript
+*.tsbuildinfo
+
+# Cache
+.cache/
+.turbo/
+
+# Uploads
+uploads/
+
+# Reports (generated)
+lightning-tiger-analysis/
+
+# Figma (reference only, not built)
+figma/node_modules/
+figma/dist/

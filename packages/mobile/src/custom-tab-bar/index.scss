@@ -1,0 +1,51 @@
+/* 自定义浮动毛玻璃导航 - 从原 .bottom-nav 提取 */
+.bottom-nav {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  width: calc(100% - 32PX);
+  max-width: 398px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1PX solid #e3dbd2;
+  border-radius: 21px;
+  box-shadow: 0 6px 24px rgba(21, 22, 23, 0.08);
+  z-index: 100;
+  padding: 0 8px;
+}
+
+.bottom-nav > View {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  font-size: 10px;
+  color: #6B6B6B;
+  transition: color 0.2s ease;
+}
+
+.bottom-nav > View > Text:first-child {
+  font-size: 19px;
+  line-height: 1;
+}
+
+.bottom-nav > View > Text:last-child {
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+
+.bottom-nav > View.selected {
+  color: #967AE9;
+}
+
+.bottom-nav > View.selected:nth-child(1) { color: #967AE9; }
+.bottom-nav > View.selected:nth-child(2) { color: #F2A03D; }
+.bottom-nav > View.selected:nth-child(3) { color: #5BAE89; }
+.bottom-nav > View.selected:nth-child(4) { color: #E07A8B; }

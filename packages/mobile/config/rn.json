@@ -1,0 +1,8 @@
+{
+  "appName": "LightningTiger",
+  "postcss": {
+    "cssModules": {
+      "enable": false
+    }
+  }
+}

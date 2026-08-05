@@ -1,0 +1,351 @@
+/* ============================================================
+   pages/match/index.scss — 匹配页样式
+   范围：match-screen、teacher-card、hero-card、portrait、swipe、
+   teacher-identity、contact-row、decision-grid、match-explainer、
+   platform-stat/filter、supply-badge、trust-line、deck-end、
+   compare-row、swipe-overlay/arrow、liked-list 等。
+   适配说明：
+   - "DM Mono" → monospace；"Ma Shan Zheng" → "STKaiti"
+   - :hover 已全部移除
+   - .play-video 的 backdrop-filter 已移除，rgba 0.17→0.35
+   - 原 .screen-content:has(.match-screen){overflow:hidden} 的
+     效果由 .match-screen 自身 overflow:hidden 承担（已包含）
+   - 1px/2px 边框使用大写 PX
+   ============================================================ */
+
+/* ---- 老师卡片基础 ---- */
+.teacher-card { margin-top: 18px; overflow: hidden; border: 1.5px solid #263334; border-radius: 20px; background: #fff; box-shadow: 5px 6px 0 #263334; transition: transform .25s ease, opacity .25s ease; }
+.swipe-left { transform: translateX(-110%) rotate(-9deg); opacity: 0; }
+.swipe-right { transform: translateX(110%) rotate(9deg); opacity: 0; }
+.portrait { height: 224px; position: relative; overflow: hidden; display: grid; place-items: center; }
+.sun { position: absolute; top: 15px; right: 20px; font-size: 36px; color: rgba(255,255,255,.9); }
+.portrait-figure { width: 116px; height: 116px; display: grid; place-items: center; border: 7px solid rgba(255,255,255,.75); background: rgba(255,255,255,.30); border-radius: 48% 52% 45% 55%; font-size: 58px; color: #fffdf9; font-family: "STKaiti", cursive; transform: rotate(-4deg); }
+.portrait-sub { position: absolute; bottom: 14px; left: 14px; padding: 6px 10px; border-radius: 20px; background: rgba(38,51,52,.82); color: white; font-size: 10px; }
+.card-body { padding: 17px; }
+.name-line { display: flex; gap: 7px; align-items: center; }
+.name-line h2 { margin: 0; font-size: 22px; letter-spacing: -.06em; }
+.name-line > span { font-size: 12px; color: #7d8581; }
+.school { margin: 5px 0 12px; color: #68716e; font-size: 11px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tags span { border: 1PX solid #dfe2d9; color: #4d5d58; padding: 4px 8px; border-radius: 20px; font-size: 10px; }
+.teacher-note { margin: 15px 0; font-size: 13px; font-weight: 600; color: #344440; }
+.teacher-meta { display: flex; align-items: center; gap: 7px; color: #82908b; font: 10px monospace; }
+.teacher-meta i { width: 2px; height: 2px; border-radius: 50%; background: #82908b; }
+.swipe-actions { margin: 20px 10px 14px; display: flex; align-items: center; justify-content: space-between; }
+.swipe-actions button { display: grid; place-items: center; border-radius: 50%; width: 50px; height: 50px; font-size: 29px; }
+.pass { border: 1.5px solid #e3ded5; color: #c1bcb4; background: white; }
+.like { border: 0; background: #ed7358; color: white; box-shadow: 0 5px 0 #b94b35; }
+.swipe-actions span { color: #92958f; font-size: 9px; }
+.contact-lock { width: 100%; border: 1PX solid #d8ddd3; background: #f5f5ed; padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 7px; color: #344440; font-size: 12px; font-weight: 700; }
+.contact-lock small { color: #9aa09a; font-weight: 400; }
+
+/* ---- 匹配列表 / 已匹配标题 / mini 老师条目（match 专属部分） ---- */
+.matched-title { margin: 22px 0 12px; }
+.matched-title h2 { margin: 4px 0 0; font-size: 18px; }
+.matched-title > span { font-size: 10px; color: #8a928c; }
+.match-list { display: grid; gap: 10px; }
+.mini-teacher h3 { margin: 0 0 3px; font-size: 14px; }
+.mini-teacher p { margin: 0; color: #7d8781; font-size: 10px; }
+.mini-teacher span { color: #e27c4e; font-size: 10px; }
+.mini-teacher button { margin-left: auto; border: 1PX solid #ed7358; background: white; color: #dc684a; border-radius: 20px; padding: 5px 10px; font-size: 10px; }
+
+/* ---- 沉浸式老师视频卡 ---- */
+.match-screen { padding-top: 11px; }
+.intro-row h1 { font-size: 25px; }
+.hero-card { margin-top: 14px; border-radius: 22px; box-shadow: 6px 7px 0 #263334; }
+.hero-card .portrait { height: 290px; background: #d6ddd5; }
+.video-cover img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; filter: saturate(.82) contrast(1.04); }
+.video-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(13,27,25,.04) 28%, rgba(13,27,25,.7) 100%); }
+/* backdrop-filter 已移除，rgba 不透明度 0.17→0.35 模拟 */
+.play-video { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 61px; height: 61px; display: grid; place-items: center; padding-left: 3px; border: 2PX solid #fff; border-radius: 50%; background: rgba(255,255,255,.35); color: #fff; transition: transform .18s ease, background .18s ease; }
+/* :hover 已移除 */
+.play-video span { font-size: 19px; }
+.video-label { position: absolute; left: 17px; bottom: 16px; display: grid; gap: 3px; color: #fff; }
+.video-label b { font-size: 15px; letter-spacing: -.04em; }
+.video-label span { font-size: 10px; opacity: .9; }
+.credential-tags { margin-top: 2px; }
+.tags .credential { border-color: #ecc3af; color: #c3593d; background: #fff7f2; font-weight: 700; }
+.hero-card .card-body { padding: 16px 17px 15px; }
+.hero-card .teacher-note { margin: 13px 0 10px; }
+.hero-card .school { margin-bottom: 10px; }
+.hero-card .teacher-meta { padding-top: 10px; border-top: 1PX solid #f0eee8; }
+.swipe-actions { margin-top: 15px; margin-bottom: 12px; }
+.swipe-actions button { width: 45px; height: 45px; }
+
+/* ---- 联系方式行（卡片内） ---- */
+.contact-row { display: flex; align-items: center; justify-content: space-between; margin-top: 13px; padding: 11px 0 0; border-top: 1PX solid #ede9e1; }
+.contact-row small { display: block; margin-bottom: 2px; color: #949a94; font-size: 9px; }
+.contact-row b { color: #53615b; font: 500 12px monospace; letter-spacing: .04em; }
+.contact-row button { border: 0; border-radius: 8px; padding: 8px 9px 8px 11px; background: #263334; color: white; font-size: 10px; font-weight: 700; }
+.contact-row button span { color: #ed9b83; font-size: 15px; vertical-align: -1px; }
+
+/* ---- 点赞数 / 收藏列表 ---- */
+.like-count { color: #ed7358; font: 10px monospace; }
+.liked-list { display: grid; gap: 8px; margin-top: 11px; }
+.liked-teacher { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; background: #f3f5ef; }
+.liked-teacher h3 { margin: 0 0 3px; color: #3b4944; font-size: 12px; }
+.liked-teacher p { margin: 0; color: #7d8781; font-size: 9px; }
+.liked-teacher .mini-avatar { width: 37px; height: 37px; border-radius: 12px; font-size: 20px; }
+.liked-teacher button { margin-left: auto; border: 1PX solid #d2ddd4; border-radius: 20px; padding: 5px 8px; background: white; color: #537063; font-size: 9px; }
+.empty-likes { margin-top: 10px; padding: 15px 12px; border: 1PX dashed #d8ded6; border-radius: 12px; color: #9ba39d; text-align: center; }
+.empty-likes span { color: #ed9b83; font-size: 17px; }
+.empty-likes p { margin: 4px 0 0; font-size: 10px; }
+
+/* ---- 重排后的 profile 优先匹配卡 ---- */
+.hero-card { overflow: hidden; }
+.teacher-identity { padding: 13px 16px 15px; position: relative; overflow: hidden; }
+.teacher-identity::after { content: "✦"; position: absolute; right: 13px; bottom: -28px; color: rgba(255,255,255,.36); font-size: 100px; line-height: 1; }
+.identity-top, .identity-main { position: relative; z-index: 1; }
+.identity-top { display: flex; justify-content: space-between; align-items: center; color: #fff; font-size: 9px; }
+.identity-top span { background: rgba(38,51,52,.6); padding: 5px 7px; border-radius: 20px; }
+.identity-top b { font-weight: 500; }
+.identity-main { display: flex; align-items: center; gap: 11px; margin-top: 14px; }
+.teacher-avatar { display: grid; place-items: center; width: 59px; height: 59px; border: 3px solid rgba(255,255,255,.9); border-radius: 20px; background: rgba(255,255,255,.3); color: #fff; font: 34px "STKaiti", cursive; }
+.teacher-identity .name-line h2 { color: #fff; font-size: 22px; }
+.teacher-identity .name-line > span { color: rgba(255,255,255,.85); }
+.teacher-identity .verified { background: rgba(41,92,77,.85); }
+.teacher-identity .school { margin: 3px 0 0; color: rgba(255,255,255,.92); }
+.teacher-identity .tags { position: relative; z-index: 1; margin-top: 13px; }
+.teacher-identity .tags span { background: rgba(255,255,255,.83); border-color: transparent; color: #47564f; }
+.teacher-identity .tags .credential { background: #fff4e7; color: #b55237; }
+.hero-card .compact-body { padding: 12px 14px 14px; }
+.compact-body .teacher-meta { padding-top: 0; border: 0; }
+.compact-body .teacher-note { margin: 9px 0; font-size: 11px; }
+.lesson-video { border-radius: 11px; overflow: hidden; }
+.lesson-video .video-label { left: 12px; bottom: 10px; }
+.lesson-video .video-label b { font-size: 12px; }
+.lesson-video .video-label span { font-size: 9px; }
+.lesson-video .play-video { width: 47px; height: 47px; }
+.lesson-video .play-video span { font-size: 14px; }
+.hero-card .contact-row { margin-top: 10px; }
+
+/* ---- 家长决策支持 ---- */
+.decision-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0 7px; }
+.decision-grid span { display: grid; gap: 2px; padding: 7px 5px; border-radius: 7px; background: #f3f5f0; color: #75817a; font-size: 8px; text-align: center; }
+.decision-grid b { color: #35473f; font-size: 11px; }
+.match-explainer { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; padding: 12px; border-radius: 12px; background: #fff4eb; }
+.match-explainer > span { color: #ed7358; font-size: 20px; }
+.match-explainer b { color: #884b38; font-size: 11px; }
+.match-explainer p { margin: 3px 0 0; color: #8f6b5d; font-size: 10px; line-height: 1.55; }
+
+/* ---- 可读性调优（match 部分） ---- */
+.decision-grid span { padding: 9px 5px; font-size: 11px; }
+.decision-grid b { font-size: 14px; }
+.teacher-meta { font-size: 11px; }
+.tags span { font-size: 11px; padding: 5px 9px; }
+.teacher-identity .tags span { color: #3c4a44; }
+.school { font-size: 12px; }
+.compact-body .teacher-note { font-size: 13px; line-height: 1.6; }
+.identity-top { font-size: 11px; }
+.swipe-actions span { font-size: 11px; color: #7c837d; }
+.swipe-actions button { width: 56px; height: 56px; font-size: 30px; }
+.contact-row small { font-size: 11px; color: #7f867f; }
+.contact-row b { font-size: 13px; color: #3f4c46; }
+.contact-row button { padding: 11px 13px; font-size: 12px; }
+.hero-card { min-height: 556px; }
+.hero-card .lesson-video { height: 150px; }
+
+/* ---- 供给置信度 + 过滤 ---- */
+.supply-badge { flex: 0 0 auto; text-align: right; }
+.supply-badge b { display: block; color: #ed7358; font: 500 18px monospace; line-height: 1.1; }
+.supply-badge span { color: #7d857f; font-size: 11px; }
+.filter-row { display: flex; gap: 7px; margin-top: 13px; }
+.filter-row button { border: 1PX solid #dfe0d7; border-radius: 20px; padding: 7px 12px; background: #f6f5ef; color: #4c5852; font-size: 12px; font-weight: 600; }
+.relax-note { margin: 10px 0 0; padding: 9px 11px; border-radius: 9px; background: #fdf1e6; color: #96603f; font-size: 12px; }
+
+/* ---- 信任条 ---- */
+.trust-line { width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 11px; padding: 10px 11px; border: 1PX solid #dde6de; border-radius: 9px; background: #f4f7f3; color: #3f6a54; font-size: 12px; text-align: left; }
+.trust-line span { white-space: nowrap; }
+.trust-line span:last-child { margin-left: auto; color: #d1663f; font-weight: 700; }
+
+/* ---- 牌堆结束态 ---- */
+.deck-end { margin-top: 44px; padding: 30px 22px; border: 1PX dashed #d6dbd4; border-radius: 20px; text-align: center; }
+.deck-end > span { color: #ed9b83; font-size: 30px; }
+.deck-end b { display: block; margin: 12px 0 7px; font-size: 17px; color: #34413d; }
+.deck-end p { margin: 0 auto; max-width: 260px; color: #7c847e; font-size: 12px; line-height: 1.7; }
+.deck-end-actions { display: flex; gap: 9px; margin-top: 19px; }
+.deck-end-actions button { flex: 1; padding: 12px; border: 1PX solid #dcded4; border-radius: 10px; background: #fff; color: #55625b; font-size: 13px; font-weight: 600; }
+.deck-end-actions .primary { border: 0; background: #ed7358; color: #fff; }
+
+/* ---- 测试流程中匹配解释列表（match-explainer） ---- */
+.match-explainer ul { margin: 6px 0 0; padding-left: 16px; color: #8f6b5d; font-size: 12px; line-height: 1.85; }
+.match-explainer li::marker { color: #e79c7f; }
+
+/* ---- 收藏与对比 ---- */
+.compare-row { display: flex; align-items: center; gap: 11px; padding: 11px 0; border-bottom: 1PX solid #f1efe8; }
+.compare-row:last-of-type { border-bottom: 0; }
+.compare-row > div:nth-child(2) { flex: 1; }
+.compare-row .mini-avatar { width: 40px; height: 40px; border-radius: 13px; font-size: 21px; }
+.compare-row button { border: 1PX solid #ed7358; border-radius: 20px; padding: 8px 13px; background: #fff; color: #d1663f; font-size: 12px; font-weight: 600; }
+.expand-empty { margin: 13px 0 4px; color: #868f89; font-size: 12px; line-height: 1.7; }
+.compare-more { width: 100%; margin-top: 11px; padding: 11px; border: 1PX dashed #dcd9d0; border-radius: 10px; background: transparent; color: #7d857f; font-size: 12px; }
+
+/* ---- 单屏居中匹配视图 ---- */
+/* 原 .screen-content:has(.match-screen){overflow:hidden} 适配：
+   由 .match-screen 自身 overflow:hidden 承担（见下） */
+.match-screen {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.platform-stat { flex: 0 0 auto; gap: 12px; }
+.platform-stat h1 { margin: 0; color: #42514b; font-size: 17px; font-weight: 600; line-height: 1.4; letter-spacing: -.035em; }
+.platform-stat h1 strong { display: inline-block; margin: 0 2px; color: #ed7358; font-family: monospace; font-size: 25px; font-weight: 500; letter-spacing: -.08em; vertical-align: -2px; }
+.match-screen .hero-card { flex: 0 0 556px; min-height: 556px; margin-top: auto; margin-bottom: 0; }
+.match-screen .swipe-actions { flex: 0 0 auto; margin-bottom: auto; }
+.platform-filter { flex: 0 0 auto; }
+
+/* ---- 紧凑卡片纵向 ---- */
+.hero-card .teacher-identity { padding-top: 10px; padding-bottom: 12px; }
+.hero-card .identity-top { justify-content: flex-end; }
+.hero-card .identity-main { margin-top: 8px; }
+.hero-card .teacher-identity .tags { margin-top: 10px; }
+.hero-card .lesson-video { height: 138px; }
+.hero-card .contact-row { margin-top: 8px; padding-top: 8px; }
+
+/* ---- 决策摘要 + 联系状态 ---- */
+.hero-card .decision-grid { margin: 9px 0 6px; }
+.hero-card .decision-grid span { min-height: 44px; padding: 7px 5px; }
+.contact-status { display: grid; gap: 2px; }
+.contact-row .contact-status small { margin: 0; color: #9A8678; font-size: 10px; letter-spacing: .03em; }
+.contact-row .contact-status b { display: inline-flex; align-items: center; gap: 3px; color: #B95B38; font-family: "Noto Sans SC", sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0; }
+.contact-row .contact-status b span { display: inline-grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: #FFF0E7; color: #D96A3F; font-size: 13px; line-height: 1; }
+
+/* ---- 一次性滑动引导动画 ---- */
+.hero-card.swipe-hint { animation: swipe-discovery-nudge 1.55s cubic-bezier(.36,.01,.22,1) both; transform-origin: center center; }
+@keyframes swipe-discovery-nudge {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  18% { transform: translateX(-13px) rotate(-1.2deg); }
+  39% { transform: translateX(11px) rotate(1deg); }
+  60% { transform: translateX(-7px) rotate(-.65deg); }
+  79% { transform: translateX(5px) rotate(.4deg); }
+}
+@media (prefers-reduced-motion: reduce) { .hero-card.swipe-hint { animation: none; } }
+
+/* ---- 滑动指令缓慢呼吸 ---- */
+.swipe-actions > span { animation: swipe-instruction-pulse 2.8s ease-in-out infinite; transform-origin: center; }
+@keyframes swipe-instruction-pulse {
+  0%, 100% { opacity: .72; transform: scale(1); }
+  42% { opacity: 1; transform: scale(1.045); }
+  52% { opacity: .88; transform: scale(1.015); }
+}
+@media (prefers-reduced-motion: reduce) { .swipe-actions > span { animation: none; } }
+
+/* ---- 老师卡强调与呼吸 ---- */
+.hero-card .identity-top b { font-size: 12px; }
+.hero-card .contact-row { margin-top: 13px; padding-top: 10px; }
+
+/* ---- 方向叠加层 ---- */
+.swipe-overlay { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; pointer-events: none; background: linear-gradient(90deg, rgba(38,51,52,.28), transparent 34%, transparent 66%, rgba(38,51,52,.28)); animation: swipe-overlay-fade 1.55s ease both; }
+.swipe-arrow { display: grid; place-items: center; width: 42px; height: 42px; border: 1PX solid rgba(255,255,255,.62); border-radius: 50%; background: rgba(255,253,249,.86); box-shadow: 0 5px 12px rgba(25,42,37,.16); color: #E1714A; font: 400 38px/1 "Noto Sans SC", sans-serif; }
+.swipe-arrow.left { animation: swipe-arrow-left 1.15s ease-in-out infinite; }
+.swipe-arrow.right { animation: swipe-arrow-right 1.15s ease-in-out infinite; }
+.swipe-guide { padding: 7px 10px; border-radius: 12px; background: rgba(38,51,52,.78); box-shadow: 0 5px 12px rgba(25,42,37,.14); color: #fff; font-size: 10px; font-weight: 700; line-height: 1.45; text-align: center; }
+@keyframes swipe-overlay-fade { 0%, 100% { opacity: 0; } 16%, 84% { opacity: 1; } }
+@keyframes swipe-arrow-left { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-6px); } }
+@keyframes swipe-arrow-right { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
+@media (prefers-reduced-motion: reduce) { .swipe-overlay, .swipe-arrow.left, .swipe-arrow.right { animation: none; } }
+
+/* ---- 轻量拉长方向箭头 ---- */
+.swipe-arrow { width: 54px; height: auto; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: #FFF9EF; font: 300 60px/.7 "Noto Sans SC", sans-serif; text-shadow: 0 3px 9px rgba(25,42,37,.32); }
+
+/* ---- Creem 调色板：match 部分 ---- */
+.teacher-card { border: 2PX solid #151617; border-radius: 18px; background: #FFFCF9; box-shadow: 5px 6px 0 #151617; }
+.hero-card { box-shadow: 5px 6px 0 #151617; }
+.teacher-identity { background-image: linear-gradient(135deg, rgba(255,255,255,.18), transparent); }
+.teacher-identity .tags .credential { background: #FFBE98; color: #151617; }
+.teacher-identity .tags span { border: 1PX solid #151617; color: #151617; }
+.decision-grid span { border: 1.5px solid #151617; background: #F5F0EB; color: #5C5760; }
+.decision-grid b { color: #151617; }
+.trust-line { border-color: #151617; background: #E8E4F8; color: #312C45; }
+.trust-line span:last-child { color: #6D55BD; }
+.contact-row { border-color: #151617; }
+.contact-row .contact-status b { color: #7D62D3; }
+.contact-row .contact-status b span { background: #E8E4F8; color: #7D62D3; }
+.contact-row button, .like, .deck-end-actions .primary { background: #FFBE98; color: #151617; box-shadow: 3px 4px 0 #151617; border: 2PX solid #151617; }
+.contact-row button span { color: #7D62D3; }
+.pass { border: 2PX solid #151617; color: #151617; background: #FFFCF9; }
+.platform-stat h1 strong { color: #7D62D3; }
+.platform-filter { background: #FFBE98; border-color: #151617; color: #151617; box-shadow: 2px 2px 0 #151617; }
+
+/* ---- 全局 lavender：match 屏幕背景 ---- */
+.match-screen { background: var(--creem-bone); }
+
+/* ---- lavender 卡片基底（match 部分） ---- */
+.teacher-card, .liked-teacher, .compare-row, .match-explainer { border: 2PX solid var(--creem-ink); background: var(--creem-lilac); color: var(--creem-ink); box-shadow: 3px 4px 0 var(--creem-ink); }
+.teacher-card { background: var(--creem-purple); }
+.teacher-card .teacher-identity { background: linear-gradient(135deg, #B09CFB, #967AE9) !important; }
+.teacher-card .teacher-identity::after { color: rgba(255,252,249,.28); }
+.teacher-card .name-line h2, .teacher-card .school, .teacher-card .identity-top { color: var(--creem-ink); }
+.teacher-card .name-line > span { color: rgba(21,22,23,.68); }
+.teacher-card .verified { background: var(--creem-ink); color: var(--creem-peach); }
+.teacher-card .teacher-identity .tags span { background: rgba(255,252,249,.75); }
+.teacher-card .teacher-identity .tags .credential { background: var(--creem-peach); }
+.teacher-meta, .teacher-note, .school { color: #443F4B; }
+.decision-grid span { background: var(--creem-paper); }
+
+/* ---- match 页面语义色 ---- */
+.match-screen { background: var(--surface-base); }
+.teacher-card, .liked-teacher, .compare-row { background: var(--surface-paper); color: var(--ink); }
+.teacher-card, .liked-teacher, .compare-row { box-shadow: 2px 3px 0 var(--ink); }
+.teacher-card { background: var(--surface-paper); }
+.teacher-card .teacher-identity { background: linear-gradient(135deg, #EEEAFE, #DED5FA) !important; }
+.teacher-card .teacher-identity::after { color: rgba(112,87,196,.13); }
+.teacher-card .identity-top, .teacher-card .name-line h2, .teacher-card .school { color: var(--ink); }
+.teacher-card .name-line > span { color: var(--ink-muted); }
+.teacher-card .teacher-identity .tags span { border-color: rgba(21,22,23,.32); background: rgba(255,252,249,.82); color: var(--ink); }
+.teacher-card .teacher-identity .tags .credential { background: var(--growth-soft); color: #5E48A9; }
+.teacher-card .compact-body { background: var(--surface-paper); }
+.teacher-meta, .teacher-note { color: #514B47; }
+.hero-card .decision-grid span { background: var(--action-soft); border-color: #E5A982; color: #6D493C; }
+.hero-card .decision-grid b { color: var(--ink); }
+.trust-line { border-color: #A9DDB9; background: var(--success-soft); color: #236341; }
+.trust-line span:last-child { color: #287B45; }
+.contact-row button, .like, .deck-end-actions .primary { background: var(--action); color: var(--ink); border-color: var(--ink); }
+.platform-filter { background: var(--surface-paper); color: var(--ink); }
+.platform-stat h1 strong { color: var(--growth); }
+
+/* ---- 收敛：match 散落橙值 ---- */
+.supply-badge b { color: var(--growth); }
+.mini-teacher span { color: var(--growth); }
+.mini-teacher button { border-color: var(--ink); color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+/* :hover 已移除 */
+.like-count { color: var(--growth); font-family: monospace; }
+.relax-note { background: var(--notice-soft); color: #6B5807; border: 1PX solid #E8C84A; }
+.deck-end > span { color: var(--growth); }
+.match-explainer > span { color: var(--growth); }
+
+/* ---- trial-to-chat 平静入口 ---- */
+.hero-card .contact-row { align-items: center; gap: 10px; margin-top: 12px; padding: 11px; border: 1PX solid #E6DDD5; border-radius: 16px; background: #FFF9F4; }
+.contact-status { min-width: 0; display: flex; align-items: center; gap: 8px; }
+.contact-icon { width: 29px; height: 29px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 10px; background: var(--growth-soft); color: #694FBD; font-size: 19px; line-height: 1; }
+.contact-status > span:last-child { min-width: 0; }
+.contact-row .contact-status small { margin: 0 0 2px; color: #8B8178; font: 500 10px monospace; letter-spacing: .04em; }
+.contact-row .contact-status b { display: block; overflow: hidden; color: #514B47; font-family: "Noto Sans SC", sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0; text-overflow: ellipsis; white-space: nowrap; }
+.hero-card .contact-row button { flex: 0 0 auto; min-height: 36px; padding: 8px 10px; border-radius: 12px; box-shadow: none; font-size: 11px; }
+.hero-card .contact-row button span { color: var(--ink); }
+
+/* ---- 老师标签：紧凑凭据徽章 ---- */
+.teacher-card .credential-tags { gap: 7px; margin-top: 14px; }
+.teacher-card .teacher-identity .tags span { display: inline-flex; align-items: center; min-height: 27px; padding: 5px 10px; border: 1PX solid rgba(77, 57, 143, .16); border-radius: 10px; background: rgba(255, 252, 249, .82); color: #4B4643; font-size: 11px; font-weight: 600; letter-spacing: -.01em; box-shadow: 0 1PX 0 rgba(255, 255, 255, .7) inset; }
+.teacher-card .teacher-identity .tags .credential { position: relative; border-color: rgba(100, 76, 183, .38); background: linear-gradient(135deg, #F8F5FF, #EAE3FF); color: #5D47AC; font-family: monospace, "Noto Sans SC", sans-serif; font-size: 10px; font-weight: 500; letter-spacing: .035em; box-shadow: 0 2px 5px rgba(91, 69, 170, .11); }
+.teacher-card .teacher-identity .tags .credential::before { content: "✦"; margin-right: 5px; color: #8B70DD; font-family: "Noto Sans SC", sans-serif; font-size: 10px; }
+.teacher-card .teacher-identity .tags span:nth-child(n + 3)::before { content: ""; width: 5px; height: 5px; margin-right: 6px; border-radius: 50%; background: var(--action); box-shadow: 0 0 0 2px rgba(255, 190, 152, .28); }
+
+/* ---- 统一徽章语言 ---- */
+.teacher-card .teacher-identity .tags span,
+.teacher-card .teacher-identity .tags .credential { position: relative; display: inline-flex; align-items: center; min-height: 28px; padding: 5px 10px; border: 1PX solid #CBBDF5; border-radius: 10px; background: #F8F5FF; color: #55438F; font-family: "Noto Sans SC", sans-serif; font-size: 11px; font-weight: 700; letter-spacing: -.01em; box-shadow: 0 2px 5px rgba(91, 69, 170, .08); }
+.teacher-card .teacher-identity .tags span::before,
+.teacher-card .teacher-identity .tags .credential::before,
+.teacher-card .teacher-identity .tags span:nth-child(n + 3)::before { content: ""; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--action); box-shadow: 0 0 0 2px rgba(255, 190, 152, .35); }
+
+/* ---- contact-icon 字号 ---- */
+.contact-icon { font-size: 16px; }
+
+/* ---- 降低描边密度：match 列表项柔边 ---- */
+.liked-teacher { border: 1PX solid #EAE2D9 !important; box-shadow: 0 1px 5px rgba(28,20,14,.045) !important; }
+.compare-row { border-bottom: 1PX solid #EBE3DA !important; box-shadow: none !important; }
+.mini-teacher button, .compare-row button { border: 1PX solid #D5CCC3 !important; box-shadow: none !important; transition: border-color .15s ease, box-shadow .15s ease; }
+/* :hover 已移除 */

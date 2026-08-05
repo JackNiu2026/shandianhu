@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@shared/*": ["../shared/*"],
+      "@lightning-tiger/shared": ["../shared/index.ts"],
+      "@lightning-tiger/shared/*": ["../shared/*"]
+    },
+    "typeRoots": ["./node_modules/@types"]
+  },
+  "include": ["./src", "./types", "./config"],
+  "compileOnSave": false
+}
