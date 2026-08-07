@@ -44,7 +44,7 @@ jobs:
           version: latest
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Generate Prisma Client
         run: pnpm --filter admin exec prisma generate
@@ -56,6 +56,9 @@ jobs:
 
       - name: Type check mobile
         run: pnpm --filter mobile exec tsc --noEmit
+
+      - name: Run tests
+        run: pnpm --filter admin run test
 
       - name: Push database schema
         run: pnpm --filter admin exec prisma db push
@@ -73,6 +76,11 @@ jobs:
         env:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/lightning_tiger_test?schema=public"
           JWT_SECRET: "ci-test-secret"
+
+      - name: Build mobile (weapp)
+        run: pnpm --filter mobile build:weapp
+        env:
+          WECHAT_APPID: ${{ secrets.WECHAT_APPID }}
 
   # ============ Docker 构建 ============
   docker-build:

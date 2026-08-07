@@ -18,7 +18,7 @@ const navItems = [
 ];
 
 export function Sidebar() {
-  const pathname = usePathname();
+  const pathname = usePathname() || "";
 
   return (
     <aside className="w-60 shrink-0 bg-surface-paper border-r-2 border-ink h-screen sticky top-0 flex flex-col">

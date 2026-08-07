@@ -1,8 +1,10 @@
 /**
  * 数据序列化辅助工具
- * 将 Prisma 模型（含 JSON 字符串字段）转换为前端友好的对象
+ * 将 Prisma 模型（含 Json 字段）转换为前端友好的对象
+ * P1-2：JSON 字段已改为 Prisma Json 类型，无需手动 parse
  */
 import type { Teacher, Parent, Booking, Review, Membership, Withdrawal } from "@prisma/client";
+import type { Prefs, MBTIResult } from "@lightning-tiger/shared";
 
 /** 序列化老师数据 */
 export function serializeTeacher(t: Teacher) {
@@ -12,18 +14,18 @@ export function serializeTeacher(t: Teacher) {
     age: t.age,
     school: t.school,
     subject: t.subject,
-    grades: JSON.parse(t.grades || "[]"),
+    grades: (t.grades as string[]) ?? [],
     mode: t.mode,
-    tags: JSON.parse(t.tags || "[]"),
+    tags: (t.tags as string[]) ?? [],
     color: t.color,
     note: t.note,
     rating: t.rating,
     students: t.students,
     years: t.years,
     price: t.price,
-    slots: JSON.parse(t.slots || "[]"),
+    slots: (t.slots as string[]) ?? [],
     video: t.video,
-    checks: JSON.parse(t.checks || "[]"),
+    checks: (t.checks as string[]) ?? [],
     status: t.status,
     totalRevenue: t.totalRevenue,
     pendingRevenue: t.pendingRevenue,
@@ -42,9 +44,9 @@ export function serializeParent(p: Parent) {
     avatar: p.avatar,
     phone: p.phone,
     childGrade: p.childGrade,
-    prefs: p.prefs ? JSON.parse(p.prefs) : null,
-    mbtiResult: p.mbtiResult ? JSON.parse(p.mbtiResult) : null,
-    likedTeachers: JSON.parse(p.likedTeachers || "[]"),
+    prefs: (p.prefs as Prefs | null) ?? null,
+    mbtiResult: (p.mbtiResult as MBTIResult | null) ?? null,
+    likedTeachers: (p.likedTeachers as string[]) ?? [],
     bookingCount: p.bookingCount,
     status: p.status,
     createdAt: p.createdAt.toISOString(),

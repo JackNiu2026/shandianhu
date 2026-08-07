@@ -4,9 +4,12 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/api-auth";
+import { authenticateAdmin } from "@/lib/api-auth";
 import { serializeReview } from "@/lib/serialize";
 import { updateReviewStatusSchema } from "@/lib/validation";
+
+// Prevent static prerendering
+export const dynamic = "force-dynamic";
 
 export async function PATCH(
   request: NextRequest,
@@ -14,7 +17,7 @@ export async function PATCH(
 ) {
   try {
     // 验证认证
-    const auth = authenticateRequest(request);
+    const auth = authenticateAdmin(request);
     if (auth.response) return auth.response;
 
     const { id } = await params;
@@ -62,7 +65,7 @@ export async function DELETE(
 ) {
   try {
     // 验证认证
-    const auth = authenticateRequest(request);
+    const auth = authenticateAdmin(request);
     if (auth.response) return auth.response;
 
     const { id } = await params;

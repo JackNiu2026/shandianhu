@@ -28,10 +28,13 @@ packages/admin/prisma/migrations/dev.db*
 .env.development.local
 .env.production.local
 .env.*.local
+.env.production
+.env.production.example
 
 # IDE
 .idea/
 .vscode/
+.history/
 *.swp
 *.swo
 
@@ -56,11 +59,20 @@ yarn-error.log*
 # Uploads
 uploads/
 
-# Reports (generated)
-lightning-tiger-analysis/
-project-analysis/
-.trae/
+# Archive (reports & Figma reference, kept for history; not part of build)
+# Ignore build artifacts within the archived Figma project
+archive/figma/node_modules/
+archive/figma/dist/
 
-# Figma (reference only, not built)
-figma/node_modules/
-figma/dist/
+# Prisma SQLite residual (should not exist, PostgreSQL project)
+packages/admin/prisma/dev.db
+packages/admin/prisma/dev.db-journal
+
+# WorkBuddy agent data (not project source)
+.workbuddy/
+
+# Temporary files
+_tmp_*
+
+# Trae IDE data
+.trae/

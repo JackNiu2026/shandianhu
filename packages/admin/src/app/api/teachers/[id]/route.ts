@@ -5,16 +5,19 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/api-auth";
+import { authenticateAdmin } from "@/lib/api-auth";
 import { serializeTeacher } from "@/lib/serialize";
 import { updateTeacherSchema } from "@/lib/validation";
+
+// Prevent static prerendering
+export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const auth = authenticateRequest(request);
+    const auth = authenticateAdmin(request);
     if (auth.response) return auth.response;
 
     const { id } = await params;
@@ -72,7 +75,7 @@ export async function PUT(
 ) {
   try {
     // 验证认证
-    const auth = authenticateRequest(request);
+    const auth = authenticateAdmin(request);
     if (auth.response) return auth.response;
 
     const { id } = await params;
@@ -96,18 +99,12 @@ export async function PUT(
       );
     }
 
-    // 构建更新数据（zod 已过滤，只需处理 JSON 字段序列化）
+    // 构建更新数据（P1-2：Json 字段直接传对象，无需 stringify）
     const data = result.data;
     const updateData: Record<string, unknown> = {};
-    const jsonFields = ["grades", "tags", "slots", "checks"];
-
     for (const [key, value] of Object.entries(data)) {
       if (value === undefined) continue;
-      if (jsonFields.includes(key) && Array.isArray(value)) {
-        updateData[key] = JSON.stringify(value);
-      } else {
-        updateData[key] = value;
-      }
+      updateData[key] = value;
     }
 
     const teacher = await prisma.teacher.update({
@@ -131,7 +128,7 @@ export async function DELETE(
 ) {
   try {
     // 验证认证
-    const auth = authenticateRequest(request);
+    const auth = authenticateAdmin(request);
     if (auth.response) return auth.response;
 
     const { id } = await params;

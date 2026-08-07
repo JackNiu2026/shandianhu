@@ -100,6 +100,56 @@ export const updateMembershipStatusSchema = z.object({
   status: z.enum(["active", "expired", "cancelled"]),
 });
 
+/** 创建预约请求 */
+export const createBookingSchema = z.object({
+  parentId: z.string().min(1, "家长 ID 不能为空"),
+  teacherId: z.string().min(1, "老师 ID 不能为空"),
+  subject: z.string().min(1, "科目不能为空").max(20),
+  slot: z.string().min(1, "时间段不能为空").max(100),
+});
+
+/** 创建评价请求 */
+export const createReviewSchema = z.object({
+  teacherId: z.string().min(1, "老师 ID 不能为空"),
+  author: z.string().min(1, "评价人不能为空").max(50),
+  text: z.string().min(1, "评价内容不能为空").max(500),
+  rating: z.number().int().min(1, "评分至少 1").max(5, "评分最多 5"),
+});
+
+/** 家长注册请求 */
+export const parentRegisterSchema = z.object({
+  name: z.string().min(1, "姓名不能为空").max(50),
+  phone: z.string().regex(/^1[3-9]\d{9}$/, "手机号格式不正确"),
+  password: z.string().min(8, "密码长度至少 8 位").max(100),
+  childGrade: z.string().min(1, "孩子年级不能为空").max(20),
+});
+
+/** 家长登录请求 */
+export const parentLoginSchema = z.object({
+  phone: z.string().regex(/^1[3-9]\d{9}$/, "手机号格式不正确"),
+  password: z.string().min(1, "密码不能为空"),
+});
+
+/** 发送消息请求 */
+export const sendMessageSchema = z.object({
+  receiverId: z.string().min(1, "接收者 ID 不能为空"),
+  content: z.string().min(1, "消息内容不能为空").max(1000),
+});
+
+/** 更新提现状态请求（含驳回） */
+export const updateWithdrawalSchemaV2 = z.object({
+  id: z.string().min(1),
+  status: z.enum(["pending", "processed", "rejected"]),
+  rejectReason: z.string().max(200).optional().default(""),
+});
+
+/** 更新平台配置请求（含分润比例） */
+export const platformConfigSchemaV2 = z.object({
+  platformName: z.string().min(1, "平台名称不能为空").max(50),
+  contact: z.string().max(100).optional().default(""),
+  profitSharingRatio: z.number().min(0, "分润比例不能为负").max(1, "分润比例最大 1").optional(),
+});
+
 /** 分页参数解析 */
 export function parsePagination(searchParams: URLSearchParams) {
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);

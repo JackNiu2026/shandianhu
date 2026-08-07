@@ -9,6 +9,9 @@ import { prisma } from "@/lib/prisma";
 import { generateToken, setAuthCookie } from "@/lib/auth";
 import { loginSchema } from "@/lib/validation";
 
+// Prevent static prerendering
+export const dynamic = "force-dynamic";
+
 /** 简易内存登录失败计数器（生产环境应使用 Redis） */
 const loginAttempts = new Map<string, { count: number; lastAttempt: number }>();
 const MAX_ATTEMPTS = 5;

@@ -1,13 +1,14 @@
 import { Component } from "react";
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
+import { NavIcon } from "../components/Icons";
 import "./index.scss";
 
 const tabs = [
-  { pagePath: "pages/match/index", text: "发现", icon: "discover" },
-  { pagePath: "pages/test/index", text: "测评", icon: "assessment" },
-  { pagePath: "pages/chat/index", text: "消息", icon: "chat" },
-  { pagePath: "pages/me/index", text: "我的", icon: "profile" },
+  { pagePath: "pages/match/index", text: "发现", icon: "discover" as const },
+  { pagePath: "pages/test/index", text: "测评", icon: "assessment" as const },
+  { pagePath: "pages/chat/index", text: "消息", icon: "chat" as const },
+  { pagePath: "pages/me/index", text: "我的", icon: "profile" as const },
 ];
 
 /** 根据当前路由获取选中的 tab 索引 */
@@ -49,11 +50,11 @@ export default class CustomTabBar extends Component {
         {tabs.map((tab, index) => (
           <View
             key={tab.pagePath}
-            className={this.state.selected === index ? "selected" : ""}
+            className={`nav-btn ${this.state.selected === index ? "active" : ""}`}
             onClick={() => this.switchTab(index, tab.pagePath)}
           >
-            <Text className="nav-symbol nav-icon-{tab.icon}">{tab.icon === "discover" ? "✦" : tab.icon === "assessment" ? "▣" : tab.icon === "chat" ? "✉" : "◉"}</Text>
-            <Text>{tab.text}</Text>
+            <NavIcon name={tab.icon} />
+            <Text className="nav-label">{tab.text}</Text>
           </View>
         ))}
       </View>

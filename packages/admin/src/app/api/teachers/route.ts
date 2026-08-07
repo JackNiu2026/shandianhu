@@ -4,13 +4,16 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/api-auth";
+import { authenticateAdmin } from "@/lib/api-auth";
 import { serializeTeacher } from "@/lib/serialize";
 import { createTeacherSchema, parsePagination } from "@/lib/validation";
 
+// Prevent static prerendering
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   try {
-    const auth = authenticateRequest(request);
+    const auth = authenticateAdmin(request);
     if (auth.response) return auth.response;
 
     const { searchParams } = new URL(request.url);
@@ -76,7 +79,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // 验证认证
-    const auth = authenticateRequest(request);
+    const auth = authenticateAdmin(request);
     if (auth.response) return auth.response;
 
     const body = await request.json();
@@ -98,18 +101,18 @@ export async function POST(request: NextRequest) {
         age: data.age,
         school: data.school,
         subject: data.subject,
-        grades: JSON.stringify(data.grades),
+        grades: data.grades,
         mode: data.mode,
-        tags: JSON.stringify(data.tags),
+        tags: data.tags,
         color: data.color,
         note: data.note,
         rating: data.rating,
         students: data.students,
         years: data.years,
         price: data.price,
-        slots: JSON.stringify(data.slots),
+        slots: data.slots,
         video: data.video,
-        checks: JSON.stringify(data.checks),
+        checks: data.checks,
         status: data.status,
       },
     });

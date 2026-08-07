@@ -4,16 +4,19 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/api-auth";
+import { authenticateAdmin } from "@/lib/api-auth";
 import { serializeParent, serializeBooking, serializeMembership } from "@/lib/serialize";
 import { updateParentStatusSchema } from "@/lib/validation";
+
+// Prevent static prerendering
+export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const auth = authenticateRequest(request);
+    const auth = authenticateAdmin(request);
     if (auth.response) return auth.response;
 
     const { id } = await params;
@@ -63,7 +66,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const auth = authenticateRequest(request);
+    const auth = authenticateAdmin(request);
     if (auth.response) return auth.response;
 
     const { id } = await params;

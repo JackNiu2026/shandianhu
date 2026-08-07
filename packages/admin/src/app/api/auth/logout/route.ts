@@ -5,6 +5,9 @@
 import { NextResponse } from "next/server";
 import { clearAuthCookie } from "@/lib/auth";
 
+// Prevent static prerendering
+export const dynamic = "force-dynamic";
+
 export async function POST() {
   try {
     const response = NextResponse.json({ success: true });

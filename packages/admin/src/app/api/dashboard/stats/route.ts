@@ -1,16 +1,21 @@
 /**
  * GET /api/dashboard/stats - 仪表盘统计数据
+ * 使用数据库聚合查询 + groupBy，避免全表加载到内存
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/api-auth";
+import { authenticateAdmin } from "@/lib/api-auth";
+import { subjects } from "@lightning-tiger/shared";
+
+// Prevent static prerendering
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = authenticateRequest(request);
+    const auth = authenticateAdmin(request);
     if (auth.response) return auth.response;
 
-    // 并行查询各项统计数据
+    // 并行查询各项统计数据（使用聚合和 groupBy）
     const [
       teacherCount,
       parentCount,
@@ -19,10 +24,13 @@ export async function GET(request: NextRequest) {
       pendingBookings,
       pendingTeachers,
       activeMemberships,
-      teachers,
-      reviews,
-      bookings,
-      parents,
+      teacherRevenueAgg,
+      subjectGroup,
+      ratingGroup,
+      reviewStatusGroup,
+      bookingStatusGroup,
+      gradeGroup,
+      parentMbti,
     ] = await Promise.all([
       prisma.teacher.count(),
       prisma.parent.count(),
@@ -31,60 +39,57 @@ export async function GET(request: NextRequest) {
       prisma.booking.count({ where: { status: "pending" } }),
       prisma.teacher.count({ where: { status: "pending" } }),
       prisma.membership.count({ where: { status: "active" } }),
-      prisma.teacher.findMany({
-        select: { totalRevenue: true, subject: true, rating: true },
-      }),
-      prisma.review.findMany({
-        select: { status: true, rating: true },
-      }),
-      prisma.booking.findMany({
-        select: { status: true, createdAt: true },
-      }),
+      prisma.teacher.aggregate({ _sum: { totalRevenue: true } }),
+      prisma.teacher.groupBy({ by: ["subject"], _count: true }),
+      prisma.teacher.groupBy({ by: ["rating"], _count: true }),
+      prisma.review.groupBy({ by: ["status"], _count: true }),
+      prisma.booking.groupBy({ by: ["status"], _count: true }),
+      prisma.parent.groupBy({ by: ["childGrade"], _count: true }),
       prisma.parent.findMany({
-        select: { childGrade: true, mbtiResult: true },
+        where: { NOT: { mbtiResult: null } },
+        select: { mbtiResult: true },
       }),
     ]);
 
-    // 计算总收益
-    const totalRevenue = teachers.reduce((sum, t) => sum + t.totalRevenue, 0);
+    const totalRevenue = teacherRevenueAgg._sum.totalRevenue || 0;
 
-    // 科目分布
-    const subjectDistribution = ["语文", "数学", "英语", "物理", "化学"].map((s) => ({
+    // 科目分布（使用 shared 包的 subjects 列表）
+    const subjectDist = subjects.map((s) => ({
       name: s,
-      count: teachers.filter((t) => t.subject === s).length,
+      count: subjectGroup.find((g) => g.subject === s)?._count || 0,
     }));
 
     // 评分分布
-    const ratingDistribution = ["4.9", "4.8", "4.7", "4.6", "4.5"].map((r) => ({
+    const ratingDist = ["4.9", "4.8", "4.7", "4.6", "4.5"].map((r) => ({
       name: r,
-      count: teachers.filter((t) => t.rating === r).length,
+      count: ratingGroup.find((g) => g.rating === r)?._count || 0,
     }));
 
     // 评价状态分布
     const reviewStats = {
-      approved: reviews.filter((r) => r.status === "approved").length,
-      pending: reviews.filter((r) => r.status === "pending").length,
-      rejected: reviews.filter((r) => r.status === "rejected").length,
+      approved: reviewStatusGroup.find((g) => g.status === "approved")?._count || 0,
+      pending: reviewStatusGroup.find((g) => g.status === "pending")?._count || 0,
+      rejected: reviewStatusGroup.find((g) => g.status === "rejected")?._count || 0,
     };
 
     // 预约状态分布
     const bookingStats = {
-      completed: bookings.filter((b) => b.status === "completed").length,
-      confirmed: bookings.filter((b) => b.status === "confirmed").length,
-      pending: bookings.filter((b) => b.status === "pending").length,
-      cancelled: bookings.filter((b) => b.status === "cancelled").length,
+      completed: bookingStatusGroup.find((g) => g.status === "completed")?._count || 0,
+      confirmed: bookingStatusGroup.find((g) => g.status === "confirmed")?._count || 0,
+      pending: bookingStatusGroup.find((g) => g.status === "pending")?._count || 0,
+      cancelled: bookingStatusGroup.find((g) => g.status === "cancelled")?._count || 0,
     };
 
     // 学段分布
-    const gradeDistribution = ["小学", "初中", "高中"].map((g) => ({
+    const gradeDist = ["小学", "初中", "高中"].map((g) => ({
       name: g,
-      count: parents.filter((p) => p.childGrade === g).length,
+      count: gradeGroup.find((p) => p.childGrade === g)?._count || 0,
     }));
 
-    // MBTI 维度分布
-    const mbtiResults = parents
-      .filter((p) => p.mbtiResult)
-      .map((p) => JSON.parse(p.mbtiResult!).code as string);
+    // MBTI 维度分布（P1-2：mbtiResult 已是 Json 对象，无需 parse）
+    const mbtiResults = parentMbti
+      .map((p) => (p.mbtiResult as { code: string } | null)?.code ?? null)
+      .filter((c): c is string => c !== null);
 
     const mbtiDimensionStats = [
       { dim: "EI", E: mbtiResults.filter((c) => c.includes("E")).length, I: mbtiResults.filter((c) => c.includes("I")).length },
@@ -102,11 +107,11 @@ export async function GET(request: NextRequest) {
       pendingBookings,
       pendingTeachers,
       activeMemberships,
-      subjectDistribution,
-      ratingDistribution,
+      subjectDistribution: subjectDist,
+      ratingDistribution: ratingDist,
       reviewStats,
       bookingStats,
-      gradeDistribution,
+      gradeDistribution: gradeDist,
       mbtiDimensionStats,
     });
   } catch (error) {

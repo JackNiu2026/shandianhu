@@ -10,11 +10,72 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============ 枚举类型（P1-3：状态/角色字段改 enum）============
+enum AdminRole {
+  superadmin
+  editor
+}
+
+enum TeacherStatus {
+  active
+  pending
+  blocked
+}
+
+enum ParentStatus {
+  active
+  blocked
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  completed
+  cancelled
+}
+
+enum ReviewStatus {
+  pending
+  approved
+  rejected
+}
+
+enum MembershipStatus {
+  active
+  expired
+  cancelled
+}
+
+enum WithdrawalStatus {
+  pending
+  processed
+  rejected
+}
+
+enum OrderType {
+  membership
+  lesson
+  tip
+}
+
+enum OrderStatus {
+  pending
+  paid
+  cancelled
+  refunded
+}
+
+enum MessageRole {
+  parent
+  teacher
+  admin
+}
+
 model AdminUser {
   id        String   @id @default(cuid())
   username  String   @unique
   password  String   // bcrypt hashed
-  role      String   @default("superadmin") // superadmin | editor
+  role      AdminRole @default(superadmin)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -25,19 +86,19 @@ model Teacher {
   age       String
   school    String
   subject   String
-  grades    String   // JSON string of array
+  grades    Json     // JSON array of Grade
   mode      String
-  tags      String   // JSON string of array
+  tags      Json     // JSON array of string
   color     String   @default("#f2cabc")
   note      String   @default("")
   rating    String   @default("0.0")
   students  String   @default("0")
   years     String   @default("1年")
   price     Int      @default(100)
-  slots     String   // JSON string of array
+  slots     Json     // JSON array of string
   video     String   @default("")
-  checks    String   // JSON string of array
-  status    String   @default("pending") // active | pending | blocked
+  checks    Json     // JSON array of string
+  status    TeacherStatus @default(pending)
   totalRevenue     Int @default(0)
   pendingRevenue   Int @default(0)
   availableRevenue Int @default(0)
@@ -47,22 +108,32 @@ model Teacher {
   reviews   Review[]
   bookings  Booking[]
   withdrawals Withdrawal[]
+
+  @@index([status])
+  @@index([subject])
+  @@index([createdAt])
 }
 
 model Parent {
   id        String   @id @default(cuid())
   name      String
   avatar    String   @default("")
-  phone     String
+  phone     String   @unique
+  password  String?  // bcrypt hashed, null if using WeChat only
+  openid    String?  @unique // WeChat openid
   childGrade String
-  prefs     String?  // JSON string of Prefs or null
-  mbtiResult String? // JSON string of MBTIResult or null
-  likedTeachers String @default("[]") // JSON string of string array
+  prefs     Json?    // JSON of Prefs or null
+  mbtiResult Json?   // JSON of MBTIResult or null
+  likedTeachers Json @default("[]") // JSON array of string
   bookingCount  Int  @default(0)
-  status    String   @default("active") // active | blocked
+  status    ParentStatus @default(active)
   createdAt DateTime @default(now())
   bookings  Booking[]
   memberships Membership[]
+  orders    Order[]
+
+  @@index([status])
+  @@index([phone])
 }
 
 model Booking {
@@ -73,9 +144,14 @@ model Booking {
   teacherId   String
   subject     String
   slot        String
-  status      String   @default("pending") // pending | confirmed | completed | cancelled
+  status      BookingStatus @default(pending)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([teacherId])
+  @@index([parentId])
+  @@index([createdAt])
 }
 
 model Review {
@@ -85,9 +161,13 @@ model Review {
   author      String
   text        String
   rating      Int      @default(5)
-  status      String   @default("pending") // pending | approved | rejected
+  status      ReviewStatus @default(pending)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([teacherId])
+  @@index([createdAt])
 }
 
 model Membership {
@@ -98,9 +178,12 @@ model Membership {
   amount    Float
   startDate String
   endDate   String
-  status    String   @default("active") // active | expired | cancelled
+  status    MembershipStatus @default(active)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([parentId])
 }
 
 model Withdrawal {
@@ -108,15 +191,61 @@ model Withdrawal {
   teacher     Teacher  @relation(fields: [teacherId], references: [id])
   teacherId   String
   amount      Int
-  status      String   @default("pending") // pending | processed
+  status      WithdrawalStatus @default(pending)
+  rejectReason String @default("")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([teacherId])
+  @@index([createdAt])
 }
 
 model PlatformConfig {
+  id                 String  @id @default(cuid())
+  platformName       String  @default("闪电虎")
+  contact            String  @default("")
+  profitSharingRatio Float   @default(0.1) // 平台抽成比例 (0-1)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+/// 订单 / 支付记录
+model Order {
+  id            String   @id @default(cuid())
+  parent        Parent   @relation(fields: [parentId], references: [id])
+  parentId      String
+  type          OrderType
+  amount        Float
+  status        OrderStatus @default(pending)
+  relatedId     String?  // 关联 ID (membershipId, bookingId 等)
+  payMethod     String   @default("") // wechat | offline
+  transactionId String   @default("") // 微信支付交易号
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status])
+  @@index([parentId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+/// 聊天消息
+/// P0-1 修复：多态关联，senderId/receiverId 不设外键约束
+/// ID 指向 Parent 还是 Teacher 由 senderRole/receiverRole 决定，
+/// 应用层负责校验对应实体存在。这样 teacher 发消息不会违反外键约束。
+model Message {
   id           String   @id @default(cuid())
-  platformName String   @default("闪电虎")
-  contact      String   @default("")
+  senderId     String   // parentId 或 teacherId（由 senderRole 决定）
+  senderRole   MessageRole
+  receiverId   String   // parentId 或 teacherId（由 receiverRole 决定）
+  receiverRole MessageRole
+  content      String
+  read         Boolean  @default(false)
   createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+  @@index([read])
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, Image } from "@tarojs/components";
+import { View, Text, Image, Textarea } from "@tarojs/components";
 import type { Prefs, Grade, Teacher, Role } from "@lightning-tiger/shared";
 import { subjects, grades, budgetOptions } from "@lightning-tiger/shared";
 
@@ -31,35 +31,35 @@ export function NeedsSheet({
       <View className="sheet needs-sheet">
         <View className="handle" />
         <Text className="eyebrow">TELL US ABOUT YOUR CHILD</Text>
-        <Text>先告诉我们三件事</Text>
+        <Text className="h2">先告诉我们三件事</Text>
         <Text className="sheet-note">这样推荐的每一位老师，都真的教这个学段和科目。</Text>
         <View className="needs-group">
-          <Text>孩子的学段</Text>
+          <Text className="label">孩子的学段</Text>
           <View className="chip-row">
             {grades.map((g) => (
-              <View key={g} className={g === grade ? "on" : ""} onClick={() => chooseGrade(g)}>
+              <View key={g} className={`button${g === grade ? " on" : ""}`} onClick={() => chooseGrade(g)}>
                 <Text>{g}</Text>
               </View>
             ))}
           </View>
         </View>
         <View className="needs-group">
-          <Text>想补的科目</Text>
+          <Text className="label">想补的科目</Text>
           <View className="chip-row">
             {availableSubjects.map((s) => (
-              <View key={s} className={s === subject ? "on" : ""} onClick={() => setSubject(s)}>
+              <View key={s} className={`button${s === subject ? " on" : ""}`} onClick={() => setSubject(s)}>
                 <Text>{s}</Text>
               </View>
             ))}
           </View>
         </View>
         <View className="needs-group">
-          <Text>单次课预算（60 分钟）</Text>
+          <Text className="label">单次课预算（60 分钟）</Text>
           <View className="chip-row">
             {budgetOptions.map((option) => (
               <View
                 key={option.value}
-                className={option.value === budget ? "on" : ""}
+                className={`button${option.value === budget ? " on" : ""}`}
                 onClick={() => setBudget(option.value)}
               >
                 <Text>{option.label}</Text>
@@ -87,20 +87,20 @@ export function TrustSheet({ teacher, onClose }: { teacher: Teacher; onClose: ()
       <View className="sheet trust-sheet" catchTap={noop}>
         <View className="handle" />
         <Text className="eyebrow">SAFETY &amp; TRUST</Text>
-        <Text>{teacher.name}老师的保障</Text>
+        <Text className="h2">{teacher.name}老师的保障</Text>
         <View className="check-list">
           {teacher.checks.map((c) => (
             <Text key={c}>✓ {c}</Text>
           ))}
         </View>
-        <Text>家长怎么说</Text>
+        <Text className="h3">家长怎么说</Text>
         {teacher.reviews.map((r) => (
-          <View key={r.by}>
-            <Text>“{r.text}”</Text>
-            <Text>{r.by}</Text>
+          <View className="blockquote" key={r.by}>
+            <Text className="p">“{r.text}”</Text>
+            <Text className="cite">{r.by}</Text>
           </View>
         ))}
-        <Text>平台规则</Text>
+        <Text className="h3">平台规则</Text>
         <View className="rule-list">
           <View>
             <Text>线上课全程可录制，家长可回看 30 天</Text>
@@ -140,28 +140,29 @@ export function BookSheet({
           <Text>×</Text>
         </View>
         <Text className="eyebrow">FREE TRIAL · 60 MIN</Text>
-        <Text>先和 {teacher.name}老师聊一节</Text>
+        <Text className="h2">先和 {teacher.name}老师聊一节</Text>
         <Text className="sheet-note">
           免费试听，不需要订阅。先了解孩子的情况，再决定是否长期跟学。
         </Text>
         <View className="trial-teacher">
           <View className="trial-avatar" style={{ backgroundColor: teacher.color }}>
-            {teacher.avatar ? <Image src={teacher.avatar} /> : <Text>{teacher.name[0]}</Text>}
+            {teacher.avatar ? <Image src={teacher.avatar} mode="aspectFill" /> : <Text>{teacher.name[0]}</Text>}
           </View>
-          <View>
-            <Text>
-              {teacher.name}老师 <Text>✓</Text>
+          <View className="trial-info">
+            <Text className="b">
+              {teacher.name}老师 <Text className="i">✓</Text>
             </Text>
-            <Text>
+            <Text className="span">
               {teacher.subject} · {teacher.years}教龄 · ★ {teacher.rating}
             </Text>
           </View>
-          <Text>免费</Text>
+          <Text className="em">免费</Text>
         </View>
         <Text className="trial-slot-label">选择方便的时间</Text>
         <View className="slot-grid">
           {teacher.slots.map((slot) => (
             <View
+              className="button"
               key={slot}
               onClick={() => {
                 onBook(teacher.name, slot);
@@ -169,11 +170,59 @@ export function BookSheet({
               }}
             >
               <Text>{slot}</Text>
-              <Text>60 分钟试听</Text>
+              <Text className="small">60 分钟试听</Text>
             </View>
           ))}
         </View>
         <Text className="sheet-foot">预约成功后，老师的联系方式会在「消息」中开放</Text>
+      </View>
+    </View>
+  );
+}
+
+/* ============ 评价弹窗 ============ */
+export function ReviewSheet({
+  teacherName,
+  onClose,
+  onSubmit,
+}: {
+  teacherName: string;
+  onClose: () => void;
+  onSubmit: (rating: number, text: string) => void;
+}) {
+  const [rating, setRating] = useState(5);
+  const [text, setText] = useState("");
+
+  return (
+    <View className="modal-backdrop centered-modal" onClick={onClose}>
+      <View className="sheet review-sheet" catchTap={noop}>
+        <View className="close" onClick={onClose}>
+          <Text>×</Text>
+        </View>
+        <Text className="eyebrow">SHARE YOUR EXPERIENCE</Text>
+        <Text className="h2">评价 {teacherName}老师</Text>
+        <View className="rating-row">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Text key={star} className={star <= rating ? "on" : ""} onClick={() => setRating(star)}>
+              ★
+            </Text>
+          ))}
+        </View>
+        <Textarea
+          className="review-textarea"
+          placeholder="说说老师上课的优点和可以改进的地方..."
+          value={text}
+          onInput={(e) => setText(e.detail.value)}
+        />
+        <View
+          className="sheet-btn"
+          onClick={() => {
+            onSubmit(rating, text);
+            onClose();
+          }}
+        >
+          <Text>提交评价</Text>
+        </View>
       </View>
     </View>
   );
@@ -184,16 +233,16 @@ export function VideoPlayer({ teacher, onClose }: { teacher: Teacher; onClose: (
   return (
     <View className="modal-backdrop center" onClick={onClose}>
       <View className="player" catchTap={noop}>
-        <Image src={teacher.video} />
+        <Image src={teacher.video} mode="aspectFill" />
         <View className="player-shade" />
         <View className="player-info">
-          <Text>{teacher.name}老师 · 试听片段</Text>
-          <Text>
+          <Text className="b">{teacher.name}老师 · 试听片段</Text>
+          <Text className="span">
             {teacher.subject} · {teacher.tags[2] ?? teacher.tags[0]}
           </Text>
         </View>
         <View className="player-bar">
-          <View />
+          <View className="i" />
         </View>
         <View className="player-close" onClick={onClose}>
           <Text>×</Text>
@@ -215,18 +264,18 @@ export function SubscribeModal({ onClose }: { onClose: () => void }) {
           <Text>✦</Text>
         </View>
         <Text className="eyebrow">闪电虎会员 · 可选</Text>
-        <Text>想同时对比多位老师？</Text>
-        <Text>试听和联系单个老师始终免费。会员适合想一次多约几位、横向比较的家长。</Text>
+        <Text className="h2">想同时对比多位老师？</Text>
+        <Text className="p">试听和联系单个老师始终免费。会员适合想一次多约几位、横向比较的家长。</Text>
         <View className="membership-benefits">
-          <Text>✓ 不限次数联系与预约</Text>
-          <Text>✓ 每月 3 次免费试听（非会员 1 次）</Text>
-          <Text>✓ 30 天内不合适可无限次换老师</Text>
-          <Text>✓ 专属顾问帮你筛老师</Text>
+          <Text className="span">✓ 不限次数联系与预约</Text>
+          <Text className="span">✓ 每月 3 次免费试听（非会员 1 次）</Text>
+          <Text className="span">✓ 30 天内不合适可无限次换老师</Text>
+          <Text className="span">✓ 专属顾问帮你筛老师</Text>
         </View>
         <View className="subscribe-btn" onClick={onClose}>
           <Text>开通会员 · ¥19.9 / 月</Text>
         </View>
-        <Text>随时可取消 · 未使用可申请全额退</Text>
+        <Text className="small">随时可取消 · 未使用可申请全额退</Text>
       </View>
     </View>
   );
@@ -234,10 +283,10 @@ export function SubscribeModal({ onClose }: { onClose: () => void }) {
 
 /* ============ 名片弹窗 ============ */
 export function PosterModal({
-  teacherName,
+  teacher,
   onClose,
 }: {
-  teacherName: string;
+  teacher: Teacher;
   onClose: () => void;
 }) {
   return (
@@ -250,41 +299,41 @@ export function PosterModal({
         <View className="teacher-poster">
           <View className="poster-brand">
             <Text>闪</Text>
-            <Text>电虎 </Text>
-            <Text>严选一对一家教</Text>
+            <Text className="span">电虎</Text>
+            <Text className="small">严选一对一家教</Text>
           </View>
           <View className="poster-main">
             <View className="poster-avatar">
-              <Text>{teacherName[0]}</Text>
+              {teacher.avatar ? <Image src={teacher.avatar} mode="aspectFill" /> : <Text>{teacher.name[0]}</Text>}
             </View>
             <View>
-              <Text>复旦大学 · 数学与应用数学</Text>
-              <Text>
-                {teacherName} <Text>✓</Text>
+              <Text className="p">{teacher.school} · {teacher.subject}</Text>
+              <Text className="h2">
+                {teacher.name}老师 <Text className="i">✓</Text>
               </Text>
-              <Text>中考数学 · 竞赛启蒙</Text>
+              <Text className="span">{teacher.tags.join(" · ")}</Text>
             </View>
           </View>
-          <Text className="poster-quote">“把抽象的数学，讲成孩子愿意自己动手解决的问题。”</Text>
+          <Text className="poster-quote">“{teacher.note}”</Text>
           <View className="poster-metrics">
-            <Text>
-              <Text>4.9</Text>
-              <Text>综合评分</Text>
+            <Text className="span">
+              <Text className="b">{teacher.rating}</Text>
+              <Text className="small">综合评分</Text>
             </Text>
-            <Text>
-              <Text>32</Text>
-              <Text>累计学生</Text>
+            <Text className="span">
+              <Text className="b">{teacher.students}</Text>
+              <Text className="small">累计学生</Text>
             </Text>
-            <Text>
-              <Text>186</Text>
-              <Text>授课课时</Text>
+            <Text className="span">
+              <Text className="b">186</Text>
+              <Text className="small">授课课时</Text>
             </Text>
           </View>
           <View className="poster-footer">
             <View className="poster-code">
               <Text>▦</Text>
             </View>
-            <Text>
+            <Text className="p">
               扫码查看老师详情{"\n"}预约免费试听
             </Text>
           </View>
@@ -311,7 +360,7 @@ export function SettingsModal({
         <View className="settings-head">
           <View>
             <Text className="eyebrow">ACCOUNT SETTINGS</Text>
-            <Text>设置</Text>
+            <Text className="h2">设置</Text>
           </View>
           <View className="close" onClick={onClose}>
             <Text>×</Text>
@@ -319,11 +368,11 @@ export function SettingsModal({
         </View>
         <View className="settings-menu-item" onClick={onSwitchRole}>
           <Text className="settings-menu-icon">⇄</Text>
-          <Text>
-            <Text>切换身份</Text>
-            <Text>在家长与老师工作台之间切换</Text>
+          <Text className="settings-menu-text">
+            <Text className="b">切换身份</Text>
+            <Text className="small">在家长与老师工作台之间切换</Text>
           </Text>
-          <Text>›</Text>
+          <Text className="i">›</Text>
         </View>
       </View>
     </View>
@@ -345,22 +394,22 @@ export function RoleModal({
       <View className="sheet role-modal">
         <View className="handle" />
         <Text className="eyebrow">WELCOME TO LIGHTNING TIGER</Text>
-        <Text>你的身份是？</Text>
-        <View onClick={() => onSelect("parent")}>
+        <Text className="h2">你的身份是？</Text>
+        <View className="button" onClick={() => onSelect("parent")}>
           <Text className="role-icon peach">⌂</Text>
           <Text>
-            <Text>我是家长</Text>
-            <Text>为孩子寻找合拍的老师</Text>
+            <Text className="b">我是家长</Text>
+            <Text className="small">为孩子寻找合拍的老师</Text>
           </Text>
-          <Text>›</Text>
+          <Text className="i">›</Text>
         </View>
-        <View onClick={() => onSelect("teacher")}>
+        <View className="button" onClick={() => onSelect("teacher")}>
           <Text className="role-icon green">✎</Text>
           <Text>
-            <Text>我是老师</Text>
-            <Text>开启专业陪伴之旅</Text>
+            <Text className="b">我是老师</Text>
+            <Text className="small">开启专业陪伴之旅</Text>
           </Text>
-          <Text>›</Text>
+          <Text className="i">›</Text>
         </View>
         {hasRole && (
           <View className="text-btn" onClick={onClose}>

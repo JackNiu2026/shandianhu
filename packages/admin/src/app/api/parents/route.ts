@@ -3,17 +3,22 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/api-auth";
+import { authenticateAdmin } from "@/lib/api-auth";
 import { serializeParent } from "@/lib/serialize";
+import { parsePagination } from "@/lib/validation";
+
+// Prevent static prerendering
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = authenticateRequest(request);
+    const auth = authenticateAdmin(request);
     if (auth.response) return auth.response;
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
     const status = searchParams.get("status") || "";
+    const { skip, take, page, pageSize } = parsePagination(searchParams);
 
     const where: Record<string, unknown> = {};
 
@@ -28,14 +33,19 @@ export async function GET(request: NextRequest) {
       where.status = status;
     }
 
-    const parents = await prisma.parent.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-    });
+    const [parents, total] = await Promise.all([
+      prisma.parent.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take,
+      }),
+      prisma.parent.count({ where }),
+    ]);
 
     const result = parents.map(serializeParent);
 
-    return NextResponse.json({ data: result, total: result.length });
+    return NextResponse.json({ data: result, total, page, pageSize });
   } catch (error) {
     console.error("[Parents List Error]", error);
     return NextResponse.json(

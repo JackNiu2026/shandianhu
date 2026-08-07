@@ -5,18 +5,15 @@
 import jwt from "jsonwebtoken";
 import type { NextResponse } from "next/server";
 
-/** JWT 密钥，从环境变量读取，生产环境必须设置 */
-export const JWT_SECRET = process.env.JWT_SECRET;
-
-/** 检查 JWT 密钥是否已配置 */
+/** JWT 密钥，从环境变量读取，必须设置 */
 function getJwtSecret(): string {
-  if (!JWT_SECRET) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("生产环境必须设置 JWT_SECRET 环境变量");
-    }
-    return "lightning-tiger-dev-secret-change-in-production";
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error(
+      "JWT_SECRET 环境变量未设置。请在 .env 文件或环境变量中配置 JWT_SECRET。",
+    );
   }
-  return JWT_SECRET;
+  return secret;
 }
 
 /** Cookie 名称 */
@@ -41,12 +38,13 @@ export const PROTECTED_PATHS = [
 
 /**
  * 生成 JWT Token
- * @param username 管理员用户名
+ * @param subject 用户标识（管理员用户名或家长 ID）
+ * @param role 角色：superadmin 或 parent
  * @returns 签名后的 JWT 字符串
  */
-export function generateToken(username: string): string {
+export function generateToken(subject: string, role: "superadmin" | "parent" = "superadmin"): string {
   return jwt.sign(
-    { username, role: "superadmin", iat: Date.now() },
+    { username: subject, role },
     getJwtSecret(),
     { expiresIn: "7d" },
   );

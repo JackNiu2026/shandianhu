@@ -57,7 +57,7 @@ export default function TeacherDetailPage() {
   });
 
   useEffect(() => {
-    if (params.id) {
+    if (params?.id) {
       getTeacherById(params.id as string)
         .then((data) => {
           const t = data as unknown as TeacherDetail;
@@ -74,7 +74,7 @@ export default function TeacherDetailPage() {
         })
         .catch((err) => { setError(err.message || "加载失败"); setLoading(false); });
     }
-  }, [params.id]);
+  }, [params?.id]);
 
   if (loading) return <div className="text-center py-12 text-ink-muted">加载中...</div>;
   if (error) return <div className="text-center py-12 text-danger">{error}</div>;

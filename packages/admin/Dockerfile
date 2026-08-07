@@ -6,12 +6,13 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 
 # 安装 pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@11.20.0 --activate
 
-# 复制 workspace 配置
-COPY package.json pnpm-workspace.yaml ./
+# 复制 workspace 配置和 lockfile
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
 COPY packages/admin/package.json ./packages/admin/
 COPY packages/shared/package.json ./packages/shared/
+COPY packages/mobile/package.json ./packages/mobile/
 
 # 安装依赖（仅生产依赖 + Prisma）
 RUN pnpm install --frozen-lockfile
@@ -20,13 +21,13 @@ RUN pnpm install --frozen-lockfile
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@11.20.0 --activate
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages/admin/node_modules ./packages/admin/node_modules
 COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
 
-COPY package.json pnpm-worksuite.yaml ./
+COPY package.json pnpm-workspace.yaml ./
 COPY packages/shared/ ./packages/shared/
 COPY packages/admin/ ./packages/admin/
 
@@ -57,6 +58,10 @@ COPY --from=builder /app/packages/admin/node_modules/.prisma ./packages/admin/no
 # 复制启动脚本
 COPY --from=builder /app/packages/admin/package.json ./packages/admin/package.json
 
+# 复制 prisma CLI 和迁移文件
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
 USER nextjs
 
 EXPOSE 3000
@@ -64,5 +69,9 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "fetch('http://localhost:3000/api/public/stats').then(r=>r.ok?process.exit(0):process.exit(1)).catch(()=>process.exit(1))"
+
 # 启动命令：先运行数据库迁移，再启动应用
-CMD ["node", "packages/admin/server.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node packages/admin/server.js"]

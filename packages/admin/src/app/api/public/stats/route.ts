@@ -5,6 +5,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// Prevent static prerendering
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const [teacherCount, parentCount] = await Promise.all([

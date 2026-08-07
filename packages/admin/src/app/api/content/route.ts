@@ -4,11 +4,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { subjects, grades, budgetOptions } from "@lightning-tiger/shared";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/api-auth";
+import { authenticateAdmin } from "@/lib/api-auth";
+
+// Prevent static prerendering
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = authenticateRequest(request);
+    const auth = authenticateAdmin(request);
     if (auth.response) return auth.response;
 
     const [teacherCount, parentCount] = await Promise.all([

@@ -1,0 +1,11 @@
+node_modules
+.next
+dist
+build
+out
+.swc
+.turbo
+pnpm-lock.yaml
+package-lock.json
+figma
+.trae-html-share-packages

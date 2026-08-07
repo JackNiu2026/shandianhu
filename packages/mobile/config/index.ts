@@ -46,6 +46,9 @@ export default defineConfig(async (merge, { command }) => {
     sass: {
       data: "",
     },
+    // 微信小程序 AppID 说明：
+    // project.config.json 中的 appid 需在部署时替换为真实 AppID
+    // 或通过环境变量 WECHAT_APPID 配置
     mini: {
       webpackChain(chain: { module: { rule: (name: string) => { include: { add: (path: string) => { end: () => void } } } } }) {
         chain.module.rule("script").include.add(sharedPath).end();

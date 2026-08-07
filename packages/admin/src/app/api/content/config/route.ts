@@ -4,12 +4,15 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/api-auth";
-import { platformConfigSchema } from "@/lib/validation";
+import { authenticateAdmin } from "@/lib/api-auth";
+import { platformConfigSchemaV2 } from "@/lib/validation";
+
+// Prevent static prerendering
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = authenticateRequest(request);
+    const auth = authenticateAdmin(request);
     if (auth.response) return auth.response;
 
     const config = await prisma.platformConfig.findFirst();
@@ -29,13 +32,13 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const auth = authenticateRequest(request);
+    const auth = authenticateAdmin(request);
     if (auth.response) return auth.response;
 
     const body = await request.json();
 
     // zod 输入验证
-    const result = platformConfigSchema.safeParse(body);
+    const result = platformConfigSchemaV2.safeParse(body);
     if (!result.success) {
       return NextResponse.json(
         { error: result.error.issues[0]?.message || "输入参数无效" },
@@ -43,18 +46,23 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const { platformName, contact } = result.data;
+    const { platformName, contact, profitSharingRatio } = result.data;
+
+    const data: Record<string, unknown> = { platformName, contact };
+    if (profitSharingRatio !== undefined) {
+      data.profitSharingRatio = profitSharingRatio;
+    }
 
     const existing = await prisma.platformConfig.findFirst();
     let config;
     if (existing) {
       config = await prisma.platformConfig.update({
         where: { id: existing.id },
-        data: { platformName, contact },
+        data,
       });
     } else {
       config = await prisma.platformConfig.create({
-        data: { platformName, contact },
+        data,
       });
     }
 

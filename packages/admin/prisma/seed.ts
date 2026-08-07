@@ -55,7 +55,7 @@ const mbtiResults: (MBTIResult | null)[] = [
 
 const parentStatuses = [
   "active", "active", "active", "active", "blocked", "active", "active", "active", "active", "active",
-];
+] as const;
 
 /* ============ 预约数据 ============ */
 const bookingSlots = [
@@ -66,7 +66,7 @@ const bookingStatuses = [
   "completed", "confirmed", "pending", "cancelled", "completed",
   "confirmed", "pending", "completed", "confirmed", "pending",
   "completed", "cancelled", "confirmed", "pending", "completed",
-];
+] as const;
 
 /* ============ 评价数据 ============ */
 const reviewTexts = [
@@ -96,7 +96,7 @@ const reviewStatuses = [
   "approved", "approved", "approved", "approved", "approved",
   "approved", "approved", "pending", "approved", "approved",
   "approved", "pending", "rejected", "approved", "approved",
-];
+] as const;
 
 /* ============ 会员数据 ============ */
 const membershipData = [
@@ -105,7 +105,7 @@ const membershipData = [
   { parentName: "李明轩", duration: "月度会员", amount: 19.9, startDate: "2026-06-01", endDate: "2026-07-01", status: "expired" },
   { parentName: "张雨晴", duration: "年度会员", amount: 199, startDate: "2026-01-01", endDate: "2026-12-31", status: "active" },
   { parentName: "刘子涵", duration: "月度会员", amount: 19.9, startDate: "2026-05-01", endDate: "2026-06-01", status: "cancelled" },
-];
+] as const;
 
 /* ============ 主函数 ============ */
 async function main() {
@@ -145,18 +145,18 @@ async function main() {
         age: t.age,
         school: t.school,
         subject: t.subject,
-        grades: JSON.stringify(t.grades),
+        grades: t.grades,
         mode: t.mode,
-        tags: JSON.stringify(t.tags),
+        tags: t.tags,
         color: t.color,
         note: t.note,
         rating: t.rating,
         students: t.students,
         years: t.years,
         price: t.price,
-        slots: JSON.stringify(t.slots),
+        slots: t.slots,
         video: t.video,
-        checks: JSON.stringify(t.checks),
+        checks: t.checks,
         status: teacherStatusList[i] || "active",
         totalRevenue: revenue.total,
         pendingRevenue: revenue.pending,
@@ -187,9 +187,9 @@ async function main() {
         avatar: p.avatar,
         phone: p.phone,
         childGrade: p.grade,
-        prefs: prefs ? JSON.stringify(prefs) : null,
-        mbtiResult: mbti ? JSON.stringify(mbti) : null,
-        likedTeachers: JSON.stringify(likedTeachers),
+        prefs: prefs ?? undefined,
+        mbtiResult: mbti ?? undefined,
+        likedTeachers: likedTeachers,
         bookingCount: (i % 4) + (i % 2),
         status: parentStatuses[i],
         createdAt: new Date(2026, 5, 5 + i * 4),
@@ -260,7 +260,7 @@ async function main() {
   console.log("创建提现数据...");
   const withdrawalTeachers = ["林知夏", "周予安", "陈默", "叶承川"];
   const withdrawalAmounts = [5000, 3000, 2000, 4000];
-  const withdrawalStatuses = ["pending", "processed", "pending", "processed"];
+  const withdrawalStatuses = ["pending", "processed", "pending", "processed"] as const;
   for (let i = 0; i < withdrawalTeachers.length; i++) {
     const teacherIdx = teachers.findIndex((t) => t.name === withdrawalTeachers[i]);
     if (teacherIdx >= 0 && teacherIds[teacherIdx]) {

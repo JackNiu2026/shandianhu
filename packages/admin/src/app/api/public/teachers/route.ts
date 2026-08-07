@@ -1,9 +1,14 @@
 /**
  * GET /api/public/teachers - 公开老师列表（无需认证）
  * 返回所有 active 状态的老师，格式兼容移动端 Teacher 类型
+ * 限制最多返回 100 条，使用安全 JSON 解析
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { serializeTeacher } from "@/lib/serialize";
+
+// Prevent static prerendering
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,28 +32,12 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { rating: "desc" },
+      take: 100,
     });
 
-    // 过滤学段（grades 是 JSON 字符串，需在内存中过滤）
+    // 序列化 + 安全 JSON 解析
     let result = teachers.map((t) => ({
-      id: t.id,
-      name: t.name,
-      age: t.age,
-      school: t.school,
-      subject: t.subject,
-      grades: JSON.parse(t.grades || "[]"),
-      mode: t.mode,
-      tags: JSON.parse(t.tags || "[]"),
-      color: t.color,
-      note: t.note,
-      rating: t.rating,
-      students: t.students,
-      years: t.years,
-      price: t.price,
-      slots: JSON.parse(t.slots || "[]"),
-      video: t.video,
-      checks: JSON.parse(t.checks || "[]"),
-      status: t.status,
+      ...serializeTeacher(t),
       reviews: t.reviews.map((r) => ({
         id: r.id,
         by: r.author,
@@ -57,6 +46,7 @@ export async function GET(request: NextRequest) {
       })),
     }));
 
+    // 过滤学段（grades 是 JSON 字符串，需在内存中过滤）
     if (grade) {
       result = result.filter((t) => (t.grades as string[]).includes(grade));
     }

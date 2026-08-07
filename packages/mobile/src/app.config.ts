@@ -7,10 +7,13 @@ export default defineAppConfig({
   ],
   window: {
     backgroundTextStyle: "light",
-    navigationBarBackgroundColor: "#fff",
+    // 自定义导航:由 components/TopBar 渲染品牌顶栏(对齐 Figma topbar)
+    navigationStyle: "custom",
+    navigationBarBackgroundColor: "#FFFCF9",
     navigationBarTitleText: "闪电虎",
     navigationBarTextStyle: "black",
-    backgroundColor: "#f1ece4",
+    // 与设计稿 --surface-base 一致(下拉 overscroll 时可见)
+    backgroundColor: "#F5F2F0",
   },
   tabBar: {
     custom: true,

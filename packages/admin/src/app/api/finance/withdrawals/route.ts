@@ -4,13 +4,16 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/api-auth";
+import { authenticateAdmin } from "@/lib/api-auth";
 import { serializeWithdrawal } from "@/lib/serialize";
-import { updateWithdrawalSchema, parsePagination } from "@/lib/validation";
+import { updateWithdrawalSchemaV2, parsePagination } from "@/lib/validation";
+
+// Prevent static prerendering
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = authenticateRequest(request);
+    const auth = authenticateAdmin(request);
     if (auth.response) return auth.response;
 
     const { searchParams } = new URL(request.url);
@@ -49,13 +52,13 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     // 验证认证
-    const auth = authenticateRequest(request);
+    const auth = authenticateAdmin(request);
     if (auth.response) return auth.response;
 
     const body = await request.json();
 
     // zod 输入验证
-    const result = updateWithdrawalSchema.safeParse(body);
+    const result = updateWithdrawalSchemaV2.safeParse(body);
     if (!result.success) {
       return NextResponse.json(
         { error: result.error.issues[0]?.message || "输入参数无效" },
@@ -63,7 +66,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const { id, status } = result.data;
+    const { id, status, rejectReason } = result.data;
 
     // 检查提现记录是否存在
     const existing = await prisma.withdrawal.findUnique({ where: { id } });
@@ -76,7 +79,7 @@ export async function PATCH(request: NextRequest) {
 
     const withdrawal = await prisma.withdrawal.update({
       where: { id },
-      data: { status },
+      data: { status, rejectReason },
       include: { teacher: true },
     });
 

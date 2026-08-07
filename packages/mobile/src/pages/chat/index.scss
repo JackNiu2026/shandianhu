@@ -4,26 +4,29 @@
    conversation-head、date-label、message-stack、bubble-row、bubble、
    message-input、chat-empty 等。
    适配说明：
-   - "DM Mono" → monospace
+   - "DM Mono" → "DM Mono", monospace
    - :hover 已全部移除（:active 按规则保留）
    - scrollbar 相关属性已移除（3 处之一：message-stack）
    - 原 .screen-content:has(.chat-screen){height:calc(100% - 154px);
      overflow:hidden} 适配到 .chat-screen 自身（见文件末尾）
    - 1px/2px 边框使用大写 PX
+   - HTML 标签后代选择器已改为类选择器（h3→.h3, p→.p, time→.time,
+     i→.i, b→.b, span→.span, button→.button），input 保留（Taro Input 渲染为 input）
    ============================================================ */
 
 /* ---- 聊天屏基础 ---- */
-.chat-screen { padding: 10px 16px 0; }
+/* padding-top 归零:顶部间距由 TopBar 品牌栏承担 */
+.chat-screen { padding: 0 16px; }
 .chat-list-title { display: flex; justify-content: space-between; align-items: center; margin: 2px 4px 15px; }
-.chat-list-title span { background: #ed7358; color: white; padding: 3px 7px; border-radius: 12px; font-size: 9px; }
+.chat-list-title .span { background: #ed7358; color: white; padding: 3px 7px; border-radius: 12px; font-size: 9px; }
 .chat-contact { width: 100%; border: 0; background: transparent; text-align: left; display: flex; gap: 10px; align-items: center; padding: 9px 4px 15px; border-bottom: 1PX solid #eee9df; }
-.chat-contact h3 { margin: 0; font-size: 13px; }
-.chat-contact p { margin: 4px 0 0; width: 230px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #8b928c; font-size: 11px; }
-.chat-contact time { margin-left: auto; align-self: flex-start; color: #a4aaa5; font-size: 9px; }
+.chat-contact .h3 { margin: 0; font-size: 13px; }
+.chat-contact .p { margin: 4px 0 0; width: 230px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #8b928c; font-size: 11px; }
+.chat-contact .time { margin-left: auto; align-self: flex-start; color: #a4aaa5; font-size: 9px; }
 .conversation { height: 390px; display: flex; flex-direction: column; margin: 12px -16px 0; background: #f5f4ee; }
 .conversation-head { display: flex; gap: 8px; align-items: center; padding: 11px 16px; background: #fffdf9; font-size: 13px; }
-.conversation-head button { border: 0; background: transparent; font-size: 25px; }
-.conversation-head span { margin-left: auto; }
+.conversation-head .button { border: 0; background: transparent; font-size: 25px; }
+.conversation-head .span { margin-left: auto; }
 .small { width: 26px; height: 26px; border-radius: 9px; font-size: 16px; }
 .date-label { margin: 13px auto; color: #a2aaa5; font-size: 9px; }
 .message-stack { flex: 1; padding: 0 15px; overflow: auto; }
@@ -32,26 +35,26 @@
 .tiny { width: 27px; height: 27px; border-radius: 9px; font-size: 16px; }
 .bubble { max-width: 255px; margin: 0; padding: 10px 12px; border-radius: 4px 13px 13px 13px; background: white; color: #3c4945; font-size: 12px; line-height: 1.55; }
 .mine .bubble { border-radius: 13px 4px 13px 13px; background: #cde1d4; }
-.bubble-row time { display: block; margin-top: 3px; color: #9ba39d; font-size: 8px; }
-.mine time { text-align: right; }
+.bubble-row .time { display: block; margin-top: 3px; color: #9ba39d; font-size: 8px; }
+.mine .time { text-align: right; }
 .message-input { display: flex; gap: 7px; padding: 8px 12px; background: white; }
-.message-input button { border: 0; background: transparent; color: #7d8a83; }
+.message-input .button { border: 0; background: transparent; color: #7d8a83; }
 .message-input input { flex: 1; border: 0; outline: 0; background: #f4f4ef; border-radius: 6px; padding: 8px; font-size: 11px; }
 .message-input .send { color: #ed7358; font-size: 11px; }
 
 /* ---- 可读性调优（chat 部分） ---- */
-.chat-contact h3 { font-size: 15px; }
-.chat-contact p { font-size: 12px; }
-.chat-contact time { font-size: 11px; }
+.chat-contact .h3 { font-size: 15px; }
+.chat-contact .p { font-size: 12px; }
+.chat-contact .time { font-size: 11px; }
 .bubble { font-size: 14px; }
-.bubble-row time { font-size: 10px; }
+.bubble-row .time { font-size: 10px; }
 .message-input input { font-size: 14px; padding: 11px; }
 .message-input .send { font-size: 13px; padding: 0 4px; }
 
 /* ---- 聊天空态 + 单屏会话 ---- */
 .chat-empty { margin-top: 30px; padding: 26px 22px; border: 1PX dashed #e2e0d7; border-radius: 16px; text-align: center; color: #8d948e; }
-.chat-empty span { font-size: 26px; color: #c7cdc6; }
-.chat-empty p { margin: 10px 0 0; font-size: 12px; line-height: 1.75; }
+.chat-empty .span { font-size: 26px; color: #c7cdc6; }
+.chat-empty .p { margin: 10px 0 0; font-size: 12px; line-height: 1.75; }
 .chat-screen .conversation { height: calc(100vh - 260PX); min-height: 430px; margin: 0 -16px; }
 
 /* ---- 全局 lavender：chat 屏幕背景 ---- */
@@ -67,17 +70,17 @@
 
 /* ---- Creem 调色板：chat 部分 ---- */
 .chat-screen { background: #F5F0EB; }
-.chat-list-title h1, .conversation-head b { color: var(--creem-ink); }
+.chat-list-title .h1, .conversation-head .b { color: var(--creem-ink); }
 .chat-contact { border: 1.5px solid #D8D0C5; background: #FFFCF9; box-shadow: none; }
 /* :hover 已移除 */
-.chat-contact p, .chat-contact time { color: #756F68; }
-.chat-contact i { background: var(--creem-peach); color: var(--creem-ink); }
+.chat-contact .p, .chat-contact .time { color: #756F68; }
+.chat-contact .i { background: var(--creem-peach); color: var(--creem-ink); }
 .chat-empty { border: 1.5px dashed #BEB4A8; background: #FFFCF9; color: #716A63; }
 .conversation { border: 0; background: #F5F0EB; }
 .conversation-head { border-bottom: 1.5px solid #D7CEC2; background: #FFFCF9; }
 .bubble { border: 1.5px solid #D1C8BC; background: #FFFCF9; box-shadow: none; }
 .bubble-row.mine .bubble, .bubble.mine { border-color: var(--creem-ink); background: var(--creem-peach); color: var(--creem-ink); box-shadow: 2px 2px 0 var(--creem-ink); }
-.bubble-row time { color: #91887F; }
+.bubble-row .time { color: #91887F; }
 .message-input { border-top: 1.5px solid #D7CEC2; background: #FFFCF9; }
 .message-input input { background: #F5F0EB; color: var(--creem-ink); }
 .message-input .send { border: 1.5px solid var(--creem-ink); background: var(--creem-peach); box-shadow: 2px 2px 0 var(--creem-ink); }
@@ -86,7 +89,7 @@
 .chat-screen, .conversation { background: var(--surface-base); }
 .chat-contact { border-color: #DED6CE; box-shadow: none; }
 /* :hover 已移除 */
-.chat-contact i { background: var(--success); color: var(--ink); }
+.chat-contact .i { background: var(--success); color: var(--ink); }
 .chat-empty { background: var(--surface-paper); border-color: #D8D0C8; }
 .conversation-head, .message-input { background: var(--surface-paper); border-color: #DDD5CD; }
 .bubble { background: var(--surface-paper); border-color: #D9D1C9; color: var(--ink); box-shadow: none; }
@@ -96,27 +99,27 @@
 
 /* ---- 聊天精修：柔和会话面 ---- */
 .chat-list-title { align-items: center; margin-bottom: 12px; }
-.chat-list-title > span { padding: 5px 9px; border-radius: 999px; background: var(--notice-soft); color: #8B6609; font: 500 10px monospace; }
+.chat-list-title > .span { padding: 5px 9px; border-radius: 999px; background: var(--notice-soft); color: #8B6609; font: 500 10px "DM Mono", monospace; }
 .chat-contact { width: 100%; min-height: 76px; padding: 12px; border: 1.5px solid #DED6CE; border-radius: 19px; display: flex; align-items: center; gap: 10px; text-align: left; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
 /* :hover 已移除 */
 .chat-contact:active { transform: translateY(0) scale(.99); }
 .chat-contact .chat-avatar { flex: 0 0 auto; border-radius: 14px; box-shadow: 0 3px 8px rgba(54, 43, 35, .12); }
-.chat-contact p { width: auto; max-width: 218px; }
+.chat-contact .p { width: auto; max-width: 218px; }
 .chat-empty { border-radius: 20px; border-style: dashed; }
 .conversation { overflow: hidden; border-radius: 23px 23px 0 0; }
 .conversation-head { min-height: 58px; padding: 10px 16px; border-bottom: 1PX solid #E4DDD6; }
-.conversation-head button { width: 33px; height: 33px; display: grid; place-items: center; border-radius: 50%; color: var(--ink); transition: background .18s ease; }
+.conversation-head .button { width: 33px; height: 33px; display: grid; place-items: center; border-radius: 50%; color: var(--ink); transition: background .18s ease; }
 /* :hover 已移除 */
 .date-label { padding: 4px 10px; border-radius: 999px; background: rgba(214, 205, 195, .45); color: #827970; }
 .message-stack { padding: 4px 15px 12px; }
 /* scrollbar 相关属性已移除 */
 .bubble-row { margin-bottom: 16px; }
-.bubble-row > div:last-child { max-width: calc(100% - 35PX); }
+.bubble-row .bubble-body { max-width: calc(100% - 35PX); }
 .bubble { max-width: 255px; padding: 10px 13px; border: 1PX solid #DED6CE; border-radius: 19px 19px 19px 8px; background: var(--surface-paper); line-height: 1.6; box-shadow: 0 2px 5px rgba(72, 59, 47, .045); }
 .bubble-row.mine .bubble, .bubble.mine { border-color: #E9B995; border-radius: 19px 19px 8px 19px; background: var(--action-soft); box-shadow: 0 2px 5px rgba(174, 103, 65, .08); }
-.bubble-row time { margin: 5px 4px 0; color: #948A80; }
+.bubble-row .time { margin: 5px 4px 0; color: #948A80; }
 .message-input { align-items: center; gap: 8px; padding: 10px 12px 12px; border-top: 1PX solid #E4DDD6; }
-.message-input > button:first-child { width: 31px; height: 31px; flex: 0 0 auto; border-radius: 50%; background: var(--growth-soft); color: #684EBA; font-size: 20px; line-height: 1; }
+.message-input > .button:first-child { width: 31px; height: 31px; flex: 0 0 auto; border-radius: 50%; background: var(--growth-soft); color: #684EBA; font-size: 20px; line-height: 1; }
 .message-input input { min-width: 0; border-radius: 999px; padding: 10px 14px; }
 .message-input .send { min-width: 45px; min-height: 32px; border: 0; border-radius: 999px; box-shadow: none; }
 
@@ -126,3 +129,15 @@
 .chat-screen { height: 100%; min-height: 0; }
 .chat-screen { height: calc(100% - 154PX); min-height: 0; overflow: hidden; }
 .chat-screen .conversation { height: 100%; min-height: 0; margin: 0 -16px; }
+
+/* ---- Figma 最终覆盖:会话直角 ---- */
+.chat-screen .conversation { border-radius: 0; }
+
+/* ============================================================
+   2026-08-07 P1 修复:flex 单列布局
+   - TopBar 品牌栏作为首个 flex 子项占位
+   - 会话区 flex:1 填满剩余空间,替代旧 calc(100% - 154PX)
+   - padding-bottom 84px 为浮动胶囊导航留位
+   ============================================================ */
+.chat-screen { height: 100%; display: flex; flex-direction: column; padding-bottom: 84px; }
+.chat-screen .conversation { flex: 1 1 auto; height: auto; min-height: 0; }

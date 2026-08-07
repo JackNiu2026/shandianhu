@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>闪电虎小程序 × Figma 还原度评估报告 V2(2026-08-07)</title>
+<style>
+  :root{
+    --ink:#151617; --ink-muted:#756E69; --paper:#FFFCF9; --bone:#F5F2F0; --soft:#F8F5F1;
+    --growth:#967AE9; --growth-deep:#7057C4; --growth-soft:#E8E4F8;
+    --action:#FFBE98; --action-soft:#FFF1E8;
+    --success:#3E9B62; --success-soft:#E6F7EC;
+    --notice:#A7770B; --notice-soft:#FFF7D9;
+    --danger:#C9522F; --danger-soft:#FDEBE4;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bone);color:var(--ink);line-height:1.7;padding:32px 20px 80px}
+  .wrap{max-width:980px;margin:0 auto}
+  .mono{font-family:"DM Mono",ui-monospace,Menlo,Consolas,monospace}
+
+  /* header */
+  .hero{background:linear-gradient(135deg,#6951C7 0%,#967AE9 56%,#B6A5F4 100%);border:2px solid var(--ink);border-radius:22px;box-shadow:6px 7px 0 var(--ink);padding:34px 34px 30px;color:#FFFCF9;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;width:200px;height:200px;right:-70px;bottom:-110px;border:1px solid rgba(255,252,249,.35);border-radius:50%}
+  .hero .kick{font:500 11px ui-monospace,monospace;letter-spacing:.12em;color:#FFECCC}
+  .hero h1{font-size:30px;letter-spacing:-.03em;margin:8px 0 4px}
+  .hero .sub{color:rgba(255,252,249,.85);font-size:13px;max-width:640px}
+  .hero .meta{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+  .hero .meta span{padding:4px 10px;border:1px solid rgba(255,252,249,.5);border-radius:99px;background:rgba(255,252,249,.16);font-size:11px}
+
+  /* score block */
+  .score-row{display:grid;grid-template-columns:230px 1fr;gap:18px;margin-top:22px}
+  .score-main{background:var(--paper);border:2px solid var(--ink);border-radius:20px;box-shadow:5px 6px 0 var(--ink);display:grid;place-items:center;padding:26px;text-align:center}
+  .score-main .num{font:700 64px/1 ui-monospace,monospace;letter-spacing:-.05em;color:var(--growth-deep)}
+  .score-main .num small{font-size:26px;color:var(--ink-muted)}
+  .score-main .lab{margin-top:8px;font-size:12px;color:var(--ink-muted)}
+  .score-main .verdict{margin-top:10px;display:inline-block;padding:4px 12px;border-radius:99px;background:var(--notice-soft);color:var(--notice);font-size:12px;font-weight:700}
+  .card{background:var(--paper);border:2px solid var(--ink);border-radius:20px;box-shadow:5px 6px 0 var(--ink);padding:22px 24px}
+  .card h2{font-size:17px;letter-spacing:-.02em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .card h2::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--growth)}
+
+  .bars{display:grid;gap:10px}
+  .bar-row{display:grid;grid-template-columns:150px 1fr 52px;gap:10px;align-items:center;font-size:12.5px}
+  .bar-row .name{color:#3A3E46;font-weight:600}
+  .bar-track{height:14px;border:1.5px solid var(--ink);border-radius:99px;background:var(--soft);overflow:hidden}
+  .bar-fill{height:100%;border-radius:99px}
+  .bar-val{font:600 12px ui-monospace,monospace;text-align:right}
+  .bar-note{grid-column:1/-1;font-size:11px;color:var(--ink-muted);margin-top:-6px}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  .mt{margin-top:18px}
+
+  /* summary list */
+  .findings{display:grid;gap:10px}
+  .finding{display:flex;gap:12px;padding:13px 14px;border:1.5px solid #E3DBD2;border-radius:14px;background:var(--soft);font-size:13px}
+  .finding .dot{flex:0 0 auto;width:26px;height:26px;display:grid;place-items:center;border-radius:8px;font-weight:800;font-size:13px;border:1.5px solid var(--ink)}
+  .finding b{display:block;font-size:13.5px}
+  .finding p{color:var(--ink-muted);font-size:12px;margin-top:2px}
+
+  /* priority tables */
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{font:700 11px ui-monospace,monospace;letter-spacing:.06em;color:var(--ink-muted);text-align:left;padding:8px 10px;border-bottom:2px solid var(--ink)}
+  td{padding:10px;border-bottom:1px solid #EAE3DA;vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  .tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:800;white-space:nowrap}
+  .p0{background:var(--danger-soft);color:var(--danger);border:1px solid #E8B4A2}
+  .p1{background:var(--notice-soft);color:var(--notice);border:1px solid #E8D28A}
+  .p2{background:var(--growth-soft);color:var(--growth-deep);border:1px solid #C9BBF0}
+  .ok{background:var(--success-soft);color:var(--success);border:1px solid #ABDDBD}
+  code{font:12px ui-monospace,monospace;background:#F0ECE6;border:1px solid #E0D9CF;border-radius:5px;padding:1px 5px;color:#5A4632;word-break:break-all}
+  .file{color:var(--growth-deep);font-weight:600}
+
+  /* roadmap */
+  .phase{display:grid;grid-template-columns:86px 1fr;gap:14px;padding:16px 0;border-bottom:1px dashed #DDD4C8}
+  .phase:last-child{border-bottom:0}
+  .phase .ph{font:800 13px ui-monospace,monospace;color:var(--growth-deep)}
+  .phase .ph small{display:block;color:var(--ink-muted);font-weight:500;font-size:10px;margin-top:3px}
+  .phase ul{padding-left:18px;font-size:13px}
+  .phase li{margin-bottom:5px}
+
+  .callout{margin-top:18px;padding:14px 16px;border:1.5px solid var(--ink);border-radius:14px;background:var(--action-soft);font-size:13px}
+  .callout b{color:#9A4A26}
+  .footer{margin-top:26px;text-align:center;color:var(--ink-muted);font-size:11px}
+  @media(max-width:760px){.score-row,.grid2{grid-template-columns:1fr}.bar-row{grid-template-columns:110px 1fr 46px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ═══════ 头部 ═══════ -->
+  <section class="hero">
+    <div class="kick">FIGMA FIDELITY AUDIT · V2 · RE-ASSESSMENT</div>
+    <h1>闪电虎小程序 × Figma 设计还原度评估</h1>
+    <p class="sub">对照设计稿(<span class="mono">figma/src/App.tsx + index.css</span>,1695 行层层覆盖的最终收敛态)逐文件扫描小程序实现(<span class="mono">packages/mobile/src</span>,Taro + React + SCSS),从「样式表移植完整度」与「运行时有效还原度」两个口径给出评估。</p>
+    <div class="meta">
+      <span>评估日期 2026-08-07</span><span>设计稿 2 个文件</span><span>小程序 18 个源文件</span><span>比对维度 8 类</span>
+    </div>
+  </section>
+
+  <!-- ═══════ 修复状态(2026-08-07 同日完成) ═══════ -->
+  <section class="card mt" style="border-color:var(--success);box-shadow:5px 6px 0 var(--success)">
+    <h2 style="margin-bottom:8px">✅ 修复状态:P0 全部完成、P1 全部完成(2026-08-07)</h2>
+    <p style="font-size:13px;color:var(--ink-muted)">本报告为修复前快照。以下 P0/P1 项已于同日修复并通过 <span class="mono">build:weapp</span>(零警告)与 <span class="mono">tsc --noEmit</span> 验证:</p>
+    <div class="findings" style="margin-top:10px">
+      <div class="finding"><span class="dot" style="background:var(--success-soft);color:var(--success)">✓</span><div><b>P0-1 弹窗类名</b><p>Modals.tsx 全量补齐 .h2/.h3/.label/.button/.span/.b/.small/.i/.em/.blockquote/.p/.cite 语义类名</p></div></div>
+      <div class="finding"><span class="dot" style="background:var(--success-soft);color:var(--success)">✓</span><div><b>P0-2 book-sheet 样式</b><p>app.scss 补移植 .book-sheet/.trial-teacher/.trial-avatar/.trial-slot-label 整段 + slot-grid 两列居中最终版</p></div></div>
+      <div class="finding"><span class="dot" style="background:var(--success-soft);color:var(--success)">✓</span><div><b>P0-3/4/5 失效选择器</b><p>全部 img→image(并给 Image 组件补 mode="aspectFill")、div→类名/view、大写 Text→text;compare-row/mini-teacher/match-explainer 等跨页共享样式归位 app.scss</p></div></div>
+      <div class="finding"><span class="dot" style="background:var(--success-soft);color:var(--success)">✓</span><div><b>P0-6 滑动操作区</b><p>居中三键簇(gap 42px)、pass/like 52px、undo 38px 圆角方形 + is-disabled 态、decision-confirm 脉冲动画、ActionIcon 尺寸分级(23/18px)</p></div></div>
+      <div class="finding"><span class="dot" style="background:var(--success-soft);color:var(--success)">✓</span><div><b>P1-1 品牌顶栏</b><p>navigationStyle: custom + 新增 components/TopBar.tsx(胶囊安全区自适应、吸顶);品牌 PNG 裁白边压缩 2459KB→43KB / 481KB→50KB;types/assets.d.ts 补图片模块声明</p></div></div>
+      <div class="finding"><span class="dot" style="background:var(--success-soft);color:var(--success)">✓</span><div><b>P1-2/3 最终层同步</b><p>test 页 hero 渐变(#6951C7→#967AE9→#B6A5F4)/22px 圆角/装饰圆/quick-points 白字/欢迎卡最终渐变与衬线 26px 标题;role-modal 居中 350px + serif 25px 最终版</p></div></div>
+      <div class="finding"><span class="dot" style="background:var(--success-soft);color:var(--success)">✓</span><div><b>P1-4 导航留位</b><p>match/test/me 页 padding-bottom 84px(app.scss);chat 页改 flex 单列(TopBar + conversation flex:1 + 留位);修复 custom-tab-bar 的 calc+env() 解析告警(12PX 大写)</p></div></div>
+      <div class="finding"><span class="dot" style="background:var(--notice-soft);color:var(--notice)">…</span><div><b>P1-5 字体(部分)</b><p>STKaiti 增加 KaiTi/serif 兜底链;完整还原需 wx.loadFontFace + CDN 域名白名单,留待阶段二</p></div></div>
+    </div>
+    <p style="font-size:12px;color:var(--ink-muted);margin-top:10px">待真机验证项:矮屏(&lt;750px)匹配页滚动降级、sticky 顶栏在各机型表现、头像真实图片填充效果。遗留可自行删除的目录:packages/mobile/dist-old-*(旧构建产物,沙箱批量删除保护拦截)。</p>
+  </section>
+
+  <!-- ═══════ 总分 ═══════ -->
+  <section class="score-row">
+    <div class="score-main">
+      <div>
+        <div class="num">72<small>%</small></div>
+        <div class="lab">综合有效还原度(运行时口径)</div>
+        <div class="verdict">框架到位,细节破损失分</div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>两个口径的成绩单</h2>
+      <div class="bars">
+        <div class="bar-row"><span class="name">样式表移植完整度</span><div class="bar-track"><div class="bar-fill" style="width:92%;background:linear-gradient(90deg,#B09CFB,#967AE9)"></div></div><span class="bar-val">92%</span></div>
+        <div class="bar-note">SCSS 几乎是 Figma CSS 的逐层镜像,含收敛层、语义色变量、降描边密度层,移植纪律很好</div>
+        <div class="bar-row"><span class="name">运行时有效还原度</span><div class="bar-track"><div class="bar-fill" style="width:72%;background:linear-gradient(90deg,#FFCF9E,#FF9E66)"></div></div><span class="bar-val">72%</span></div>
+        <div class="bar-note">约 30+ 条已移植样式因「选择器失效 / 类名缺失」在真机上不生效,实际渲染明显打折</div>
+      </div>
+      <div class="callout" style="margin-top:14px"><b>一句话结论:</b>不是"没搬",而是"搬了没接上电"。设计系统、配色、布局骨架的还原已是高水准;失分集中在四类接线问题——弹窗 JSX 缺语义类名、<code>img</code>/<code>div</code> 元素选择器在 WXSS 中失配、Figma 最终覆盖层部分未同步、品牌顶栏整体缺席。</div>
+    </div>
+  </section>
+
+  <!-- ═══════ 分模块评分 ═══════ -->
+  <section class="card mt">
+    <h2>分模块还原度</h2>
+    <div class="bars">
+      <div class="bar-row"><span class="name">设计令牌 / 全局色</span><div class="bar-track"><div class="bar-fill" style="width:95%;background:#967AE9"></div></div><span class="bar-val">95%</span></div>
+      <div class="bar-row"><span class="name">底部浮动导航</span><div class="bar-track"><div class="bar-fill" style="width:95%;background:#967AE9"></div></div><span class="bar-val">95%</span></div>
+      <div class="bar-note">浮动胶囊 + 四色选中态 + 毛玻璃渐进增强,与设计稿一致;但页面侧未预留 84px 底部空间(<code>.screen-content</code> 在页面中并不存在),匹配页底部按钮有被遮挡风险</div>
+      <div class="bar-row"><span class="name">消息页 chat</span><div class="bar-track"><div class="bar-fill" style="width:82%;background:#7EC8A0"></div></div><span class="bar-val">82%</span></div>
+      <div class="bar-note">气泡/会话/输入区样式完整;扣分:<code>.bubble-row &gt; div</code> 失效(气泡最大宽度失控)、头像 <code>img</code> 样式失效</div>
+      <div class="bar-row"><span class="name">测评页 test</span><div class="bar-track"><div class="bar-fill" style="width:80%;background:#7EC8A0"></div></div><span class="bar-val">80%</span></div>
+      <div class="bar-note">骨架与层级一致;扣分:Figma 最后一轮覆盖层未同步——hero 渐变/圆角、purpose-quick-points 文字颜色(深字压在紫底上)、欢迎卡渐变与衬线大标题</div>
+      <div class="bar-row"><span class="name">发现页 match</span><div class="bar-track"><div class="bar-fill" style="width:78%;background:#F2C48A"></div></div><span class="bar-val">78%</span></div>
+      <div class="bar-note">老师卡/信任条/联系行高度还原;扣分:swipe-actions 仍是旧几何(56px 圆钮 + space-between,Figma 已是 52/38px 居中簇 + 42px 间距),decision-feedback 反馈动画缺失</div>
+      <div class="bar-row"><span class="name">我的页 me</span><div class="bar-track"><div class="bar-fill" style="width:75%;background:#F2C48A"></div></div><span class="bar-val">75%</span></div>
+      <div class="bar-note">紫色身份卡/工作台九宫格/收益卡样式齐全;扣分:多处 <code>div</code> 选择器失效、头像真实图片填充失效</div>
+      <div class="bar-row"><span class="name">弹窗 / 抽屉系统</span><div class="bar-track"><div class="bar-fill" style="width:45%;background:#EE9B7C"></div></div><span class="bar-val">45%</span></div>
+      <div class="bar-note">最大失分区:Modals.tsx 的 JSX 普遍缺少 SCSS 期待的类名,book-sheet 整段样式未移植,role-modal 最终版未同步(详见 P0 清单)</div>
+      <div class="bar-row"><span class="name">字体系统</span><div class="bar-track"><div class="bar-fill" style="width:55%;background:#EE9B7C"></div></div><span class="bar-val">55%</span></div>
+      <div class="bar-note">DM Mono→monospace、Noto Serif SC→serif、Ma Shan Zheng→STKaiti 的降级合理但视觉差异真实存在(尤其测评页衬线标题与等宽数字)</div>
+      <div class="bar-row"><span class="name">品牌顶栏 topbar</span><div class="bar-track"><div class="bar-fill" style="width:8%;background:#D96A5A"></div></div><span class="bar-val">~0%</span></div>
+      <div class="bar-note">虎标 + 字标品牌栏未在任何页面渲染(以微信原生导航栏替代);app.scss 中约 40 行 wordmark 样式与两张品牌 PNG(共约 3MB)处于闲置状态</div>
+    </div>
+  </section>
+
+  <!-- ═══════ 做得好的 ═══════ -->
+  <section class="grid2">
+    <div class="card">
+      <h2>已经做对的(保持)</h2>
+      <div class="findings">
+        <div class="finding"><span class="dot" style="background:var(--success-soft);color:var(--success)">✓</span><div><b>设计令牌双体系完整落地</b><p>--creem-* 与语义色 --surface/--growth/--action/--success/--notice 两套变量与 Figma 收敛层一致,全页引用规范</p></div></div>
+        <div class="finding"><span class="dot" style="background:var(--success-soft);color:var(--success)">✓</span><div><b>平台适配动作专业</b><p>:hover 移除、scrollbar 移除、1px/2px 大写 PX 防 pxtransform、backdrop-filter @supports 渐进增强、conic-gradient 降级为 SVG data URI</p></div></div>
+        <div class="finding"><span class="dot" style="background:var(--success-soft);color:var(--success)">✓</span><div><b>标签选择器→类选择器改造</b><p>四个页面 TSX 正确使用 .h1/.h2/.span/.b/.em 等类名对接样式,页面主体渲染可靠</p></div></div>
+        <div class="finding"><span class="dot" style="background:var(--success-soft);color:var(--success)">✓</span><div><b>图标方案工程化</b><p>Icons.tsx 用 CSS mask + currentColor 复刻 Figma 全部 SVG(path 逐条一致),颜色可继承,比图片雪碧更优</p></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>根因分析(为什么"搬了没生效")</h2>
+      <div class="findings">
+        <div class="finding"><span class="dot" style="background:var(--danger-soft);color:var(--danger)">1</span><div><b>Figma CSS 是"考古地层"</b><p>index.css 历经 10+ 轮迭代,同一选择器被覆盖 5–8 次,最终有效值要靠人工追完整条 cascade——本次大部分偏差都是"最终覆盖层"漏同步</p></div></div>
+        <div class="finding"><span class="dot" style="background:var(--danger-soft);color:var(--danger)">2</span><div><b>WXSS 与 Web CSS 的元素鸿沟</b><p>Taro 的 View/Text/Image 渲染为 view/text/image 原生组件,移植过来的 <code>div</code>(7 处)、<code>img</code>(19 处)、<code>Text</code>(1 处)元素选择器全部静默失效,且构建期无任何告警</p></div></div>
+        <div class="finding"><span class="dot" style="background:var(--danger-soft);color:var(--danger)">3</span><div><b>弹窗组件 TSX 与 SCSS 脱节</b><p>Modals.tsx 是后写/重写的,JSX 用了裸 View/Text,没挂上移植 SCSS 所期待的语义类名,两边各自正确、合在一起失效</p></div></div>
+        <div class="finding"><span class="dot" style="background:var(--danger-soft);color:var(--danger)">4</span><div><b>缺少视觉回归手段</b><p>没有截图对比 / 真机走查清单,样式静默失效难以被开发过程发现</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ P0 ═══════ -->
+  <section class="card mt">
+    <h2>P0 · 视觉直接破损(必须修)</h2>
+    <table>
+      <tr><th style="width:64px">级别</th><th style="width:31%">问题</th><th>证据与影响</th></tr>
+      <tr><td><span class="tag p0">P0</span></td><td><b>弹窗 JSX 缺语义类名</b><br><span class="file">components/Modals.tsx</span></td><td>NeedsSheet 标题无 <code>.h2</code>、分组标题无 <code>.label</code>、chips 是无类名 View(<code>.chip-row .button</code> 的边框/圆角/内边距全部不生效,<b>未选中 chip 渲染为裸文字</b>);TrustSheet 的家长评价无 <code>.blockquote/.p/.cite</code>(左边框引用块消失);RoleModal 两个身份卡无 <code>.button</code>(<b>卡片样式整体丢失</b>);SettingsModal/PosterModal 同类问题</td></tr>
+      <tr><td><span class="tag p0">P0</span></td><td><b>预约弹窗样式整段缺失</b><br><span class="file">app.scss(未移植)</span></td><td>Figma 最终层的 <code>.book-sheet</code>(356px 居中 dialog)、<code>.trial-teacher</code> 老师行、<code>.trial-avatar</code>、<code>.trial-slot-label</code>、两列居中的 <code>.slot-grid</code> 在小程序 SCSS 中<b>零匹配</b>;且 BookSheet.tsx 的 slot 按钮同样无类名——预约弹窗目前只有通用 sheet 外壳</td></tr>
+      <tr><td><span class="tag p0">P0</span></td><td><b>19 处 <code>img</code> 选择器失效</b><br><span class="file">app.scss / 各页 scss</span></td><td>小程序里 Taro <code>&lt;Image&gt;</code> 渲染为 <code>&lt;image&gt;</code> 组件,<code>img</code> 选择器永不命中:头像的 <code>width/height:100% + object-fit + scale(1.1x)</code>、视频封面填充、海报头像填充<b>全部失效</b>→ 真实头像图无法正确铺满圆角框</td></tr>
+      <tr><td><span class="tag p0">P0</span></td><td><b>7 处 <code>div</code> 选择器失效</b><br><span class="file">多文件</span></td><td><code>.result-card &gt; div:nth-child(2)</code>(test/index.scss:33)失效 → <b>测评结果卡文字与左侧圆形徽章重叠</b>;<code>.bubble-row &gt; div:last-child</code>(chat:116)失效 → 气泡宽度失控;<code>.compare-row &gt; div</code>(match:181)、<code>.connected-teacher &gt; div</code>(me:39-40)、<code>.settings-profile &gt; div</code>(app:232)、<code>.interest-title &gt; div</code>(me:72)同病</td></tr>
+      <tr><td><span class="tag p0">P0</span></td><td><b>评价弹窗星级选择器大小写错误</b><br><span class="file">app.scss:115</span></td><td><code>.rating-row &gt; Text</code> 使用大写元素名,WXSS 元素选择器为小写 <code>text</code> → 32px 大星星渲染成默认字号</td></tr>
+      <tr><td><span class="tag p0">P0</span></td><td><b>滑动操作区停留在旧版几何</b><br><span class="file">pages/match/index.scss</span></td><td>Figma 最终版:三按钮<b>居中簇</b>(gap 42px),pass/like 52px、undo 38px 圆角方形墨边按钮,点击有 <code>decision-confirm</code> 缩放脉冲反馈;小程序仍是 56px 圆形 + space-between 旧版,<code>.decision-feedback</code> 动画与 <code>.action-icon</code> 尺寸规则整段未移植(undo 按钮目前几乎"隐形":无边框无背景)</td></tr>
+    </table>
+  </section>
+
+  <!-- ═══════ P1 ═══════ -->
+  <section class="card mt">
+    <h2>P1 · 明显可见偏差(应当修)</h2>
+    <table>
+      <tr><th style="width:64px">级别</th><th style="width:31%">问题</th><th>证据与影响</th></tr>
+      <tr><td><span class="tag p1">P1</span></td><td><b>品牌顶栏缺席</b><br><span class="file">全部页面 / app.config.ts</span></td><td>Figma 每屏顶部有虎标 +「闪电虎」字标组合(68px 高);小程序用微信原生白底导航栏替代,品牌感与暖纸底色(<code>#FFFCF9</code>)均丢失。app.scss 约 40 行 wordmark 样式与 <code>assets/tiger-logo-*.png</code>(2.5MB + 0.49MB)闲置——<b>若直接启用还会撞 2MB 主包上限,需先压缩/上 CDN</b></td></tr>
+      <tr><td><span class="tag p1">P1</span></td><td><b>测评页最终覆盖层未同步</b><br><span class="file">pages/test/index.scss</span></td><td>① hero 渐变应为 <code>#6951C7→#967AE9→#B6A5F4</code> 272px/22px 圆角 + 右下装饰圆,当前是旧版 <code>#7E66D8…</code>/20px 圆角;② <code>purpose-quick-points</code> 文字应为白色 <code>#FFFCF9</code>,当前残留 <code>#151617</code> 深字——<b>深字压紫底,对比度事故</b>;③ tiny-label 应为 <code>#FFF5D9</code>;④ 欢迎卡最终渐变(<code>#EFEAFF→#DCD2FF</code>, 光斑 .75 透明度)与 serif 26px 大标题未同步</td></tr>
+      <tr><td><span class="tag p1">P1</span></td><td><b>角色弹窗非最终版</b><br><span class="file">app.scss</span></td><td>Figma 最终:居中 350px 浮层、serif 25px 标题、整体居中排版;小程序仍是旧版底部抽屉式(left 对齐、24px 无衬线标题)</td></tr>
+      <tr><td><span class="tag p1">P1</span></td><td><b>页面未给浮动导航留位</b><br><span class="file">custom-tab-bar/index.scss:95</span></td><td><code>.screen-content { padding-bottom: 84px }</code> 写了,但四个页面的根节点是 <code>.match-screen</code> 等,<b>没有 .screen-content 元素</b>——规则空转;匹配页 <code>height:100% + overflow:hidden</code>,底部滑动按钮区在矮屏设备上可能被浮动导航压住</td></tr>
+      <tr><td><span class="tag p1">P1</span></td><td><b>字体降级链在安卓断档</b><br><span class="file">全局 scss</span></td><td><code>STKaiti</code> 仅 iOS 存在,Android 上头像占位字/装饰字回退为默认黑体;<code>serif</code> 在部分安卓 WebView 渲染为默认 sans → 测评页"衬线大标题"的设计意图丢失。DM Mono→monospace 失去等宽数字的设计感</td></tr>
+    </table>
+  </section>
+
+  <!-- ═══════ P2 ═══════ -->
+  <section class="card mt">
+    <h2>P2 · 细微偏差与债务(建议修)</h2>
+    <table>
+      <tr><th style="width:64px">级别</th><th style="width:31%">问题</th><th>说明</th></tr>
+      <tr><td><span class="tag p2">P2</span></td><td><b>utility-modal 以 toast 替代</b></td><td>me 页功能卡点击是 <code>Taro.showToast</code>;Figma 有居中 utility-modal 样式但 App.tsx 里同样是死状态——<b>两边扯平,可接受</b>,建议后续做真实页面时补</td></tr>
+      <tr><td><span class="tag p2">P2</span></td><td><b>login 页面死代码</b></td><td><span class="file">pages/login/</span> 未在 app.config 注册,实际走 LoginModal;建议删除或注册,避免维护两份</td></tr>
+      <tr><td><span class="tag p2">P2</span></td><td><b>新增界面不在设计稿内</b></td><td>LoginModal / guest-banner / ReviewSheet 为小程序业务新增,视觉风格(紫色渐变按钮)与 Figma 的 peach action 体系不完全同宗,建议回灌设计稿统一</td></tr>
+      <tr><td><span class="tag p2">P2</span></td><td><b>窗口背景色微差</b></td><td>app.config <code>backgroundColor: #f1ece4</code> vs 设计 <code>#F5F2F0</code>(仅下拉 overscroll 时可见)</td></tr>
+      <tr><td><span class="tag p2">P2</span></td><td><b>旧版死样式囤积</b></td><td>SCSS 与 Figma 一样保留了全部历史层(如 <code>.portrait-figure</code>/<code>.sun</code>/<code>.supply-badge</code> 等已无对应 JSX),体积与心智负担双高,建议随收敛一并清理</td></tr>
+    </table>
+  </section>
+
+  <!-- ═══════ 解决方案 ═══════ -->
+  <section class="card mt">
+    <h2>解决方案路线图(通往 100%)</h2>
+
+    <div class="phase">
+      <div class="ph">阶段一<small>接线修复 · 1 天内</small></div>
+      <div>
+        <ul>
+          <li><b>修选择器失配(机械替换,收益最大)</b>:全部 scss 中 <code>img</code> → <code>image</code>、<code>div</code> → 显式类名、<code>&gt; Text</code> → <code>&gt; text</code>;更稳妥的做法是给关键 Image/View 直接加类名(如 <code>.avatar-img</code>),不依赖元素选择器</li>
+          <li><b>补 Modals.tsx 类名</b>:对照 Figma HTML 结构逐弹窗补齐 <code>.h2/.h3/.label/.button/.span/.b/.small/.i/.em/.blockquote/.p/.cite</code>;chip、slot、role 选项卡的 View 补上 <code>button</code> 类</li>
+          <li><b>补移植缺失段落</b>:book-sheet/trial-* 整段、decision-feedback 动画、swipe-actions 最终几何(居中/gap 42px/undo 38px)、role-modal 最终版、test 页最终覆盖层</li>
+          <li>修完本阶段,有效还原度预计 <b>72% → 88%+</b></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="ph">阶段二<small>结构对齐 · 2–3 天</small></div>
+      <div>
+        <ul>
+          <li><b>品牌顶栏</b>:<code>navigationStyle: "custom"</code> + 共享 TopBar 组件(胶囊按钮安全区适配);虎标/字标 PNG 压缩为 WebP(3MB → 预计 &lt;40KB)或放 CDN,切勿原图进主包</li>
+          <li><b>页面底部留位</b>:给四个页面根节点统一加 <code>.screen-content</code> 包装或直接把 <code>padding-bottom: 84px</code> 落到各 screen 类上;匹配页在真机(尤其 iPhone SE/矮屏安卓)验证滑卡按钮区</li>
+          <li><b>字体方案</b>:用 <code>wx.loadFontFace</code> 全局加载 Noto Serif SC(衬线标题)与 DM Mono(等宽数字),字体文件放 CDN 并配置 downloadFile 合法域名;Ma Shan Zheng 使用面极小(头像占位字),建议直接接受系统字或以图片替代,不为其加载整个字体</li>
+          <li><b>清理</b>:删除未注册的 login 页面死代码;约定新增 UI(登录/评价等)先回灌 Figma 再开发</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="ph">阶段三<small>机制保障 · 长期</small></div>
+      <div>
+        <ul>
+          <li><b>收敛设计稿 CSS(治本)</b>:把 1695 行"考古地层"计算成<b>每个选择器一份最终声明</b>的扁平样式表(可用浏览器 DevTools 或 PostCSS 脚本求值 cascade),此后小程序只跟单一事实源 diff,杜绝"漏跟最终层"复发</li>
+          <li><b>抽离 tokens.scss</b>:色板/圆角/阴影/字号做唯一令牌文件,设计变更只改令牌</li>
+          <li><b>视觉回归</b>:微信开发者工具对各页面/弹窗截图存档,与 Figma 导出图并排列入走查清单;关键页面(发现/测评)做真机截图对比</li>
+          <li><b> lint 防线</b>:加一条 scss 检查规则,禁止 <code>img|div|span|p|h1-h6</code> 等 Web 元素选择器进入小程序样式表(stylelint selector 黑名单即可),把本次 P0 类问题变成构建期报错</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="callout">
+    <b>关于"100% 一致"的现实说明:</b>小程序与 Web 存在硬边界——原生导航栏/胶囊按钮、字体渲染引擎、<code>backdrop-filter</code> 仅在部分基础库可用、<code>:hover</code> 不存在。建议把目标定义为「<b>视觉还原 100% + 平台适配白名单</b>」:凡进入白名单的差异(原生导航、字体降级、hover 移除)视为合规适配而非偏差,其余全部修齐。以当前代码基础,完成阶段一+二即可达到该目标。
+  </div>
+
+  <p class="footer">闪电虎 · Figma 还原度评估 V2 · 2026-08-07 · 基于 packages/mobile@ Aug 7 11:03 与 figma/src 全量源码逐行比对</p>
+</div>
+</body>
+</html>

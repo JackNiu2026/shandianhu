@@ -4,9 +4,7 @@ import path from "path";
 const nextConfig: NextConfig = {
   output: "standalone",
   transpilePackages: ["@lightning-tiger/shared"],
-  experimental: {
-    serverComponentsExternalPackages: ["@prisma/client"],
-  },
+  serverExternalPackages: ["@prisma/client"],
   poweredByHeader: false,
   async headers() {
     return [
@@ -17,18 +15,25 @@ const nextConfig: NextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "X-DNS-Prefetch-Control", value: "on" },
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+          {
+            key: "Content-Security-Policy",
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'",
+          },
         ],
       },
       {
         source: "/api/(.*)",
         headers: [
-          { key: "X-RateLimit-Limit", value: "100" },
+          { key: "Access-Control-Allow-Methods", value: "GET, POST, PUT, PATCH, DELETE, OPTIONS" },
+          { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization, Cookie" },
+          { key: "Access-Control-Allow-Credentials", value: "true" },
+          { key: "Access-Control-Max-Age", value: "86400" },
         ],
       },
     ];
   },
   webpack: (config) => {
-    // 别名：将 @lightning-tiger/shared 指向 monorepo 源码
     config.resolve.alias = {
       ...config.resolve.alias,
       "@lightning-tiger/shared": path.resolve(

@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { View, Text, Image } from "@tarojs/components";
+import Taro from "@tarojs/taro";
 import { ActionIcon } from "@/components/Icons";
+import { TopBar } from "@/components/TopBar";
 import { NeedsSheet, TrustSheet, BookSheet, VideoPlayer } from "@/components/Modals";
 import { useAppStore } from "@/store";
 import { useTeachers, usePlatformStats } from "@/hooks";
+import { createBooking } from "@/services/api";
 import { matchTeachers, isRelaxedMatch } from "@lightning-tiger/shared";
 import type { Teacher } from "@lightning-tiger/shared";
 import "./index.scss";
@@ -75,23 +78,19 @@ export default function MatchPage() {
 
   return (
     <View className="match-screen">
+      <TopBar />
       <View className="intro-row platform-stat">
-        <Text>
-          已有 <Text>{stats.teacherCount || "..."}</Text> 位优秀老师入驻平台
+        <Text className="h1">
+          已有 <Text className="strong">{stats.teacherCount}</Text> 位优秀老师入驻平台
         </Text>
         <View className="filter-btn platform-filter" onClick={() => setNeedsOpen(true)}>
           <Text>筛选</Text>
         </View>
       </View>
-      {error && (
-        <View className="api-error" onClick={() => reload()}>
-          <Text>加载失败，点击重试</Text>
-        </View>
-      )}
       {loading ? (
         <View className="deck-end">
-          <Text>✦</Text>
-          <Text>正在为你匹配老师...</Text>
+          <Text className="span">✦</Text>
+          <Text className="b">正在为你匹配老师...</Text>
         </View>
       ) : relaxed && (
         <Text className="relax-note">符合预算的老师已看完，以下为放宽预算后的推荐</Text>
@@ -111,7 +110,7 @@ export default function MatchPage() {
                 <Text className="swipe-arrow right">›</Text>
               </View>
             )}
-            <View className="teacher-identity" style={{ backgroundColor: teacher.color }}>
+            <View className="teacher-identity">
               <View className="identity-top">
                 <Text>
                   {teacher.subject} · {teacher.grades.join("/")}
@@ -119,12 +118,12 @@ export default function MatchPage() {
               </View>
               <View className="identity-main">
                 <View className="teacher-avatar">
-                  {teacher.avatar ? <Image src={teacher.avatar} /> : <Text>{teacher.name[0]}</Text>}
+                  {teacher.avatar ? <Image src={teacher.avatar} mode="aspectFill" /> : <Text>{teacher.name[0]}</Text>}
                 </View>
                 <View>
                   <View className="name-line">
-                    <Text>{teacher.name}</Text>
-                    <Text>{teacher.age}</Text>
+                    <Text className="h2">{teacher.name}</Text>
+                    <Text className="span">{teacher.age}</Text>
                     <View className="verified">
                       <Text>✓</Text>
                     </View>
@@ -134,7 +133,7 @@ export default function MatchPage() {
               </View>
               <View className="tags credential-tags">
                 {teacher.tags.map((tag, index) => (
-                  <Text className={index < 2 ? "credential" : ""} key={tag}>
+                  <Text className={index < 2 ? "credential span" : "span"} key={tag}>
                     {tag}
                   </Text>
                 ))}
@@ -142,62 +141,62 @@ export default function MatchPage() {
             </View>
             <View className="card-body compact-body">
               <View className="teacher-meta">
-                <Text>★ {teacher.rating} 评分</Text>
-                <View />
-                <Text>已陪伴 {teacher.students} 位学生</Text>
+                <Text className="span">★ {teacher.rating} 评分</Text>
+                <View className="i" />
+                <Text className="span">已陪伴 {teacher.students} 位学生</Text>
               </View>
               <Text className="teacher-note">“{teacher.note}”</Text>
               <View className="decision-grid">
-                <Text>
-                  <Text>{teacher.years}</Text>教龄
+                <Text className="span">
+                  <Text className="b">{teacher.years}</Text>教龄
                 </Text>
-                <Text>
-                  <Text>¥{teacher.price}</Text>起 / 60 分钟
+                <Text className="span">
+                  <Text className="b">¥{teacher.price}</Text>起 / 60 分钟
                 </Text>
-                <Text>
-                  <Text>{teacher.slots[0]}</Text>最近可约
+                <Text className="span">
+                  <Text className="b">{teacher.slots[0]}</Text>最近可约
                 </Text>
               </View>
               <View className="trust-line" onClick={() => setTrustFor(teacher)}>
-                <Text>✓ 4 项资质已核验</Text>
-                <Text>✓ {teacher.reviews.length} 条家长原话</Text>
-                <Text>查看保障详情 ›</Text>
+                <Text className="span">✓ 4 项资质已核验</Text>
+                <Text className="span">✓ {teacher.reviews.length} 条家长原话</Text>
+                <Text className="span">查看保障详情 ›</Text>
               </View>
               <View className="portrait video-cover lesson-video">
-                <Image src={teacher.video} />
+                <Image src={teacher.video} mode="aspectFill" />
                 <View className="video-shade" />
                 <View className="play-video" onClick={() => setPlaying(teacher)}>
                   <Text>▶</Text>
                 </View>
                 <View className="video-label">
-                  <Text>试听片段 · 02:18</Text>
-                  <Text>一分钟看懂 TA 的课堂</Text>
+                  <Text className="b">试听片段 · 02:18</Text>
+                  <Text className="span">一分钟看懂 TA 的课堂</Text>
                 </View>
               </View>
               <View className="contact-row">
                 <View className="contact-status">
                   <Text className="contact-icon">☎</Text>
                   <Text>
-                    <Text>联系方式</Text>
-                    <Text>完成试听后即可聊天</Text>
+                    <Text className="small">联系方式</Text>
+                    <Text className="b">完成试听后即可聊天</Text>
                   </Text>
                 </View>
-                <View onClick={() => setBookFor(teacher)}>
+                <View className="button" onClick={() => setBookFor(teacher)}>
                   <Text>预约免费试听 </Text>
-                  <Text>›</Text>
+                  <Text className="span">›</Text>
                 </View>
               </View>
             </View>
           </View>
           <View className="swipe-actions">
             <View
-              className={`pass ${swipeFeedback === "left" ? "decision-feedback" : ""}`}
+              className={`button pass ${swipeFeedback === "left" ? "decision-feedback" : ""}`}
               onClick={() => moveCard("left")}
             >
               <ActionIcon name="pass" />
             </View>
             <View
-              className="undo"
+              className={`button undo ${swipeHistory.length === 0 ? "is-disabled" : ""}`}
               onClick={() => {
                 if (swipeHistory.length) undoSwipe();
               }}
@@ -205,7 +204,7 @@ export default function MatchPage() {
               <ActionIcon name="undo" />
             </View>
             <View
-              className={`like ${swipeFeedback === "right" ? "decision-feedback" : ""}`}
+              className={`button like ${swipeFeedback === "right" ? "decision-feedback" : ""}`}
               onClick={() => moveCard("right")}
             >
               <ActionIcon name="like" />
@@ -214,16 +213,16 @@ export default function MatchPage() {
         </>
       ) : (
         <View className="deck-end">
-          <Text>✦</Text>
-          <Text>这一轮推荐看完了</Text>
-          <Text>
+          <Text className="span">✦</Text>
+          <Text className="b">这一轮推荐看完了</Text>
+          <Text className="p">
             已收藏 {liked.length} 位老师，可以在「我的」里对比。也可以放宽条件看看更多。
           </Text>
           <View className="deck-end-actions">
-            <View onClick={() => setCursor(0)}>
+            <View className="button" onClick={() => setCursor(0)}>
               <Text>重新浏览</Text>
             </View>
-            <View className="primary" onClick={() => setNeedsOpen(true)}>
+            <View className="button primary" onClick={() => setNeedsOpen(true)}>
               <Text>调整筛选条件</Text>
             </View>
           </View>
@@ -247,8 +246,26 @@ export default function MatchPage() {
         <BookSheet
           teacher={bookFor}
           onClose={() => setBookFor(null)}
-          onBook={(teacherName, slot) => {
-            dispatch({ type: "SET_BOOKED", booked: { teacher: teacherName, slot } });
+          onBook={async (teacherName, slot) => {
+            if (!state.parentId) {
+              Taro.showToast({ title: "请先登录", icon: "none" });
+              return;
+            }
+            if (!bookFor.id) {
+              Taro.showToast({ title: "老师信息异常", icon: "none" });
+              return;
+            }
+            try {
+              await createBooking({
+                teacherId: bookFor.id,
+                subject: bookFor.subject,
+                slot,
+              });
+              dispatch({ type: "SET_BOOKED", booked: { teacher: teacherName, slot, teacherId: bookFor.id } });
+              Taro.showToast({ title: "预约成功", icon: "success" });
+            } catch {
+              Taro.showToast({ title: "预约失败，请重试", icon: "none" });
+            }
           }}
         />
       )}

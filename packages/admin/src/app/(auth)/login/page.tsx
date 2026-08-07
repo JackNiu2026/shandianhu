@@ -38,7 +38,7 @@ function LoginForm() {
       }
 
       // Cookie 已由服务端通过 HttpOnly 设置
-      const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+      const callbackUrl = searchParams?.get("callbackUrl") || "/dashboard";
       router.push(callbackUrl);
       router.refresh();
     } catch {

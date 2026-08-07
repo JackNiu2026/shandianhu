@@ -1,58 +1,66 @@
 /**
  * GET /api/finance/stats - 财务统计数据
+ * 使用数据库聚合查询，避免全表加载到内存
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/api-auth";
+import { authenticateAdmin } from "@/lib/api-auth";
+
+// Prevent static prerendering
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = authenticateRequest(request);
+    const auth = authenticateAdmin(request);
     if (auth.response) return auth.response;
 
-    // 获取所有老师收入数据
-    const teachers = await prisma.teacher.findMany({
-      select: {
-        totalRevenue: true,
-        pendingRevenue: true,
-        availableRevenue: true,
-        totalLessons: true,
-      },
-    });
-
-    const totalRevenue = teachers.reduce((sum, t) => sum + t.totalRevenue, 0);
-    const pendingRevenue = teachers.reduce((sum, t) => sum + t.pendingRevenue, 0);
-    const availableRevenue = teachers.reduce((sum, t) => sum + t.availableRevenue, 0);
-    const totalLessons = teachers.reduce((sum, t) => sum + t.totalLessons, 0);
-
-    // 提现统计
-    const withdrawals = await prisma.withdrawal.findMany();
-    const pendingWithdrawals = withdrawals.filter((w) => w.status === "pending");
-    const processedWithdrawals = withdrawals.filter((w) => w.status === "processed");
-    const totalWithdrawalAmount = withdrawals.reduce((sum, w) => sum + w.amount, 0);
-    const pendingWithdrawalAmount = pendingWithdrawals.reduce((sum, w) => sum + w.amount, 0);
-
-    // 会员收入统计
-    const memberships = await prisma.membership.findMany({
-      where: { status: "active" },
-    });
-    const membershipRevenue = memberships.reduce((sum, m) => sum + m.amount, 0);
+    // 使用数据库聚合查询，避免全表加载
+    const [
+      teacherAgg,
+      pendingWithdrawalAgg,
+      totalWithdrawalAgg,
+      processedWithdrawalCount,
+      pendingWithdrawalCount,
+      membershipAgg,
+    ] = await Promise.all([
+      prisma.teacher.aggregate({
+        _sum: {
+          totalRevenue: true,
+          pendingRevenue: true,
+          availableRevenue: true,
+          totalLessons: true,
+        },
+      }),
+      prisma.withdrawal.aggregate({
+        where: { status: "pending" },
+        _sum: { amount: true },
+      }),
+      prisma.withdrawal.aggregate({
+        _sum: { amount: true },
+      }),
+      prisma.withdrawal.count({ where: { status: "processed" } }),
+      prisma.withdrawal.count({ where: { status: "pending" } }),
+      prisma.membership.aggregate({
+        where: { status: "active" },
+        _sum: { amount: true },
+      }),
+    ]);
 
     return NextResponse.json({
       revenue: {
-        total: totalRevenue,
-        pending: pendingRevenue,
-        available: availableRevenue,
-        membership: membershipRevenue,
+        total: teacherAgg._sum.totalRevenue || 0,
+        pending: teacherAgg._sum.pendingRevenue || 0,
+        available: teacherAgg._sum.availableRevenue || 0,
+        membership: membershipAgg._sum.amount || 0,
       },
       withdrawals: {
-        total: totalWithdrawalAmount,
-        pending: pendingWithdrawalAmount,
-        pendingCount: pendingWithdrawals.length,
-        processedCount: processedWithdrawals.length,
+        total: totalWithdrawalAgg._sum.amount || 0,
+        pending: pendingWithdrawalAgg._sum.amount || 0,
+        pendingCount: pendingWithdrawalCount,
+        processedCount: processedWithdrawalCount,
       },
       lessons: {
-        total: totalLessons,
+        total: teacherAgg._sum.totalLessons || 0,
       },
     });
   } catch (error) {

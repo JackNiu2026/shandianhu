@@ -9,6 +9,7 @@ export type Prefs = {
 };
 
 export type Teacher = {
+  id?: string;
   name: string;
   age: string;
   school: string;
@@ -52,4 +53,5 @@ export type ChatMessage = {
 export type BookedInfo = {
   teacher: string;
   slot: string;
+  teacherId?: string;
 };
