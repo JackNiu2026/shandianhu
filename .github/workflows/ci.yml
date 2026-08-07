@@ -88,6 +88,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main'
+    env:
+      CONTAINER_REGISTRY_TOKEN: ${{ secrets.CONTAINER_REGISTRY_TOKEN }}
+      CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
+      CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
 
     steps:
       - uses: actions/checkout@v4
@@ -96,9 +100,9 @@ jobs:
         run: docker build -f packages/admin/Dockerfile -t lightning-tiger-admin:latest .
 
       - name: Log in to Container Registry
-        if: secrets.CONTAINER_REGISTRY_TOKEN != ''
-        run: echo "${{ secrets.CONTAINER_REGISTRY_TOKEN }}" | docker login -u ${{ secrets.CONTAINER_REGISTRY_USER }} --password-stdin
+        if: env.CONTAINER_REGISTRY_TOKEN != ''
+        run: echo "${{ env.CONTAINER_REGISTRY_TOKEN }}" | docker login -u ${{ env.CONTAINER_REGISTRY_USER }} --password-stdin
 
       - name: Push Docker image
-        if: secrets.CONTAINER_REGISTRY_TOKEN != ''
-        run: docker tag lightning-tiger-admin:latest ${{ secrets.CONTAINER_REGISTRY }}/lightning-tiger-admin:latest && docker push ${{ secrets.CONTAINER_REGISTRY }}/lightning-tiger-admin:latest
+        if: env.CONTAINER_REGISTRY_TOKEN != ''
+        run: docker tag lightning-tiger-admin:latest ${{ env.CONTAINER_REGISTRY }}/lightning-tiger-admin:latest && docker push ${{ env.CONTAINER_REGISTRY }}/lightning-tiger-admin:latest
