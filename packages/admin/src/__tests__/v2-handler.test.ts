@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AppError } from "@lightning-tiger/server/src/errors/app-error";
+import { AppError } from "@lightning-tiger/server";
 import { toHttpResponse } from "../lib/v2-handler";
 
 describe("toHttpResponse", () => {

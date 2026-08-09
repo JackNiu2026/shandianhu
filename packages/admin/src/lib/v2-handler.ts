@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
-import type { ApiResult } from "@lightning-tiger/shared/api";
-import { AppError } from "@lightning-tiger/server/src/errors/app-error";
+import { AppError } from "@lightning-tiger/server";
+import type { ApiResult } from "@lightning-tiger/shared";
 
 export async function toHttpResponse<T>(
   handler: () => Promise<T>,

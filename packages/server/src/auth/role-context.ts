@@ -1,4 +1,4 @@
-import type { RequestContext } from "../../../shared/types";
+import type { RequestContext } from "@lightning-tiger/shared";
 
 type UserWorkspace = Extract<RequestContext["actor"], { kind: "user" }>["workspace"];
 type UserProfileContext = Pick<

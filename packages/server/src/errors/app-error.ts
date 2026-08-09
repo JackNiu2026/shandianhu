@@ -1,4 +1,4 @@
-import type { ApiErrorCode } from "../../../shared/api";
+import type { ApiErrorCode } from "@lightning-tiger/shared";
 
 export class AppError extends Error {
   constructor(

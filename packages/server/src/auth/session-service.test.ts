@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
-import { AppError } from "../errors/app-error";
+import { AppError } from "../index";
 import {
   resolveSession,
   type AuthSessionClient,
