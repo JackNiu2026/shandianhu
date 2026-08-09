@@ -87,3 +87,16 @@ export type DiagnosisReport = {
   suggestions: string[];
   createdAt: string;
 };
+
+export interface RequestContext {
+  requestId: string;
+  actor:
+    | {
+        kind: "user";
+        userId: string;
+        workspace: "account" | "parent" | "teacher";
+        parentProfileId?: string;
+        teacherProfileId?: string;
+      }
+    | { kind: "admin"; adminUserId: string };
+}

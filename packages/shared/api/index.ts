@@ -21,3 +21,21 @@ export interface PlatformStats {
   teacherCount: number;
   parentCount: number;
 }
+
+export type ApiErrorCode =
+  | "VALIDATION_ERROR"
+  | "UNAUTHENTICATED"
+  | "FORBIDDEN"
+  | "NOT_FOUND"
+  | "QUOTA_EXCEEDED"
+  | "RESOURCE_CONFLICT"
+  | "MODEL_UNAVAILABLE"
+  | "JOB_FAILED"
+  | "INTERNAL_ERROR";
+
+export type ApiResult<T> =
+  | { ok: true; data: T; requestId: string }
+  | {
+      ok: false;
+      error: { code: ApiErrorCode; message: string; requestId: string };
+    };
