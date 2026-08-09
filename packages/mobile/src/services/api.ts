@@ -3,7 +3,7 @@
  * 基于 Taro.request，兼容小程序和 H5
  */
 import Taro from "@tarojs/taro";
-import type { Teacher, Prefs, DiagnosisReport } from "@lightning-tiger/shared";
+import type { ApiResult, Grade, Teacher, Prefs, DiagnosisReport } from "@lightning-tiger/shared";
 
 /** API 基础地址 */
 const API_BASE = process.env.TARO_APP_API_BASE || "http://localhost:3000";
@@ -75,6 +75,66 @@ async function request<T>(url: string, options?: RequestOptions): Promise<T> {
     console.error("[API Request Error]", url, error);
     throw error;
   }
+}
+
+async function requestV2<T>(url: string, options?: RequestOptions): Promise<T> {
+  const result = await request<ApiResult<T>>(url, options);
+  if (!result.ok) throw new Error(result.error.message);
+  return result.data;
+}
+
+export interface ChildSummary {
+  id: string;
+  displayName: string;
+  grade: Grade;
+}
+
+export type ChildWorkspace = {
+  activeChildId: string | null;
+  children: ChildSummary[];
+};
+
+type ChildResponse = {
+  id: string;
+  name: string;
+  grade: string | null;
+};
+
+function childSummary(child: ChildResponse): ChildSummary {
+  return {
+    id: child.id,
+    displayName: child.name,
+    grade: (child.grade ?? "小学") as Grade,
+  };
+}
+
+export async function fetchChildren(): Promise<ChildWorkspace> {
+  const response = await requestV2<{ activeChildId: string | null; children: ChildResponse[] }>("/api/v2/children");
+  return { activeChildId: response.activeChildId, children: response.children.map(childSummary) };
+}
+
+export async function createChild(displayName: string, grade: Grade): Promise<ChildSummary> {
+  const response = await requestV2<{ child: ChildResponse }>("/api/v2/children", {
+    method: "POST",
+    data: JSON.stringify({ displayName, grade }),
+  });
+  return childSummary(response.child);
+}
+
+export async function updateChild(childId: string, displayName: string): Promise<ChildSummary> {
+  const response = await requestV2<{ child: ChildResponse }>(`/api/v2/children/${childId}`, {
+    method: "PATCH",
+    data: JSON.stringify({ displayName }),
+  });
+  return childSummary(response.child);
+}
+
+export async function setActiveChild(childId: string): Promise<ChildSummary> {
+  const response = await requestV2<{ child: ChildResponse }>("/api/v2/children/active", {
+    method: "PUT",
+    data: JSON.stringify({ childId }),
+  });
+  return childSummary(response.child);
 }
 
 /** 平台统计数据 */
