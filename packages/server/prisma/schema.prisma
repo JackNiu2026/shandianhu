@@ -73,6 +73,22 @@ enum AuditAction {
   REVOKE
 }
 
+enum AuditActorKind {
+  USER
+  ADMIN
+  SYSTEM
+  ASYNC_JOB
+}
+
+enum AuditEntityType {
+  USER
+  CHILD
+  ASSESSMENT_RUN
+  LEARNING_REPORT
+  FILE_OBJECT
+  MODEL_CONFIG
+}
+
 enum ModelProvider {
   OPENAI
   AZURE_OPENAI
@@ -84,6 +100,19 @@ enum ModelCapability {
   TEXT
   VISION
   EMBEDDING
+}
+
+enum ModelUsagePurpose {
+  ASSESSMENT
+  PROFILE_GENERATION
+  REPORT_GENERATION
+  OTHER
+}
+
+enum ModelUsageStatus {
+  SUCCEEDED
+  FAILED
+  CANCELLED
 }
 
 enum AssessmentVersionStatus {
@@ -150,6 +179,7 @@ model ParentProfile {
   activeChild   Child?  @relation("ActiveChild", fields: [id, activeChildId], references: [parentProfileId, id], onDelete: Restrict)
   children      Child[] @relation("ParentChildren")
   fileObjects   FileObject[] @relation("FileParentProfile")
+  notifications Notification[] @relation("NotificationParentProfile")
 
   @@unique([id, activeChildId])
   @@unique([userId, id])
@@ -173,6 +203,7 @@ model Child {
   fileObjects     FileObject[]       @relation("FileChild")
   learningProfile LearningProfile?
   reports         LearningReport[]
+  notifications   Notification[]       @relation("NotificationChild")
   auditLogs       AuditLog[]
 
   @@index([parentProfileId])
@@ -247,6 +278,7 @@ model FileObject {
   @@index([ownerUserId, createdAt])
   @@index([ownerUserId, status, deletedAt])
   @@index([childId, purpose, status])
+  @@unique([childId, id])
 }
 
 model AsyncJob {
@@ -279,20 +311,30 @@ model AsyncJob {
 }
 
 model Notification {
-  id        String             @id @default(cuid())
-  userId    String
-  type      NotificationType
-  status    NotificationStatus @default(UNREAD)
-  body      Json
-  readAt    DateTime?
-  createdAt DateTime           @default(now())
-  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String             @id @default(cuid())
+  userId          String
+  parentProfileId String?
+  childId         String?
+  dedupeKey       String             @unique
+  type            NotificationType
+  status          NotificationStatus @default(UNREAD)
+  targetRoute     String?
+  targetParams    Json?
+  body            Json
+  readAt          DateTime?
+  createdAt       DateTime           @default(now())
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentProfile   ParentProfile?     @relation("NotificationParentProfile", fields: [userId, parentProfileId], references: [userId, id], onDelete: Restrict)
+  child           Child?             @relation("NotificationChild", fields: [parentProfileId, childId], references: [parentProfileId, id], onDelete: Restrict)
 
   @@index([userId, status, createdAt])
+  @@index([childId, status, createdAt])
 }
 
 model AuditLog {
   id               String          @id @default(cuid())
+  actorKind        AuditActorKind
+  actorId          String?
   actorUserId      String?
   actorAdminUserId String?
   subjectUserId    String?
@@ -300,8 +342,10 @@ model AuditLog {
   asyncJobId       String?
   assessmentRunId  String?
   learningReportId String?
+  entityType       AuditEntityType
+  entityId         String
   action           AuditAction
-  metadata         Json?
+  sanitizedDiff    Json?
   createdAt        DateTime        @default(now())
   actorUser        User?           @relation("AuditActorUser", fields: [actorUserId], references: [id], onDelete: SetNull)
   actorAdminUser   AdminUser?      @relation("AuditActorAdmin", fields: [actorAdminUserId], references: [id], onDelete: SetNull)
@@ -312,40 +356,57 @@ model AuditLog {
   learningReport   LearningReport? @relation(fields: [learningReportId], references: [id], onDelete: SetNull)
 
   @@index([actorUserId, createdAt])
+  @@index([actorKind, actorId, createdAt])
+  @@index([entityType, entityId, createdAt])
   @@index([childId, createdAt])
 }
 
 model ModelConfig {
-  id               String             @id @default(cuid())
+  id               String                  @id @default(cuid())
   createdByAdminId String?
   provider         ModelProvider
-  model            String
-  capability       ModelCapability
-  configuration    Json?
-  isActive         Boolean            @default(true)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  createdByAdmin   AdminUser?         @relation(fields: [createdByAdminId], references: [id], onDelete: SetNull)
+  endpointUrl      String
+  apiKeyCiphertext String
+  apiKeyIv         String
+  apiKeyTag        String
+  modelName        String
+  capabilities     ModelCapability
+  timeoutMs        Int                     @default(30000)
+  maxOutputTokens  Int                     @default(1024)
+  temperature      Decimal                 @default(0.0) @db.Decimal(3, 2)
+  inputCostMicros  BigInt                  @default(0)
+  outputCostMicros BigInt                  @default(0)
+  enabled          Boolean                 @default(false)
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  createdByAdmin   AdminUser?              @relation(fields: [createdByAdminId], references: [id], onDelete: SetNull)
   usageLedgers     ModelUsageLedger[]
+  profileVersions  LearningProfileVersion[]
 
-  @@unique([provider, model, capability])
+  @@unique([provider, modelName, capabilities])
 }
 
 model ModelUsageLedger {
-  id            String      @id @default(cuid())
-  modelConfigId String
-  userId        String?
-  childId       String?
-  inputTokens   Int         @default(0)
-  outputTokens  Int         @default(0)
-  estimatedCost Decimal?    @db.Decimal(12, 6)
-  metadata      Json?
-  createdAt     DateTime    @default(now())
-  modelConfig   ModelConfig @relation(fields: [modelConfigId], references: [id], onDelete: Restrict)
-  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  child         Child?      @relation(fields: [childId], references: [id], onDelete: SetNull)
+  id             String            @id @default(cuid())
+  callId         String            @unique
+  modelConfigId  String
+  userId         String?
+  childId        String?
+  purpose        ModelUsagePurpose
+  status         ModelUsageStatus
+  inputTokens    Int               @default(0)
+  outputTokens   Int               @default(0)
+  imageCount     Int               @default(0)
+  latencyMs      Int               @default(0)
+  microCost      BigInt            @default(0)
+  sanitizedError String?
+  createdAt      DateTime          @default(now())
+  modelConfig    ModelConfig       @relation(fields: [modelConfigId], references: [id], onDelete: Restrict)
+  user           User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  child          Child?            @relation(fields: [childId], references: [id], onDelete: SetNull)
 
-  @@index([modelConfigId, createdAt])
+  @@index([modelConfigId, purpose, createdAt])
+  @@index([modelConfigId, status, createdAt])
   @@index([childId, createdAt])
 }
 
@@ -403,15 +464,18 @@ model AssessmentRun {
 
 model AssessmentArtifact {
   id              String        @id @default(cuid())
+  childId         String
   assessmentRunId String
   fileObjectId    String
+  ordinal         Int
   kind            ArtifactKind
   metadata        Json?
   createdAt       DateTime      @default(now())
-  assessmentRun   AssessmentRun @relation(fields: [assessmentRunId], references: [id], onDelete: Cascade)
-  fileObject      FileObject    @relation(fields: [fileObjectId], references: [id], onDelete: Restrict)
+  assessmentRun   AssessmentRun @relation(fields: [childId, assessmentRunId], references: [childId, id], onDelete: Cascade)
+  fileObject      FileObject    @relation(fields: [childId, fileObjectId], references: [childId, id], onDelete: Restrict)
 
   @@index([assessmentRunId, kind])
+  @@unique([assessmentRunId, ordinal])
 }
 
 model AssessmentResult {
@@ -463,18 +527,24 @@ model LearningProfile {
 }
 
 model LearningProfileVersion {
-  id                String           @id @default(cuid())
-  learningProfileId String
-  version           Int
-  snapshot          Json
-  createdAt         DateTime         @default(now())
-  learningProfile   LearningProfile  @relation("ProfileVersions", fields: [learningProfileId], references: [id], onDelete: Cascade)
-  currentFor        LearningProfile? @relation("CurrentLearningProfileVersion")
-  reports           LearningReport[]
+  id                   String           @id @default(cuid())
+  learningProfileId    String
+  modelConfigId        String?
+  version              Int
+  ruleVersion          String
+  snapshot             Json
+  confidenceBasis      Json
+  revokedAt            DateTime?
+  createdAt            DateTime         @default(now())
+  learningProfile      LearningProfile  @relation("ProfileVersions", fields: [learningProfileId], references: [id], onDelete: Cascade)
+  modelConfig          ModelConfig?     @relation(fields: [modelConfigId], references: [id], onDelete: Restrict)
+  currentFor           LearningProfile? @relation("CurrentLearningProfileVersion")
+  reports              LearningReport[]
   evidenceDependencies LearningProfileVersionEvidence[]
 
   @@unique([learningProfileId, version])
   @@unique([learningProfileId, id])
+  @@index([modelConfigId, revokedAt])
 }
 
 model LearningProfileVersionEvidence {
@@ -507,7 +577,7 @@ model LearningReport {
   child                    Child                  @relation(fields: [childId], references: [id], onDelete: Restrict)
   learningProfile          LearningProfile        @relation(fields: [childId, learningProfileId], references: [childId, id], onDelete: Restrict)
   learningProfileVersion   LearningProfileVersion @relation(fields: [learningProfileId, learningProfileVersionId], references: [learningProfileId, id], onDelete: Restrict)
-  fileObject               FileObject?            @relation(fields: [fileObjectId], references: [id], onDelete: SetNull)
+  fileObject               FileObject?            @relation(fields: [childId, fileObjectId], references: [childId, id], onDelete: Restrict)
   shares                   ReportShare[]
   auditLogs                AuditLog[]
 

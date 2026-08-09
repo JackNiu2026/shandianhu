@@ -32,10 +32,22 @@ CREATE TYPE "NotificationStatus" AS ENUM ('UNREAD', 'READ');
 CREATE TYPE "AuditAction" AS ENUM ('CREATE', 'UPDATE', 'DELETE', 'LOGIN', 'LOGOUT', 'SHARE', 'REVOKE');
 
 -- CreateEnum
+CREATE TYPE "AuditActorKind" AS ENUM ('USER', 'ADMIN', 'SYSTEM', 'ASYNC_JOB');
+
+-- CreateEnum
+CREATE TYPE "AuditEntityType" AS ENUM ('USER', 'CHILD', 'ASSESSMENT_RUN', 'LEARNING_REPORT', 'FILE_OBJECT', 'MODEL_CONFIG');
+
+-- CreateEnum
 CREATE TYPE "ModelProvider" AS ENUM ('OPENAI', 'AZURE_OPENAI', 'ANTHROPIC', 'OTHER');
 
 -- CreateEnum
 CREATE TYPE "ModelCapability" AS ENUM ('TEXT', 'VISION', 'EMBEDDING');
+
+-- CreateEnum
+CREATE TYPE "ModelUsagePurpose" AS ENUM ('ASSESSMENT', 'PROFILE_GENERATION', 'REPORT_GENERATION', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "ModelUsageStatus" AS ENUM ('SUCCEEDED', 'FAILED', 'CANCELLED');
 
 -- CreateEnum
 CREATE TYPE "AssessmentVersionStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'RETIRED');
@@ -179,8 +191,13 @@ CREATE TABLE "AsyncJob" (
 CREATE TABLE "Notification" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "parentProfileId" TEXT,
+    "childId" TEXT,
+    "dedupeKey" TEXT NOT NULL,
     "type" "NotificationType" NOT NULL,
     "status" "NotificationStatus" NOT NULL DEFAULT 'UNREAD',
+    "targetRoute" TEXT,
+    "targetParams" JSONB,
     "body" JSONB NOT NULL,
     "readAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -191,6 +208,8 @@ CREATE TABLE "Notification" (
 -- CreateTable
 CREATE TABLE "AuditLog" (
     "id" TEXT NOT NULL,
+    "actorKind" "AuditActorKind" NOT NULL,
+    "actorId" TEXT,
     "actorUserId" TEXT,
     "actorAdminUserId" TEXT,
     "subjectUserId" TEXT,
@@ -198,8 +217,10 @@ CREATE TABLE "AuditLog" (
     "asyncJobId" TEXT,
     "assessmentRunId" TEXT,
     "learningReportId" TEXT,
+    "entityType" "AuditEntityType" NOT NULL,
+    "entityId" TEXT NOT NULL,
     "action" "AuditAction" NOT NULL,
-    "metadata" JSONB,
+    "sanitizedDiff" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
@@ -210,10 +231,18 @@ CREATE TABLE "ModelConfig" (
     "id" TEXT NOT NULL,
     "createdByAdminId" TEXT,
     "provider" "ModelProvider" NOT NULL,
-    "model" TEXT NOT NULL,
-    "capability" "ModelCapability" NOT NULL,
-    "configuration" JSONB,
-    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "endpointUrl" TEXT NOT NULL,
+    "apiKeyCiphertext" TEXT NOT NULL,
+    "apiKeyIv" TEXT NOT NULL,
+    "apiKeyTag" TEXT NOT NULL,
+    "modelName" TEXT NOT NULL,
+    "capabilities" "ModelCapability" NOT NULL,
+    "timeoutMs" INTEGER NOT NULL DEFAULT 30000,
+    "maxOutputTokens" INTEGER NOT NULL DEFAULT 1024,
+    "temperature" DECIMAL(3,2) NOT NULL DEFAULT 0.0,
+    "inputCostMicros" BIGINT NOT NULL DEFAULT 0,
+    "outputCostMicros" BIGINT NOT NULL DEFAULT 0,
+    "enabled" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -223,13 +252,18 @@ CREATE TABLE "ModelConfig" (
 -- CreateTable
 CREATE TABLE "ModelUsageLedger" (
     "id" TEXT NOT NULL,
+    "callId" TEXT NOT NULL,
     "modelConfigId" TEXT NOT NULL,
     "userId" TEXT,
     "childId" TEXT,
+    "purpose" "ModelUsagePurpose" NOT NULL,
+    "status" "ModelUsageStatus" NOT NULL,
     "inputTokens" INTEGER NOT NULL DEFAULT 0,
     "outputTokens" INTEGER NOT NULL DEFAULT 0,
-    "estimatedCost" DECIMAL(12,6),
-    "metadata" JSONB,
+    "imageCount" INTEGER NOT NULL DEFAULT 0,
+    "latencyMs" INTEGER NOT NULL DEFAULT 0,
+    "microCost" BIGINT NOT NULL DEFAULT 0,
+    "sanitizedError" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "ModelUsageLedger_pkey" PRIMARY KEY ("id")
@@ -280,8 +314,10 @@ CREATE TABLE "AssessmentRun" (
 -- CreateTable
 CREATE TABLE "AssessmentArtifact" (
     "id" TEXT NOT NULL,
+    "childId" TEXT NOT NULL,
     "assessmentRunId" TEXT NOT NULL,
     "fileObjectId" TEXT NOT NULL,
+    "ordinal" INTEGER NOT NULL,
     "kind" "ArtifactKind" NOT NULL,
     "metadata" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -332,8 +368,12 @@ CREATE TABLE "LearningProfile" (
 CREATE TABLE "LearningProfileVersion" (
     "id" TEXT NOT NULL,
     "learningProfileId" TEXT NOT NULL,
+    "modelConfigId" TEXT,
     "version" INTEGER NOT NULL,
+    "ruleVersion" TEXT NOT NULL,
     "snapshot" JSONB NOT NULL,
+    "confidenceBasis" JSONB NOT NULL,
+    "revokedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "LearningProfileVersion_pkey" PRIMARY KEY ("id")
@@ -439,6 +479,9 @@ CREATE INDEX "FileObject_ownerUserId_status_deletedAt_idx" ON "FileObject"("owne
 CREATE INDEX "FileObject_childId_purpose_status_idx" ON "FileObject"("childId", "purpose", "status");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "FileObject_childId_id_key" ON "FileObject"("childId", "id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "AsyncJob_dedupeKey_key" ON "AsyncJob"("dedupeKey");
 
 -- CreateIndex
@@ -448,19 +491,37 @@ CREATE INDEX "AsyncJob_status_retryAt_availableAt_idx" ON "AsyncJob"("status", "
 CREATE INDEX "AsyncJob_childId_createdAt_idx" ON "AsyncJob"("childId", "createdAt");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Notification_dedupeKey_key" ON "Notification"("dedupeKey");
+
+-- CreateIndex
 CREATE INDEX "Notification_userId_status_createdAt_idx" ON "Notification"("userId", "status", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "Notification_childId_status_createdAt_idx" ON "Notification"("childId", "status", "createdAt");
 
 -- CreateIndex
 CREATE INDEX "AuditLog_actorUserId_createdAt_idx" ON "AuditLog"("actorUserId", "createdAt");
 
 -- CreateIndex
+CREATE INDEX "AuditLog_actorKind_actorId_createdAt_idx" ON "AuditLog"("actorKind", "actorId", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "AuditLog_entityType_entityId_createdAt_idx" ON "AuditLog"("entityType", "entityId", "createdAt");
+
+-- CreateIndex
 CREATE INDEX "AuditLog_childId_createdAt_idx" ON "AuditLog"("childId", "createdAt");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ModelConfig_provider_model_capability_key" ON "ModelConfig"("provider", "model", "capability");
+CREATE UNIQUE INDEX "ModelConfig_provider_modelName_capabilities_key" ON "ModelConfig"("provider", "modelName", "capabilities");
 
 -- CreateIndex
-CREATE INDEX "ModelUsageLedger_modelConfigId_createdAt_idx" ON "ModelUsageLedger"("modelConfigId", "createdAt");
+CREATE UNIQUE INDEX "ModelUsageLedger_callId_key" ON "ModelUsageLedger"("callId");
+
+-- CreateIndex
+CREATE INDEX "ModelUsageLedger_modelConfigId_purpose_createdAt_idx" ON "ModelUsageLedger"("modelConfigId", "purpose", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "ModelUsageLedger_modelConfigId_status_createdAt_idx" ON "ModelUsageLedger"("modelConfigId", "status", "createdAt");
 
 -- CreateIndex
 CREATE INDEX "ModelUsageLedger_childId_createdAt_idx" ON "ModelUsageLedger"("childId", "createdAt");
@@ -485,6 +546,9 @@ CREATE UNIQUE INDEX "AssessmentRun_childId_idempotencyKey_key" ON "AssessmentRun
 
 -- CreateIndex
 CREATE INDEX "AssessmentArtifact_assessmentRunId_kind_idx" ON "AssessmentArtifact"("assessmentRunId", "kind");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "AssessmentArtifact_assessmentRunId_ordinal_key" ON "AssessmentArtifact"("assessmentRunId", "ordinal");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "AssessmentResult_assessmentRunId_key" ON "AssessmentResult"("assessmentRunId");
@@ -512,6 +576,9 @@ CREATE UNIQUE INDEX "LearningProfile_id_currentVersionId_key" ON "LearningProfil
 
 -- CreateIndex
 CREATE UNIQUE INDEX "LearningProfile_childId_id_key" ON "LearningProfile"("childId", "id");
+
+-- CreateIndex
+CREATE INDEX "LearningProfileVersion_modelConfigId_revokedAt_idx" ON "LearningProfileVersion"("modelConfigId", "revokedAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "LearningProfileVersion_learningProfileId_version_key" ON "LearningProfileVersion"("learningProfileId", "version");
@@ -577,6 +644,12 @@ ALTER TABLE "AsyncJob" ADD CONSTRAINT "AsyncJob_assessmentRunId_fkey" FOREIGN KE
 ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_parentProfileId_fkey" FOREIGN KEY ("userId", "parentProfileId") REFERENCES "ParentProfile"("userId", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Notification" ADD CONSTRAINT "Notification_parentProfileId_childId_fkey" FOREIGN KEY ("parentProfileId", "childId") REFERENCES "Child"("parentProfileId", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_actorUserId_fkey" FOREIGN KEY ("actorUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -625,10 +698,10 @@ ALTER TABLE "AssessmentRun" ADD CONSTRAINT "AssessmentRun_childId_fkey" FOREIGN 
 ALTER TABLE "AssessmentRun" ADD CONSTRAINT "AssessmentRun_requestedByUserId_fkey" FOREIGN KEY ("requestedByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AssessmentArtifact" ADD CONSTRAINT "AssessmentArtifact_assessmentRunId_fkey" FOREIGN KEY ("assessmentRunId") REFERENCES "AssessmentRun"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AssessmentArtifact" ADD CONSTRAINT "AssessmentArtifact_childId_assessmentRunId_fkey" FOREIGN KEY ("childId", "assessmentRunId") REFERENCES "AssessmentRun"("childId", "id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AssessmentArtifact" ADD CONSTRAINT "AssessmentArtifact_fileObjectId_fkey" FOREIGN KEY ("fileObjectId") REFERENCES "FileObject"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "AssessmentArtifact" ADD CONSTRAINT "AssessmentArtifact_childId_fileObjectId_fkey" FOREIGN KEY ("childId", "fileObjectId") REFERENCES "FileObject"("childId", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AssessmentResult" ADD CONSTRAINT "AssessmentResult_assessmentRunId_fkey" FOREIGN KEY ("assessmentRunId") REFERENCES "AssessmentRun"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -649,6 +722,9 @@ ALTER TABLE "LearningProfile" ADD CONSTRAINT "LearningProfile_id_currentVersionI
 ALTER TABLE "LearningProfileVersion" ADD CONSTRAINT "LearningProfileVersion_learningProfileId_fkey" FOREIGN KEY ("learningProfileId") REFERENCES "LearningProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "LearningProfileVersion" ADD CONSTRAINT "LearningProfileVersion_modelConfigId_fkey" FOREIGN KEY ("modelConfigId") REFERENCES "ModelConfig"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "LearningProfileVersionEvidence" ADD CONSTRAINT "LearningProfileVersionEvidence_childId_learningProfileId_fkey" FOREIGN KEY ("childId", "learningProfileId") REFERENCES "LearningProfile"("childId", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -667,7 +743,7 @@ ALTER TABLE "LearningReport" ADD CONSTRAINT "LearningReport_childId_learningProf
 ALTER TABLE "LearningReport" ADD CONSTRAINT "LearningReport_learningProfileId_learningProfileVersionId_fkey" FOREIGN KEY ("learningProfileId", "learningProfileVersionId") REFERENCES "LearningProfileVersion"("learningProfileId", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "LearningReport" ADD CONSTRAINT "LearningReport_fileObjectId_fkey" FOREIGN KEY ("fileObjectId") REFERENCES "FileObject"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "LearningReport" ADD CONSTRAINT "LearningReport_childId_fileObjectId_fkey" FOREIGN KEY ("childId", "fileObjectId") REFERENCES "FileObject"("childId", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ReportShare" ADD CONSTRAINT "ReportShare_learningReportId_fkey" FOREIGN KEY ("learningReportId") REFERENCES "LearningReport"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -681,10 +757,20 @@ CREATE UNIQUE INDEX "LearningEvidence_assessment_source_key" ON "LearningEvidenc
 -- A child file must be associated with that child's parent profile.
 ALTER TABLE "FileObject" ADD CONSTRAINT "FileObject_child_requires_parent_profile_check" CHECK ("childId" IS NULL OR "parentProfileId" IS NOT NULL);
 
--- Preserve immutable profile snapshots while allowing an explicit privacy purge.
+-- A child-targeted notification must remain in the recipient's parent profile.
+ALTER TABLE "Notification" ADD CONSTRAINT "Notification_child_requires_parent_profile_check" CHECK ("childId" IS NULL OR "parentProfileId" IS NOT NULL);
+
+-- Preserve immutable profile snapshots while allowing explicit revocation and privacy erasure.
 CREATE FUNCTION "prevent_learning_profile_version_mutation"()
 RETURNS TRIGGER AS $$
 BEGIN
+  IF TG_OP = 'UPDATE'
+    AND current_setting('app.allow_learning_profile_version_revocation', true) = 'on'
+    AND OLD."revokedAt" IS NULL AND NEW."revokedAt" IS NOT NULL
+    AND (to_jsonb(NEW) - 'revokedAt') = (to_jsonb(OLD) - 'revokedAt') THEN
+    RETURN NEW;
+  END IF;
+
   IF TG_OP = 'DELETE'
     AND current_setting('app.allow_learning_profile_version_purge', true) = 'on' THEN
     RETURN OLD;

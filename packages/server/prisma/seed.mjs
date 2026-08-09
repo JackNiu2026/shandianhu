@@ -15,17 +15,22 @@ try {
 
   await prisma.modelConfig.upsert({
     where: {
-      provider_model_capability: {
+      provider_modelName_capabilities: {
         provider: ModelProvider.OPENAI,
-        model: "gpt-5-mini",
-        capability: ModelCapability.TEXT,
+        modelName: "gpt-5-mini",
+        capabilities: ModelCapability.TEXT,
       },
     },
-    update: { isActive: true },
+    update: { enabled: false },
     create: {
       provider: ModelProvider.OPENAI,
-      model: "gpt-5-mini",
-      capability: ModelCapability.TEXT,
+      endpointUrl: "https://gateway.invalid/openai",
+      apiKeyCiphertext: "placeholder-ciphertext",
+      apiKeyIv: "placeholder-iv",
+      apiKeyTag: "placeholder-tag",
+      modelName: "gpt-5-mini",
+      capabilities: ModelCapability.TEXT,
+      enabled: false,
     },
   });
 } finally {

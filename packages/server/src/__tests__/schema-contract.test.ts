@@ -13,6 +13,7 @@ const migration = fs.readFileSync(
   ),
   "utf8",
 );
+const seed = fs.readFileSync(path.resolve(__dirname, "../../prisma/seed.mjs"), "utf8");
 
 function field(modelName: string, fieldName: string) {
   const model = models.get(modelName);
@@ -214,6 +215,107 @@ describe("V2.1 Prisma schema contract", () => {
     expect(migration).toContain(
       'CREATE INDEX "Child_parentProfileId_deletedAt_idx" ON "Child"("parentProfileId", "deletedAt")',
     );
+  });
+
+  it("enforces child ownership for uploaded artifacts and report PDFs", () => {
+    expect(models.get("FileObject")?.uniqueFields).toContainEqual(["childId", "id"]);
+    expect(field("AssessmentArtifact", "childId")).toMatchObject({ type: "String" });
+    expect(field("AssessmentArtifact", "assessmentRun")).toMatchObject({
+      relationFromFields: ["childId", "assessmentRunId"],
+      relationToFields: ["childId", "id"],
+    });
+    expect(field("AssessmentArtifact", "fileObject")).toMatchObject({
+      relationFromFields: ["childId", "fileObjectId"],
+      relationToFields: ["childId", "id"],
+    });
+    expect(field("LearningReport", "fileObject")).toMatchObject({
+      relationFromFields: ["childId", "fileObjectId"],
+      relationToFields: ["childId", "id"],
+    });
+    expect(migration).toContain(
+      'FOREIGN KEY ("childId", "fileObjectId") REFERENCES "FileObject"("childId", "id")',
+    );
+  });
+
+  it("keeps notification routing and ownership as queryable data", () => {
+    expect(field("Notification", "parentProfileId")).toMatchObject({
+      type: "String",
+      isRequired: false,
+    });
+    expect(field("Notification", "childId")).toMatchObject({ type: "String", isRequired: false });
+    expect(field("Notification", "dedupeKey")).toMatchObject({ isUnique: true, type: "String" });
+    expect(field("Notification", "targetRoute")).toMatchObject({ type: "String", isRequired: false });
+    expect(field("Notification", "targetParams")).toMatchObject({ type: "Json", isRequired: false });
+    expect(field("Notification", "child")).toMatchObject({
+      relationFromFields: ["parentProfileId", "childId"],
+      relationToFields: ["parentProfileId", "id"],
+    });
+    expect(migration).toContain(
+      'CONSTRAINT "Notification_child_requires_parent_profile_check" CHECK ("childId" IS NULL OR "parentProfileId" IS NOT NULL)',
+    );
+  });
+
+  it("records audit actors and entities without an unbounded sensitive body", () => {
+    expect(field("AuditLog", "actorKind")).toMatchObject({ type: "AuditActorKind" });
+    expect(field("AuditLog", "actorId")).toMatchObject({ type: "String", isRequired: false });
+    expect(field("AuditLog", "entityType")).toMatchObject({ type: "AuditEntityType" });
+    expect(field("AuditLog", "entityId")).toMatchObject({ type: "String" });
+    expect(field("AuditLog", "sanitizedDiff")).toMatchObject({ type: "Json", isRequired: false });
+    expect(models.get("AuditLog")?.fields.find((candidate) => candidate.name === "metadata")).toBeUndefined();
+    expect(migration).toContain('CREATE INDEX "AuditLog_actorKind_actorId_createdAt_idx"');
+    expect(migration).toContain('CREATE INDEX "AuditLog_entityType_entityId_createdAt_idx"');
+  });
+
+  it("uses typed, disabled-by-default model gateway configuration and usage telemetry", () => {
+    for (const name of [
+      "endpointUrl",
+      "apiKeyCiphertext",
+      "apiKeyIv",
+      "apiKeyTag",
+      "modelName",
+      "capabilities",
+      "timeoutMs",
+      "maxOutputTokens",
+      "temperature",
+      "inputCostMicros",
+      "outputCostMicros",
+      "enabled",
+    ]) {
+      expect(field("ModelConfig", name)).toBeDefined();
+    }
+    expect(models.get("ModelConfig")?.fields.find((candidate) => candidate.name === "configuration")).toBeUndefined();
+    expect(field("ModelUsageLedger", "callId")).toMatchObject({ isUnique: true, type: "String" });
+    expect(field("ModelUsageLedger", "purpose")).toMatchObject({ type: "ModelUsagePurpose" });
+    expect(field("ModelUsageLedger", "status")).toMatchObject({ type: "ModelUsageStatus" });
+    expect(field("ModelUsageLedger", "imageCount")).toMatchObject({ type: "Int" });
+    expect(field("ModelUsageLedger", "latencyMs")).toMatchObject({ type: "Int" });
+    expect(field("ModelUsageLedger", "microCost")).toMatchObject({ type: "BigInt" });
+    expect(field("ModelUsageLedger", "sanitizedError")).toMatchObject({ type: "String", isRequired: false });
+    expect(seed).toContain("provider_modelName_capabilities");
+    expect(seed).not.toContain("provider_model_capability:");
+    expect(seed).toContain("enabled: false");
+    expect(seed).toContain("placeholder-ciphertext");
+  });
+
+  it("versions artifacts and profile-generation provenance for safe revocation", () => {
+    expect(field("AssessmentArtifact", "ordinal")).toMatchObject({ type: "Int" });
+    expect(models.get("AssessmentArtifact")?.uniqueFields).toContainEqual([
+      "assessmentRunId",
+      "ordinal",
+    ]);
+    expect(field("LearningProfileVersion", "ruleVersion")).toMatchObject({ type: "String" });
+    expect(field("LearningProfileVersion", "modelConfigId")).toMatchObject({
+      type: "String",
+      isRequired: false,
+    });
+    expect(field("LearningProfileVersion", "confidenceBasis")).toMatchObject({ type: "Json" });
+    expect(field("LearningProfileVersion", "revokedAt")).toMatchObject({
+      type: "DateTime",
+      isRequired: false,
+    });
+    expect(field("LearningProfileVersion", "modelConfig")).toMatchObject({ type: "ModelConfig" });
+    expect(migration).toContain("app.allow_learning_profile_version_revocation");
+    expect(migration).toContain('OLD."revokedAt" IS NULL AND NEW."revokedAt" IS NOT NULL');
   });
 
   it("uses server-owned migration and seed commands in CI", () => {
