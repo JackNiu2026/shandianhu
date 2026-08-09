@@ -2,6 +2,7 @@ export default defineAppConfig({
   pages: [
     "pages/match/index",
     "pages/test/index",
+    "pages/assessment-style/index",
     "pages/diagnose/index",
     "pages/me/index",
   ],

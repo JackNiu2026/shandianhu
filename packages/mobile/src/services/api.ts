@@ -3,7 +3,7 @@
  * 基于 Taro.request，兼容小程序和 H5
  */
 import Taro from "@tarojs/taro";
-import type { ApiResult, Grade, Teacher, Prefs, DiagnosisReport } from "@lightning-tiger/shared";
+import type { ApiResult, Grade, Teacher, Prefs, DiagnosisReport, LearningStyleSubmission } from "@lightning-tiger/shared";
 
 /** API 基础地址 */
 const API_BASE = process.env.TARO_APP_API_BASE || "http://localhost:3000";
@@ -135,6 +135,18 @@ export async function setActiveChild(childId: string): Promise<ChildSummary> {
     data: JSON.stringify({ childId }),
   });
   return childSummary(response.child);
+}
+
+export async function submitLearningStyle(input: LearningStyleSubmission): Promise<{
+  runId: string;
+  resultId: string;
+  taskId: string;
+  code: string;
+}> {
+  return requestV2("/api/v2/assessments/learning-style", {
+    method: "POST",
+    data: JSON.stringify(input),
+  });
 }
 
 /** 平台统计数据 */

@@ -1,5 +1,6 @@
 import type { Dim, MBTIResult } from "../types";
 import { questions, typeNames, styleAdvice, typeProfiles } from "../constants";
+export { LEARNING_STYLE_QUESTIONS, LEARNING_STYLE_VERSION } from "../api/assessments";
 
 /**
  * MBTI 计分：对每个维度，统计答案中对应字母的票数，过半即胜出

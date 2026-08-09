@@ -1,4 +1,4 @@
-import { ModelCapability, ModelProvider, PrismaClient } from "@prisma/client";
+import { AssessmentType, AssessmentVersionStatus, ModelCapability, ModelProvider, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -31,6 +31,39 @@ try {
       modelName: "gpt-5-mini",
       capabilities: ModelCapability.TEXT,
       enabled: false,
+    },
+  });
+
+  const definition = await prisma.assessmentDefinition.upsert({
+    where: { slug: "learning-style" },
+    update: {},
+    create: {
+      slug: "learning-style",
+      name: "28题学习风格测评",
+      description: "教学偏好参考，不是心理诊断或能力评价",
+      enabled: true,
+    },
+  });
+
+  await prisma.assessmentVersion.upsert({
+    where: { assessmentDefinitionId_version: { assessmentDefinitionId: definition.id, version: 1 } },
+    update: {},
+    create: {
+      assessmentDefinitionId: definition.id,
+      version: 1,
+      checksum: "learning-style-v1-28-question-deterministic",
+      type: AssessmentType.DIAGNOSTIC,
+      status: AssessmentVersionStatus.PUBLISHED,
+      specification: {
+        version: "learning-style-v1",
+        questionIds: Array.from({ length: 28 }, (_, index) => `q${index + 1}`),
+        legalOptions: ["A", "B"],
+      },
+      configuration: {
+        scorer: "deterministic-learning-style-v1",
+        dimensions: ["interaction", "information", "decision", "rhythm"],
+      },
+      publishedAt: new Date(),
     },
   });
 } finally {

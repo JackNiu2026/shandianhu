@@ -39,3 +39,11 @@ export type ApiResult<T> =
       ok: false;
       error: { code: ApiErrorCode; message: string; requestId: string };
     };
+
+export {
+  LEARNING_STYLE_QUESTIONS,
+  LEARNING_STYLE_VERSION,
+  type LearningStyleAnswer,
+  type LearningStyleOption,
+  type LearningStyleSubmission,
+} from "./assessments";
