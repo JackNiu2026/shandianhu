@@ -1,12 +1,43 @@
-import { questions } from "../constants";
+type Dimension = "EI" | "SN" | "TF" | "JP";
+type Row = readonly [string, Dimension, string, string, string, string];
 
-export const LEARNING_STYLE_V1_QUESTION_DATA = Object.freeze(questions.map((question, index) => Object.freeze({
+const rows: readonly Row[] = [
+  ["在集体活动中，孩子更倾向", "EI", "主动和大家互动", "E", "和熟悉的人相处或观察", "I"],
+  ["上完一天课回家，孩子更需要", "EI", "和家人分享一天经历", "E", "安静独处恢复精力", "I"],
+  ["做作业遇到困难时，孩子更想", "EI", "马上讨论解决", "E", "先独立想一想", "I"],
+  ["进入新环境时，孩子通常", "EI", "主动探索参与", "E", "先观察再适应", "I"],
+  ["课堂被提问时，孩子通常", "EI", "积极举手边说边想", "E", "想好后再回答", "I"],
+  ["周末时，孩子更愿意", "EI", "参加集体活动", "E", "做喜欢的安静活动", "I"],
+  ["学到新知识后，孩子更倾向", "EI", "讲给别人听", "E", "先自己消化", "I"],
+  ["面对新概念时，孩子更希望老师", "SN", "讲清步骤和示例", "S", "先讲整体框架", "N"],
+  ["孩子更容易记住", "SN", "具体步骤和数字", "S", "背后的道理和联系", "N"],
+  ["遇到陌生题目时，孩子倾向", "SN", "照例题逐步套用", "S", "先猜方向再验证", "N"],
+  ["读完故事后，孩子更爱聊", "SN", "发生了什么", "S", "换个结局会怎样", "N"],
+  ["孩子更擅长", "SN", "按要求准确完成", "S", "想出独特办法", "N"],
+  ["学习新知识时，孩子更关注", "SN", "具体怎么使用", "S", "能和什么联系", "N"],
+  ["做手工或画画时，孩子更倾向", "SN", "按样品还原", "S", "自由想象创作", "N"],
+  ["做错题被指出时，孩子更在意", "TF", "错在哪里和怎么改", "T", "语气和他人感受", "F"],
+  ["推动孩子持续努力的是", "TF", "目标和进步数据", "T", "认可和鼓励", "F"],
+  ["和同学意见不同时，孩子倾向", "TF", "讲道理解决", "T", "顾及关系感受", "F"],
+  ["选择兴趣活动时，孩子更看重", "TF", "能学到什么", "T", "和谁一起参加", "F"],
+  ["朋友心情不好时，孩子会", "TF", "分析问题想办法", "T", "先陪伴安慰", "F"],
+  ["评价一件事时，孩子更看重", "TF", "效率和结果", "T", "大家是否开心", "F"],
+  ["老师布置任务时，孩子更希望", "TF", "要求和标准明确", "T", "氛围友好并被鼓励", "F"],
+  ["计划临时变化时，孩子会", "JP", "希望提前知道安排", "J", "觉得新鲜可适应", "P"],
+  ["写作业的方式更像", "JP", "列清单按顺序完成", "J", "灵活安排最后冲刺", "P"],
+  ["孩子的书桌和书包通常", "JP", "有固定摆放较整齐", "J", "有点乱但自己找得到", "P"],
+  ["面对长假时，孩子更想", "JP", "提前计划每天安排", "J", "到时候再灵活安排", "P"],
+  ["做选择时，孩子更倾向", "JP", "尽快确定下来", "J", "多看看再决定", "P"],
+  ["收到新任务时，孩子通常", "JP", "先做计划和时间表", "J", "先开始再调整", "P"],
+  ["对于规则和约定，孩子", "JP", "希望大家遵守", "J", "觉得可以灵活商量", "P"],
+];
+
+export const LEARNING_STYLE_V1_QUESTION_DATA = Object.freeze(rows.map(([prompt, dimension, firstText, firstLetter, secondText, secondLetter], index) => Object.freeze({
   id: `q${index + 1}`,
-  prompt: question.title,
-  dimension: question.dim,
-  options: Object.freeze(question.options.map((option, optionIndex) => Object.freeze({
-    id: optionIndex === 0 ? "A" : "B",
-    text: option.text,
-    letter: option.letter,
-  }))),
+  prompt,
+  dimension,
+  options: Object.freeze([
+    Object.freeze({ id: "A", text: firstText, letter: firstLetter }),
+    Object.freeze({ id: "B", text: secondText, letter: secondLetter }),
+  ]),
 })));

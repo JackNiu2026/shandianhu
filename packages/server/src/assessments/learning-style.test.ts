@@ -12,8 +12,10 @@ function answers(option: "A" | "B" = "A") {
 describe("learning-style scoring", () => {
   it("pins the complete v1 question rules independently of legacy UI questions", () => {
     const contractSource = readFileSync(resolve(__dirname, "../../../shared/api/assessments.ts"), "utf8");
+    const versionSource = readFileSync(resolve(__dirname, "../../../shared/api/learning-style-v1-data.ts"), "utf8");
 
     expect(contractSource).not.toContain('from "../constants"');
+    expect(versionSource).not.toMatch(/from ["'][^"']*constants/);
     expect(LEARNING_STYLE_VERSION_CONFIGURATION.questions).toHaveLength(28);
     expect(LEARNING_STYLE_VERSION_CONFIGURATION.legalOptions).toEqual(["A", "B"]);
     expect(LEARNING_STYLE_VERSION_CHECKSUM).toMatch(/^[a-f0-9]{64}$/);
