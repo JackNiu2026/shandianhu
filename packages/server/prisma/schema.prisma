@@ -129,12 +129,14 @@ model User {
 model ParentProfile {
   id            String  @id @default(cuid())
   userId        String  @unique
-  activeChildId String? @unique
+  activeChildId String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  activeChild   Child?  @relation("ActiveChild", fields: [activeChildId], references: [id], onDelete: SetNull)
+  activeChild   Child?  @relation("ActiveChild", fields: [id, activeChildId], references: [parentProfileId, id], onDelete: Restrict)
   children      Child[] @relation("ParentChildren")
+
+  @@unique([id, activeChildId])
 }
 
 model Child {
@@ -152,10 +154,10 @@ model Child {
   assessmentRuns  AssessmentRun[]
   evidence        LearningEvidence[]
   learningProfile LearningProfile?
-  reports         LearningReport[]
   auditLogs       AuditLog[]
 
   @@index([parentProfileId])
+  @@unique([parentProfileId, id])
 }
 
 model AuthSession {
@@ -403,12 +405,14 @@ model LearningEvidence {
 model LearningProfile {
   id               String                   @id @default(cuid())
   childId          String                   @unique
-  currentVersionId String?                  @unique
+  currentVersionId String?
   createdAt        DateTime                 @default(now())
   updatedAt        DateTime                 @updatedAt
   child            Child                    @relation(fields: [childId], references: [id], onDelete: Cascade)
-  currentVersion   LearningProfileVersion?  @relation("CurrentLearningProfileVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  currentVersion   LearningProfileVersion?  @relation("CurrentLearningProfileVersion", fields: [id, currentVersionId], references: [learningProfileId, id], onDelete: Restrict)
   versions         LearningProfileVersion[] @relation("ProfileVersions")
+
+  @@unique([id, currentVersionId])
 }
 
 model LearningProfileVersion {
@@ -422,11 +426,12 @@ model LearningProfileVersion {
   reports           LearningReport[]
 
   @@unique([learningProfileId, version])
+  @@unique([learningProfileId, id])
 }
 
 model LearningReport {
   id                       String                 @id @default(cuid())
-  childId                  String
+  learningProfileId        String
   learningProfileVersionId String
   fileObjectId             String?
   status                   ReportStatus           @default(DRAFT)
@@ -434,13 +439,12 @@ model LearningReport {
   publishedAt              DateTime?
   createdAt                DateTime               @default(now())
   updatedAt                DateTime               @updatedAt
-  child                    Child                  @relation(fields: [childId], references: [id], onDelete: Restrict)
-  learningProfileVersion   LearningProfileVersion @relation(fields: [learningProfileVersionId], references: [id], onDelete: Restrict)
+  learningProfileVersion   LearningProfileVersion @relation(fields: [learningProfileId, learningProfileVersionId], references: [learningProfileId, id], onDelete: Restrict)
   fileObject               FileObject?            @relation(fields: [fileObjectId], references: [id], onDelete: SetNull)
   shares                   ReportShare[]
   auditLogs                AuditLog[]
 
-  @@index([childId, createdAt])
+  @@index([learningProfileId, createdAt])
 }
 
 model ReportShare {

@@ -9,9 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "db:push": "prisma db push",
-    "db:seed": "tsx prisma/seed.ts"
+    "test": "vitest run"
   },
   "dependencies": {
     "@lightning-tiger/server": "workspace:*",

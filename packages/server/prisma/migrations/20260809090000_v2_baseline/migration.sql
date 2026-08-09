@@ -322,7 +322,7 @@ CREATE TABLE "LearningProfileVersion" (
 -- CreateTable
 CREATE TABLE "LearningReport" (
     "id" TEXT NOT NULL,
-    "childId" TEXT NOT NULL,
+    "learningProfileId" TEXT NOT NULL,
     "learningProfileVersionId" TEXT NOT NULL,
     "fileObjectId" TEXT,
     "status" "ReportStatus" NOT NULL DEFAULT 'DRAFT',
@@ -357,10 +357,13 @@ CREATE UNIQUE INDEX "User_wechatUnionId_key" ON "User"("wechatUnionId");
 CREATE UNIQUE INDEX "ParentProfile_userId_key" ON "ParentProfile"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ParentProfile_activeChildId_key" ON "ParentProfile"("activeChildId");
+CREATE UNIQUE INDEX "ParentProfile_id_activeChildId_key" ON "ParentProfile"("id", "activeChildId");
 
 -- CreateIndex
 CREATE INDEX "Child_parentProfileId_idx" ON "Child"("parentProfileId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Child_parentProfileId_id_key" ON "Child"("parentProfileId", "id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "AuthSession_tokenHash_key" ON "AuthSession"("tokenHash");
@@ -438,13 +441,16 @@ CREATE INDEX "LearningEvidence_childId_observedAt_idx" ON "LearningEvidence"("ch
 CREATE UNIQUE INDEX "LearningProfile_childId_key" ON "LearningProfile"("childId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "LearningProfile_currentVersionId_key" ON "LearningProfile"("currentVersionId");
+CREATE UNIQUE INDEX "LearningProfile_id_currentVersionId_key" ON "LearningProfile"("id", "currentVersionId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "LearningProfileVersion_learningProfileId_version_key" ON "LearningProfileVersion"("learningProfileId", "version");
 
 -- CreateIndex
-CREATE INDEX "LearningReport_childId_createdAt_idx" ON "LearningReport"("childId", "createdAt");
+CREATE UNIQUE INDEX "LearningProfileVersion_learningProfileId_id_key" ON "LearningProfileVersion"("learningProfileId", "id");
+
+-- CreateIndex
+CREATE INDEX "LearningReport_learningProfileId_createdAt_idx" ON "LearningReport"("learningProfileId", "createdAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ReportShare_tokenHash_key" ON "ReportShare"("tokenHash");
@@ -459,7 +465,7 @@ CREATE INDEX "ReportShare_expiresAt_idx" ON "ReportShare"("expiresAt");
 ALTER TABLE "ParentProfile" ADD CONSTRAINT "ParentProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ParentProfile" ADD CONSTRAINT "ParentProfile_activeChildId_fkey" FOREIGN KEY ("activeChildId") REFERENCES "Child"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "ParentProfile" ADD CONSTRAINT "ParentProfile_id_activeChildId_fkey" FOREIGN KEY ("id", "activeChildId") REFERENCES "Child"("parentProfileId", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Child" ADD CONSTRAINT "Child_parentProfileId_fkey" FOREIGN KEY ("parentProfileId") REFERENCES "ParentProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -552,16 +558,13 @@ ALTER TABLE "LearningEvidence" ADD CONSTRAINT "LearningEvidence_assessmentRunId_
 ALTER TABLE "LearningProfile" ADD CONSTRAINT "LearningProfile_childId_fkey" FOREIGN KEY ("childId") REFERENCES "Child"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "LearningProfile" ADD CONSTRAINT "LearningProfile_currentVersionId_fkey" FOREIGN KEY ("currentVersionId") REFERENCES "LearningProfileVersion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "LearningProfile" ADD CONSTRAINT "LearningProfile_id_currentVersionId_fkey" FOREIGN KEY ("id", "currentVersionId") REFERENCES "LearningProfileVersion"("learningProfileId", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "LearningProfileVersion" ADD CONSTRAINT "LearningProfileVersion_learningProfileId_fkey" FOREIGN KEY ("learningProfileId") REFERENCES "LearningProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "LearningReport" ADD CONSTRAINT "LearningReport_childId_fkey" FOREIGN KEY ("childId") REFERENCES "Child"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "LearningReport" ADD CONSTRAINT "LearningReport_learningProfileVersionId_fkey" FOREIGN KEY ("learningProfileVersionId") REFERENCES "LearningProfileVersion"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "LearningReport" ADD CONSTRAINT "LearningReport_learningProfileId_learningProfileVersionId_fkey" FOREIGN KEY ("learningProfileId", "learningProfileVersionId") REFERENCES "LearningProfileVersion"("learningProfileId", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "LearningReport" ADD CONSTRAINT "LearningReport_fileObjectId_fkey" FOREIGN KEY ("fileObjectId") REFERENCES "FileObject"("id") ON DELETE SET NULL ON UPDATE CASCADE;

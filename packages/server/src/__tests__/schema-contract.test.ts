@@ -1,8 +1,17 @@
+import fs from "node:fs";
+import path from "node:path";
 import { Prisma } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 
 const models = new Map(
   Prisma.dmmf.datamodel.models.map((model) => [model.name, model]),
+);
+const migration = fs.readFileSync(
+  path.resolve(
+    __dirname,
+    "../../prisma/migrations/20260809090000_v2_baseline/migration.sql",
+  ),
+  "utf8",
 );
 
 function field(modelName: string, fieldName: string) {
@@ -55,6 +64,21 @@ describe("V2.1 Prisma schema contract", () => {
     expect(field("AdminSession", "tokenHash")).toMatchObject({ isUnique: true, type: "String" });
   });
 
+  it("enforces active-child ownership with a composite relation and foreign key", () => {
+    expect(field("ParentProfile", "activeChild")).toMatchObject({
+      type: "Child",
+      relationFromFields: ["id", "activeChildId"],
+      relationToFields: ["parentProfileId", "id"],
+    });
+    expect(models.get("Child")?.uniqueFields).toContainEqual([
+      "parentProfileId",
+      "id",
+    ]);
+    expect(migration).toContain(
+      'FOREIGN KEY ("id", "activeChildId") REFERENCES "Child"("parentProfileId", "id")',
+    );
+  });
+
   it("keeps private files, jobs, notifications, audit, and model usage relational", () => {
     expect(field("FileObject", "ownerUserId")).toMatchObject({ type: "String" });
     expect(field("AsyncJob", "requestedByUserId")).toMatchObject({ type: "String", isRequired: false });
@@ -72,7 +96,54 @@ describe("V2.1 Prisma schema contract", () => {
     expect(field("LearningEvidence", "childId")).toMatchObject({ type: "String" });
     expect(field("LearningProfile", "childId")).toMatchObject({ isUnique: true, type: "String" });
     expect(field("LearningProfileVersion", "learningProfileId")).toMatchObject({ type: "String" });
-    expect(field("LearningReport", "learningProfileVersionId")).toMatchObject({ type: "String" });
+    expect(field("LearningProfile", "currentVersion")).toMatchObject({
+      type: "LearningProfileVersion",
+      relationFromFields: ["id", "currentVersionId"],
+      relationToFields: ["learningProfileId", "id"],
+    });
+    expect(models.get("LearningProfileVersion")?.uniqueFields).toContainEqual([
+      "learningProfileId",
+      "id",
+    ]);
+    expect(field("LearningReport", "learningProfileId")).toMatchObject({ type: "String" });
+    expect(field("LearningReport", "learningProfileVersion")).toMatchObject({
+      type: "LearningProfileVersion",
+      relationFromFields: ["learningProfileId", "learningProfileVersionId"],
+      relationToFields: ["learningProfileId", "id"],
+    });
+    expect(models.get("LearningReport")?.fields.some((candidate) => candidate.name === "childId")).toBe(false);
+    expect(migration).toContain(
+      'FOREIGN KEY ("id", "currentVersionId") REFERENCES "LearningProfileVersion"("learningProfileId", "id")',
+    );
+    expect(migration).toContain(
+      'FOREIGN KEY ("learningProfileId", "learningProfileVersionId") REFERENCES "LearningProfileVersion"("learningProfileId", "id")',
+    );
     expect(field("ReportShare", "tokenHash")).toMatchObject({ isUnique: true, type: "String" });
+  });
+
+  it("keeps Prisma ownership in the server package and does not migrate at admin startup", () => {
+    const adminPackage = JSON.parse(
+      fs.readFileSync(path.resolve(__dirname, "../../../admin/package.json"), "utf8"),
+    ) as { scripts: Record<string, string> };
+    const dockerfile = fs.readFileSync(
+      path.resolve(__dirname, "../../../admin/Dockerfile"),
+      "utf8",
+    );
+
+    expect(adminPackage.scripts["db:push"]).toBeUndefined();
+    expect(adminPackage.scripts["db:seed"]).toBeUndefined();
+    expect(dockerfile).toContain("COPY packages/server/package.json ./packages/server/");
+    expect(dockerfile).toContain("pnpm --filter @lightning-tiger/server prisma:generate");
+    expect(dockerfile).toContain("/app/packages/server/prisma");
+    expect(dockerfile).toContain(
+      "/app/node_modules/.pnpm/@prisma+client@*/node_modules/.prisma",
+    );
+    expect(dockerfile).toContain(
+      "/app/node_modules/.pnpm/@prisma+client@*/node_modules/@prisma",
+    );
+    expect(dockerfile).toContain('CMD ["node", "packages/admin/server.js"]');
+    expect(dockerfile).not.toContain("/app/node_modules/.prisma");
+    expect(dockerfile).not.toContain("packages/admin/prisma");
+    expect(dockerfile).not.toContain("prisma migrate deploy");
   });
 });
