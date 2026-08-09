@@ -8,8 +8,9 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "prisma:generate": "prisma generate",
-    "db:migrate": "prisma migrate deploy"
+    "prisma:generate": "prisma generate --schema ../admin/prisma/schema.prisma",
+    "db:migrate": "prisma migrate deploy --schema ../admin/prisma/schema.prisma",
+    "db:push": "prisma db push --schema ../admin/prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
