@@ -9,13 +9,14 @@
     "build:weapp": "pnpm --filter mobile build:weapp",
     "dev:admin": "pnpm --filter admin dev",
     "build:admin": "pnpm --filter admin build",
+    "build:worker": "pnpm --filter @lightning-tiger/worker build",
     "lint:admin": "pnpm --filter admin lint",
     "format": "prettier --write \"packages/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
     "format:check": "prettier --check \"packages/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
     "typecheck": "pnpm -r --parallel run typecheck",
-    "db:push": "pnpm --filter admin db:push",
-    "db:seed": "pnpm --filter admin db:seed",
-    "db:migrate": "pnpm --filter admin prisma migrate deploy"
+    "test": "pnpm -r --parallel run test",
+    "db:generate": "pnpm --filter @lightning-tiger/server prisma:generate",
+    "db:migrate": "pnpm --filter @lightning-tiger/server db:migrate"
   },
   "packageManager": "pnpm@11.20.0+sha512.9a6f330a95b66446ea088faf1521405a8a01f07fde7124cc9958dfed52d4bb436737e65b08f85f37b46fcba375092558ac51262b816844b22f63406ed166bfee",
   "devDependencies": {

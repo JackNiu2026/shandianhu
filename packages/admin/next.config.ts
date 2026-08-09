@@ -3,7 +3,7 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  transpilePackages: ["@lightning-tiger/shared"],
+  transpilePackages: ["@lightning-tiger/server", "@lightning-tiger/shared"],
   serverExternalPackages: ["@prisma/client"],
   poweredByHeader: false,
   eslint: {
