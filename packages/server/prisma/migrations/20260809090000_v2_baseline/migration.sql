@@ -436,7 +436,7 @@ CREATE TABLE "ReportShare" (
     "learningReportId" TEXT NOT NULL,
     "createdByUserId" TEXT,
     "tokenHash" TEXT NOT NULL,
-    "expiresAt" TIMESTAMP(3),
+    "expiresAt" TIMESTAMP(3) NOT NULL,
     "revokedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -669,7 +669,7 @@ ALTER TABLE "AsyncJob" ADD CONSTRAINT "AsyncJob_requestedByUserId_fkey" FOREIGN 
 ALTER TABLE "AsyncJob" ADD CONSTRAINT "AsyncJob_childId_fkey" FOREIGN KEY ("childId") REFERENCES "Child"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AsyncJob" ADD CONSTRAINT "AsyncJob_assessmentRunId_fkey" FOREIGN KEY ("assessmentRunId") REFERENCES "AssessmentRun"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "AsyncJob" ADD CONSTRAINT "AsyncJob_childId_assessmentRunId_fkey" FOREIGN KEY ("childId", "assessmentRunId") REFERENCES "AssessmentRun"("childId", "id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -788,6 +788,9 @@ ALTER TABLE "ReportShare" ADD CONSTRAINT "ReportShare_learningReportId_fkey" FOR
 -- AddForeignKey
 ALTER TABLE "ReportShare" ADD CONSTRAINT "ReportShare_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
+-- Assessment-backed jobs must identify the same child as their run.
+ALTER TABLE "AsyncJob" ADD CONSTRAINT "AsyncJob_assessment_run_requires_child_check" CHECK ("assessmentRunId" IS NULL OR "childId" IS NOT NULL);
+
 -- Keep assessment evidence sources globally idempotent without constraining other source types.
 CREATE UNIQUE INDEX "LearningEvidence_assessment_source_key" ON "LearningEvidence"("source", "sourceId") WHERE "source" = 'ASSESSMENT';
 
@@ -820,3 +823,25 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER "LearningProfileVersion_immutable"
 BEFORE UPDATE OR DELETE ON "LearningProfileVersion"
 FOR EACH ROW EXECUTE FUNCTION "prevent_learning_profile_version_mutation"();
+
+-- Version evidence is fixed at creation and may be removed only during an authorized privacy purge.
+CREATE FUNCTION "prevent_learning_profile_version_evidence_mutation"()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF TG_OP = 'INSERT'
+    AND current_setting('app.allow_learning_profile_version_dependency_creation', true) = 'on' THEN
+    RETURN NEW;
+  END IF;
+
+  IF TG_OP = 'DELETE'
+    AND current_setting('app.allow_learning_profile_version_purge', true) = 'on' THEN
+    RETURN OLD;
+  END IF;
+
+  RAISE EXCEPTION 'LearningProfileVersion evidence dependencies are immutable';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER "LearningProfileVersionEvidence_immutable"
+BEFORE INSERT OR UPDATE OR DELETE ON "LearningProfileVersionEvidence"
+FOR EACH ROW EXECUTE FUNCTION "prevent_learning_profile_version_evidence_mutation"();

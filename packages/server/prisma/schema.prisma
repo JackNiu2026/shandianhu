@@ -324,7 +324,7 @@ model AsyncJob {
   updatedAt         DateTime       @updatedAt
   requestedBy       User?          @relation("JobRequester", fields: [requestedByUserId], references: [id], onDelete: SetNull)
   child             Child?         @relation(fields: [childId], references: [id], onDelete: SetNull)
-  assessmentRun     AssessmentRun? @relation(fields: [assessmentRunId], references: [id], onDelete: SetNull)
+  assessmentRun     AssessmentRun? @relation(fields: [childId, assessmentRunId], references: [childId, id], onDelete: SetNull)
   auditLogs         AuditLog[]
 
   @@index([status, retryAt, availableAt])
@@ -626,7 +626,7 @@ model ReportShare {
   learningReportId String
   createdByUserId  String?
   tokenHash        String         @unique
-  expiresAt        DateTime?
+  expiresAt        DateTime
   revokedAt        DateTime?
   createdAt        DateTime       @default(now())
   learningReport   LearningReport @relation(fields: [learningReportId], references: [id], onDelete: Cascade)

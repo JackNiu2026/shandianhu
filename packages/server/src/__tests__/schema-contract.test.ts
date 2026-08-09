@@ -269,6 +269,34 @@ describe("V2.1 Prisma schema contract", () => {
     expect(migration).toContain('"imageCostMicros" BIGINT NOT NULL DEFAULT 0');
   });
 
+  it("requires time-limited report shares and child-scoped assessment jobs", () => {
+    expect(field("ReportShare", "expiresAt")).toMatchObject({ type: "DateTime", isRequired: true });
+    expect(field("AsyncJob", "assessmentRun")).toMatchObject({
+      type: "AssessmentRun",
+      relationFromFields: ["childId", "assessmentRunId"],
+      relationToFields: ["childId", "id"],
+    });
+    expect(migration).toContain(
+      'FOREIGN KEY ("childId", "assessmentRunId") REFERENCES "AssessmentRun"("childId", "id")',
+    );
+    expect(migration).toContain(
+      'CONSTRAINT "AsyncJob_assessment_run_requires_child_check" CHECK ("assessmentRunId" IS NULL OR "childId" IS NOT NULL)',
+    );
+  });
+
+  it("freezes evidence dependencies after their authorized creation", () => {
+    expect(migration).toContain('CREATE FUNCTION "prevent_learning_profile_version_evidence_mutation"()');
+    expect(migration).toContain("TG_OP = 'INSERT'");
+    expect(migration).toContain("app.allow_learning_profile_version_dependency_creation");
+    expect(migration).toContain("TG_OP = 'UPDATE'");
+    expect(migration).toContain("TG_OP = 'DELETE'");
+    expect(migration).toContain("app.allow_learning_profile_version_purge");
+    expect(migration).toContain("LearningProfileVersion evidence dependencies are immutable");
+    expect(migration).toContain(
+      'BEFORE INSERT OR UPDATE OR DELETE ON "LearningProfileVersionEvidence"',
+    );
+  });
+
   it("enforces child ownership for uploaded artifacts and report PDFs", () => {
     expect(models.get("FileObject")?.uniqueFields).toContainEqual(["childId", "id"]);
     expect(field("AssessmentArtifact", "childId")).toMatchObject({ type: "String" });
