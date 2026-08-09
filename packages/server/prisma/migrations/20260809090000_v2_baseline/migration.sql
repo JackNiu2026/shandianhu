@@ -77,6 +77,7 @@ CREATE TABLE "Child" (
     "name" TEXT NOT NULL,
     "birthDate" TIMESTAMP(3),
     "grade" TEXT,
+    "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -290,8 +291,10 @@ CREATE TABLE "LearningEvidence" (
     "childId" TEXT NOT NULL,
     "assessmentRunId" TEXT,
     "source" "EvidenceSource" NOT NULL,
+    "sourceId" TEXT NOT NULL,
     "observedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "payload" JSONB NOT NULL,
+    "revokedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "LearningEvidence_pkey" PRIMARY KEY ("id")
@@ -322,8 +325,10 @@ CREATE TABLE "LearningProfileVersion" (
 -- CreateTable
 CREATE TABLE "LearningReport" (
     "id" TEXT NOT NULL,
+    "childId" TEXT NOT NULL,
     "learningProfileId" TEXT NOT NULL,
     "learningProfileVersionId" TEXT NOT NULL,
+    "sequence" INTEGER NOT NULL,
     "fileObjectId" TEXT,
     "status" "ReportStatus" NOT NULL DEFAULT 'DRAFT',
     "body" JSONB NOT NULL,
@@ -361,6 +366,9 @@ CREATE UNIQUE INDEX "ParentProfile_id_activeChildId_key" ON "ParentProfile"("id"
 
 -- CreateIndex
 CREATE INDEX "Child_parentProfileId_idx" ON "Child"("parentProfileId");
+
+-- CreateIndex
+CREATE INDEX "Child_parentProfileId_deletedAt_idx" ON "Child"("parentProfileId", "deletedAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Child_parentProfileId_id_key" ON "Child"("parentProfileId", "id");
@@ -438,10 +446,22 @@ CREATE UNIQUE INDEX "AssessmentResult_assessmentRunId_key" ON "AssessmentResult"
 CREATE INDEX "LearningEvidence_childId_observedAt_idx" ON "LearningEvidence"("childId", "observedAt");
 
 -- CreateIndex
+CREATE INDEX "LearningEvidence_childId_revokedAt_observedAt_idx" ON "LearningEvidence"("childId", "revokedAt", "observedAt");
+
+-- CreateIndex
+CREATE INDEX "LearningEvidence_source_sourceId_revokedAt_idx" ON "LearningEvidence"("source", "sourceId", "revokedAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "LearningEvidence_childId_source_sourceId_key" ON "LearningEvidence"("childId", "source", "sourceId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "LearningProfile_childId_key" ON "LearningProfile"("childId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "LearningProfile_id_currentVersionId_key" ON "LearningProfile"("id", "currentVersionId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "LearningProfile_childId_id_key" ON "LearningProfile"("childId", "id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "LearningProfileVersion_learningProfileId_version_key" ON "LearningProfileVersion"("learningProfileId", "version");
@@ -451,6 +471,9 @@ CREATE UNIQUE INDEX "LearningProfileVersion_learningProfileId_id_key" ON "Learni
 
 -- CreateIndex
 CREATE INDEX "LearningReport_learningProfileId_createdAt_idx" ON "LearningReport"("learningProfileId", "createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "LearningReport_childId_sequence_key" ON "LearningReport"("childId", "sequence");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ReportShare_tokenHash_key" ON "ReportShare"("tokenHash");
@@ -564,6 +587,12 @@ ALTER TABLE "LearningProfile" ADD CONSTRAINT "LearningProfile_id_currentVersionI
 ALTER TABLE "LearningProfileVersion" ADD CONSTRAINT "LearningProfileVersion_learningProfileId_fkey" FOREIGN KEY ("learningProfileId") REFERENCES "LearningProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "LearningReport" ADD CONSTRAINT "LearningReport_childId_fkey" FOREIGN KEY ("childId") REFERENCES "Child"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "LearningReport" ADD CONSTRAINT "LearningReport_childId_learningProfileId_fkey" FOREIGN KEY ("childId", "learningProfileId") REFERENCES "LearningProfile"("childId", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "LearningReport" ADD CONSTRAINT "LearningReport_learningProfileId_learningProfileVersionId_fkey" FOREIGN KEY ("learningProfileId", "learningProfileVersionId") REFERENCES "LearningProfileVersion"("learningProfileId", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -574,3 +603,20 @@ ALTER TABLE "ReportShare" ADD CONSTRAINT "ReportShare_learningReportId_fkey" FOR
 
 -- AddForeignKey
 ALTER TABLE "ReportShare" ADD CONSTRAINT "ReportShare_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- Preserve immutable profile snapshots while allowing an explicit privacy purge.
+CREATE FUNCTION "prevent_learning_profile_version_mutation"()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF TG_OP = 'DELETE'
+    AND current_setting('app.allow_learning_profile_version_purge', true) = 'on' THEN
+    RETURN OLD;
+  END IF;
+
+  RAISE EXCEPTION 'LearningProfileVersion snapshots are immutable';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER "LearningProfileVersion_immutable"
+BEFORE UPDATE OR DELETE ON "LearningProfileVersion"
+FOR EACH ROW EXECUTE FUNCTION "prevent_learning_profile_version_mutation"();

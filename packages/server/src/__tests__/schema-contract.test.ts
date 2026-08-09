@@ -94,6 +94,16 @@ describe("V2.1 Prisma schema contract", () => {
     expect(field("AssessmentArtifact", "fileObjectId")).toMatchObject({ type: "String" });
     expect(field("AssessmentResult", "assessmentRunId")).toMatchObject({ isUnique: true, type: "String" });
     expect(field("LearningEvidence", "childId")).toMatchObject({ type: "String" });
+    expect(field("LearningEvidence", "sourceId")).toMatchObject({ type: "String" });
+    expect(field("LearningEvidence", "revokedAt")).toMatchObject({
+      type: "DateTime",
+      isRequired: false,
+    });
+    expect(models.get("LearningEvidence")?.uniqueFields).toContainEqual([
+      "childId",
+      "source",
+      "sourceId",
+    ]);
     expect(field("LearningProfile", "childId")).toMatchObject({ isUnique: true, type: "String" });
     expect(field("LearningProfileVersion", "learningProfileId")).toMatchObject({ type: "String" });
     expect(field("LearningProfile", "currentVersion")).toMatchObject({
@@ -106,19 +116,56 @@ describe("V2.1 Prisma schema contract", () => {
       "id",
     ]);
     expect(field("LearningReport", "learningProfileId")).toMatchObject({ type: "String" });
+    expect(field("LearningReport", "childId")).toMatchObject({ type: "String" });
+    expect(field("LearningReport", "sequence")).toMatchObject({ type: "Int" });
+    expect(models.get("LearningReport")?.uniqueFields).toContainEqual([
+      "childId",
+      "sequence",
+    ]);
+    expect(field("LearningReport", "learningProfile")).toMatchObject({
+      type: "LearningProfile",
+      relationFromFields: ["childId", "learningProfileId"],
+      relationToFields: ["childId", "id"],
+    });
     expect(field("LearningReport", "learningProfileVersion")).toMatchObject({
       type: "LearningProfileVersion",
       relationFromFields: ["learningProfileId", "learningProfileVersionId"],
       relationToFields: ["learningProfileId", "id"],
     });
-    expect(models.get("LearningReport")?.fields.some((candidate) => candidate.name === "childId")).toBe(false);
     expect(migration).toContain(
       'FOREIGN KEY ("id", "currentVersionId") REFERENCES "LearningProfileVersion"("learningProfileId", "id")',
     );
     expect(migration).toContain(
       'FOREIGN KEY ("learningProfileId", "learningProfileVersionId") REFERENCES "LearningProfileVersion"("learningProfileId", "id")',
     );
+    expect(migration).toContain(
+      'FOREIGN KEY ("childId", "learningProfileId") REFERENCES "LearningProfile"("childId", "id")',
+    );
+    expect(migration).toContain('CREATE TRIGGER "LearningProfileVersion_immutable"');
+    expect(migration).toContain('current_setting(\'app.allow_learning_profile_version_purge\', true)');
     expect(field("ReportShare", "tokenHash")).toMatchObject({ isUnique: true, type: "String" });
+  });
+
+  it("supports child soft deletion without deleting their learning history", () => {
+    expect(field("Child", "deletedAt")).toMatchObject({
+      type: "DateTime",
+      isRequired: false,
+    });
+    expect(migration).toContain(
+      'CREATE INDEX "Child_parentProfileId_deletedAt_idx" ON "Child"("parentProfileId", "deletedAt")',
+    );
+  });
+
+  it("uses server-owned migration and seed commands in CI", () => {
+    const ci = fs.readFileSync(
+      path.resolve(__dirname, "../../../../.github/workflows/ci.yml"),
+      "utf8",
+    );
+
+    expect(ci).toContain("pnpm --filter @lightning-tiger/server db:migrate");
+    expect(ci).toContain("pnpm --filter @lightning-tiger/server db:seed");
+    expect(ci).not.toContain("pnpm --filter admin exec prisma db push");
+    expect(ci).not.toContain("pnpm --filter admin run db:seed");
   });
 
   it("keeps Prisma ownership in the server package and does not migrate at admin startup", () => {

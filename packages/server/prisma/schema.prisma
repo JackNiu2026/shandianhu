@@ -145,6 +145,7 @@ model Child {
   name            String
   birthDate       DateTime?
   grade           String?
+  deletedAt       DateTime?
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   parentProfile   ParentProfile      @relation("ParentChildren", fields: [parentProfileId], references: [id], onDelete: Cascade)
@@ -154,9 +155,11 @@ model Child {
   assessmentRuns  AssessmentRun[]
   evidence        LearningEvidence[]
   learningProfile LearningProfile?
+  reports         LearningReport[]
   auditLogs       AuditLog[]
 
   @@index([parentProfileId])
+  @@index([parentProfileId, deletedAt])
   @@unique([parentProfileId, id])
 }
 
@@ -393,13 +396,18 @@ model LearningEvidence {
   childId         String
   assessmentRunId String?
   source          EvidenceSource
+  sourceId        String
   observedAt      DateTime       @default(now())
   payload         Json
+  revokedAt       DateTime?
   createdAt       DateTime       @default(now())
   child           Child          @relation(fields: [childId], references: [id], onDelete: Cascade)
   assessmentRun   AssessmentRun? @relation(fields: [assessmentRunId], references: [id], onDelete: SetNull)
 
   @@index([childId, observedAt])
+  @@index([childId, revokedAt, observedAt])
+  @@index([source, sourceId, revokedAt])
+  @@unique([childId, source, sourceId])
 }
 
 model LearningProfile {
@@ -411,8 +419,10 @@ model LearningProfile {
   child            Child                    @relation(fields: [childId], references: [id], onDelete: Cascade)
   currentVersion   LearningProfileVersion?  @relation("CurrentLearningProfileVersion", fields: [id, currentVersionId], references: [learningProfileId, id], onDelete: Restrict)
   versions         LearningProfileVersion[] @relation("ProfileVersions")
+  reports          LearningReport[]
 
   @@unique([id, currentVersionId])
+  @@unique([childId, id])
 }
 
 model LearningProfileVersion {
@@ -431,20 +441,25 @@ model LearningProfileVersion {
 
 model LearningReport {
   id                       String                 @id @default(cuid())
+  childId                  String
   learningProfileId        String
   learningProfileVersionId String
+  sequence                 Int
   fileObjectId             String?
   status                   ReportStatus           @default(DRAFT)
   body                     Json
   publishedAt              DateTime?
   createdAt                DateTime               @default(now())
   updatedAt                DateTime               @updatedAt
+  child                    Child                  @relation(fields: [childId], references: [id], onDelete: Restrict)
+  learningProfile          LearningProfile        @relation(fields: [childId, learningProfileId], references: [childId, id], onDelete: Restrict)
   learningProfileVersion   LearningProfileVersion @relation(fields: [learningProfileId, learningProfileVersionId], references: [learningProfileId, id], onDelete: Restrict)
   fileObject               FileObject?            @relation(fields: [fileObjectId], references: [id], onDelete: SetNull)
   shares                   ReportShare[]
   auditLogs                AuditLog[]
 
   @@index([learningProfileId, createdAt])
+  @@unique([childId, sequence])
 }
 
 model ReportShare {

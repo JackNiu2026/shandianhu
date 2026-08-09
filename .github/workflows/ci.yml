@@ -70,13 +70,13 @@ jobs:
       - name: Run tests
         run: pnpm --filter admin run test
 
-      - name: Push database schema
-        run: pnpm --filter admin exec prisma db push
+      - name: Migrate database
+        run: pnpm --filter @lightning-tiger/server db:migrate
         env:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/lightning_tiger_test?schema=public"
 
       - name: Seed database
-        run: pnpm --filter admin run db:seed
+        run: pnpm --filter @lightning-tiger/server db:seed
         env:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/lightning_tiger_test?schema=public"
           JWT_SECRET: "ci-test-secret"
