@@ -8,9 +8,10 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "prisma:generate": "prisma generate --schema ../admin/prisma/schema.prisma",
-    "db:migrate": "prisma migrate deploy --schema ../admin/prisma/schema.prisma",
-    "db:push": "prisma db push --schema ../admin/prisma/schema.prisma"
+    "prisma:generate": "prisma generate --schema prisma/schema.prisma",
+    "db:migrate": "prisma migrate deploy --schema prisma/schema.prisma",
+    "db:push": "prisma db push --schema prisma/schema.prisma",
+    "db:seed": "prisma db seed --schema prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -18,6 +19,9 @@
     "cos-nodejs-sdk-v5": "^2.14.7",
     "ioredis": "^5.7.0",
     "zod": "^3.25.76"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

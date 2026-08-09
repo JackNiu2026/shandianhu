@@ -54,7 +54,7 @@ describe("package boundaries", () => {
     }
   });
 
-  it("bridges Prisma commands to the legacy schema until the v2 schema exists", () => {
+  it("owns Prisma commands and seeding in the server package", () => {
     const serverPackage = JSON.parse(
       fs.readFileSync(path.resolve(__dirname, "../../package.json"), "utf8"),
     ) as { scripts: Record<string, string> };
@@ -63,13 +63,13 @@ describe("package boundaries", () => {
     ) as { scripts: Record<string, string> };
 
     expect(serverPackage.scripts["prisma:generate"]).toBe(
-      "prisma generate --schema ../admin/prisma/schema.prisma",
+      "prisma generate --schema prisma/schema.prisma",
     );
     expect(serverPackage.scripts["db:migrate"]).toBe(
-      "prisma migrate deploy --schema ../admin/prisma/schema.prisma",
+      "prisma migrate deploy --schema prisma/schema.prisma",
     );
     expect(serverPackage.scripts["db:push"]).toBe(
-      "prisma db push --schema ../admin/prisma/schema.prisma",
+      "prisma db push --schema prisma/schema.prisma",
     );
     expect(rootPackage.scripts["db:generate"]).toBe(
       "pnpm --filter @lightning-tiger/server prisma:generate",
@@ -80,7 +80,9 @@ describe("package boundaries", () => {
     expect(rootPackage.scripts["db:push"]).toBe(
       "pnpm --filter @lightning-tiger/server db:push",
     );
-    expect(rootPackage.scripts["db:seed"]).toBe("pnpm --filter admin db:seed");
+    expect(rootPackage.scripts["db:seed"]).toBe(
+      "pnpm --filter @lightning-tiger/server db:seed",
+    );
   });
 
   it("runs server and worker checks in CI", () => {

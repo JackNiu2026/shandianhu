@@ -1,0 +1,459 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AdminRole {
+  SUPERADMIN
+  EDITOR
+  AUDITOR
+}
+
+enum SessionStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+enum FileVisibility {
+  PRIVATE
+}
+
+enum AsyncJobType {
+  ASSESSMENT_PROCESSING
+  PROFILE_GENERATION
+  REPORT_GENERATION
+  FILE_PROCESSING
+}
+
+enum AsyncJobStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
+enum NotificationType {
+  ASSESSMENT_COMPLETE
+  REPORT_READY
+  SYSTEM
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  SHARE
+  REVOKE
+}
+
+enum ModelProvider {
+  OPENAI
+  AZURE_OPENAI
+  ANTHROPIC
+  OTHER
+}
+
+enum ModelCapability {
+  TEXT
+  VISION
+  EMBEDDING
+}
+
+enum AssessmentVersionStatus {
+  DRAFT
+  PUBLISHED
+  RETIRED
+}
+
+enum AssessmentRunStatus {
+  CREATED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
+enum ArtifactKind {
+  SOURCE_IMAGE
+  OCR_TEXT
+  ANALYSIS_JSON
+  OUTPUT_FILE
+}
+
+enum EvidenceSource {
+  ASSESSMENT
+  MANUAL
+  IMPORTED
+  MODEL
+}
+
+enum ReportStatus {
+  DRAFT
+  READY
+  ARCHIVED
+}
+
+model User {
+  id                String             @id @default(cuid())
+  wechatOpenId      String             @unique
+  wechatUnionId     String?            @unique
+  displayName       String?
+  avatarUrl         String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  parentProfile     ParentProfile?
+  authSessions      AuthSession[]
+  fileObjects       FileObject[]       @relation("FileOwner")
+  requestedJobs     AsyncJob[]         @relation("JobRequester")
+  notifications     Notification[]
+  actorAuditLogs    AuditLog[]         @relation("AuditActorUser")
+  subjectAuditLogs  AuditLog[]         @relation("AuditSubjectUser")
+  modelUsageLedgers ModelUsageLedger[]
+  assessmentRuns    AssessmentRun[]    @relation("AssessmentRequester")
+  reportShares      ReportShare[]      @relation("ReportShareCreator")
+}
+
+model ParentProfile {
+  id            String  @id @default(cuid())
+  userId        String  @unique
+  activeChildId String? @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeChild   Child?  @relation("ActiveChild", fields: [activeChildId], references: [id], onDelete: SetNull)
+  children      Child[] @relation("ParentChildren")
+}
+
+model Child {
+  id              String             @id @default(cuid())
+  parentProfileId String
+  name            String
+  birthDate       DateTime?
+  grade           String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  parentProfile   ParentProfile      @relation("ParentChildren", fields: [parentProfileId], references: [id], onDelete: Cascade)
+  activeForParent ParentProfile?     @relation("ActiveChild")
+  asyncJobs       AsyncJob[]
+  modelUsage      ModelUsageLedger[]
+  assessmentRuns  AssessmentRun[]
+  evidence        LearningEvidence[]
+  learningProfile LearningProfile?
+  reports         LearningReport[]
+  auditLogs       AuditLog[]
+
+  @@index([parentProfileId])
+}
+
+model AuthSession {
+  id         String        @id @default(cuid())
+  userId     String
+  tokenHash  String        @unique
+  status     SessionStatus @default(ACTIVE)
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime      @default(now())
+  lastUsedAt DateTime?
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([expiresAt])
+}
+
+model AdminUser {
+  id           String                 @id @default(cuid())
+  email        String                 @unique
+  passwordHash String
+  role         AdminRole              @default(EDITOR)
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  sessions     AdminSession[]
+  auditLogs    AuditLog[]             @relation("AuditActorAdmin")
+  definitions  AssessmentDefinition[]
+  modelConfigs ModelConfig[]
+}
+
+model AdminSession {
+  id          String        @id @default(cuid())
+  adminUserId String
+  tokenHash   String        @unique
+  status      SessionStatus @default(ACTIVE)
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  createdAt   DateTime      @default(now())
+  lastUsedAt  DateTime?
+  adminUser   AdminUser     @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+
+  @@index([adminUserId, status])
+  @@index([expiresAt])
+}
+
+model FileObject {
+  id             String         @id @default(cuid())
+  ownerUserId    String
+  objectKey      String         @unique
+  contentType    String
+  byteSize       Int
+  visibility     FileVisibility @default(PRIVATE)
+  checksumSha256 String?
+  createdAt      DateTime       @default(now())
+  owner          User           @relation("FileOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
+  artifacts      AssessmentArtifact[]
+  reports        LearningReport[]
+
+  @@index([ownerUserId, createdAt])
+}
+
+model AsyncJob {
+  id                String         @id @default(cuid())
+  requestedByUserId String?
+  childId           String?
+  assessmentRunId   String?
+  type              AsyncJobType
+  status            AsyncJobStatus @default(QUEUED)
+  payload           Json?
+  result            Json?
+  errorCode         String?
+  errorDetail       String?
+  availableAt       DateTime       @default(now())
+  startedAt         DateTime?
+  finishedAt        DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  requestedBy       User?          @relation("JobRequester", fields: [requestedByUserId], references: [id], onDelete: SetNull)
+  child             Child?         @relation(fields: [childId], references: [id], onDelete: SetNull)
+  assessmentRun     AssessmentRun? @relation(fields: [assessmentRunId], references: [id], onDelete: SetNull)
+  auditLogs         AuditLog[]
+
+  @@index([status, availableAt])
+  @@index([childId, createdAt])
+}
+
+model Notification {
+  id        String             @id @default(cuid())
+  userId    String
+  type      NotificationType
+  status    NotificationStatus @default(UNREAD)
+  body      Json
+  readAt    DateTime?
+  createdAt DateTime           @default(now())
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status, createdAt])
+}
+
+model AuditLog {
+  id               String          @id @default(cuid())
+  actorUserId      String?
+  actorAdminUserId String?
+  subjectUserId    String?
+  childId          String?
+  asyncJobId       String?
+  assessmentRunId  String?
+  learningReportId String?
+  action           AuditAction
+  metadata         Json?
+  createdAt        DateTime        @default(now())
+  actorUser        User?           @relation("AuditActorUser", fields: [actorUserId], references: [id], onDelete: SetNull)
+  actorAdminUser   AdminUser?      @relation("AuditActorAdmin", fields: [actorAdminUserId], references: [id], onDelete: SetNull)
+  subjectUser      User?           @relation("AuditSubjectUser", fields: [subjectUserId], references: [id], onDelete: SetNull)
+  child            Child?          @relation(fields: [childId], references: [id], onDelete: SetNull)
+  asyncJob         AsyncJob?       @relation(fields: [asyncJobId], references: [id], onDelete: SetNull)
+  assessmentRun    AssessmentRun?  @relation(fields: [assessmentRunId], references: [id], onDelete: SetNull)
+  learningReport   LearningReport? @relation(fields: [learningReportId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId, createdAt])
+  @@index([childId, createdAt])
+}
+
+model ModelConfig {
+  id               String             @id @default(cuid())
+  createdByAdminId String?
+  provider         ModelProvider
+  model            String
+  capability       ModelCapability
+  configuration    Json?
+  isActive         Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  createdByAdmin   AdminUser?         @relation(fields: [createdByAdminId], references: [id], onDelete: SetNull)
+  usageLedgers     ModelUsageLedger[]
+
+  @@unique([provider, model, capability])
+}
+
+model ModelUsageLedger {
+  id            String      @id @default(cuid())
+  modelConfigId String
+  userId        String?
+  childId       String?
+  inputTokens   Int         @default(0)
+  outputTokens  Int         @default(0)
+  estimatedCost Decimal?    @db.Decimal(12, 6)
+  metadata      Json?
+  createdAt     DateTime    @default(now())
+  modelConfig   ModelConfig @relation(fields: [modelConfigId], references: [id], onDelete: Restrict)
+  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  child         Child?      @relation(fields: [childId], references: [id], onDelete: SetNull)
+
+  @@index([modelConfigId, createdAt])
+  @@index([childId, createdAt])
+}
+
+model AssessmentDefinition {
+  id               String              @id @default(cuid())
+  createdByAdminId String?
+  slug             String              @unique
+  name             String
+  description      String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  createdByAdmin   AdminUser?          @relation(fields: [createdByAdminId], references: [id], onDelete: SetNull)
+  versions         AssessmentVersion[]
+}
+
+model AssessmentVersion {
+  id                     String                  @id @default(cuid())
+  assessmentDefinitionId String
+  version                Int
+  status                 AssessmentVersionStatus @default(DRAFT)
+  specification          Json
+  publishedAt            DateTime?
+  createdAt              DateTime                @default(now())
+  definition             AssessmentDefinition    @relation(fields: [assessmentDefinitionId], references: [id], onDelete: Cascade)
+  runs                   AssessmentRun[]
+
+  @@unique([assessmentDefinitionId, version])
+}
+
+model AssessmentRun {
+  id                  String              @id @default(cuid())
+  assessmentVersionId String
+  childId             String
+  requestedByUserId   String?
+  status              AssessmentRunStatus @default(CREATED)
+  startedAt           DateTime?
+  finishedAt          DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  assessmentVersion   AssessmentVersion   @relation(fields: [assessmentVersionId], references: [id], onDelete: Restrict)
+  child               Child               @relation(fields: [childId], references: [id], onDelete: Restrict)
+  requestedBy         User?               @relation("AssessmentRequester", fields: [requestedByUserId], references: [id], onDelete: SetNull)
+  artifacts           AssessmentArtifact[]
+  result              AssessmentResult?
+  evidence            LearningEvidence[]
+  asyncJobs           AsyncJob[]
+  auditLogs           AuditLog[]
+
+  @@index([childId, createdAt])
+  @@index([status, createdAt])
+}
+
+model AssessmentArtifact {
+  id              String        @id @default(cuid())
+  assessmentRunId String
+  fileObjectId    String
+  kind            ArtifactKind
+  metadata        Json?
+  createdAt       DateTime      @default(now())
+  assessmentRun   AssessmentRun @relation(fields: [assessmentRunId], references: [id], onDelete: Cascade)
+  fileObject      FileObject    @relation(fields: [fileObjectId], references: [id], onDelete: Restrict)
+
+  @@index([assessmentRunId, kind])
+}
+
+model AssessmentResult {
+  id              String        @id @default(cuid())
+  assessmentRunId String        @unique
+  score           Decimal?      @db.Decimal(7, 2)
+  level           String?
+  result          Json
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  assessmentRun   AssessmentRun @relation(fields: [assessmentRunId], references: [id], onDelete: Cascade)
+}
+
+model LearningEvidence {
+  id              String         @id @default(cuid())
+  childId         String
+  assessmentRunId String?
+  source          EvidenceSource
+  observedAt      DateTime       @default(now())
+  payload         Json
+  createdAt       DateTime       @default(now())
+  child           Child          @relation(fields: [childId], references: [id], onDelete: Cascade)
+  assessmentRun   AssessmentRun? @relation(fields: [assessmentRunId], references: [id], onDelete: SetNull)
+
+  @@index([childId, observedAt])
+}
+
+model LearningProfile {
+  id               String                   @id @default(cuid())
+  childId          String                   @unique
+  currentVersionId String?                  @unique
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  child            Child                    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  currentVersion   LearningProfileVersion?  @relation("CurrentLearningProfileVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  versions         LearningProfileVersion[] @relation("ProfileVersions")
+}
+
+model LearningProfileVersion {
+  id                String           @id @default(cuid())
+  learningProfileId String
+  version           Int
+  snapshot          Json
+  createdAt         DateTime         @default(now())
+  learningProfile   LearningProfile  @relation("ProfileVersions", fields: [learningProfileId], references: [id], onDelete: Cascade)
+  currentFor        LearningProfile? @relation("CurrentLearningProfileVersion")
+  reports           LearningReport[]
+
+  @@unique([learningProfileId, version])
+}
+
+model LearningReport {
+  id                       String                 @id @default(cuid())
+  childId                  String
+  learningProfileVersionId String
+  fileObjectId             String?
+  status                   ReportStatus           @default(DRAFT)
+  body                     Json
+  publishedAt              DateTime?
+  createdAt                DateTime               @default(now())
+  updatedAt                DateTime               @updatedAt
+  child                    Child                  @relation(fields: [childId], references: [id], onDelete: Restrict)
+  learningProfileVersion   LearningProfileVersion @relation(fields: [learningProfileVersionId], references: [id], onDelete: Restrict)
+  fileObject               FileObject?            @relation(fields: [fileObjectId], references: [id], onDelete: SetNull)
+  shares                   ReportShare[]
+  auditLogs                AuditLog[]
+
+  @@index([childId, createdAt])
+}
+
+model ReportShare {
+  id               String         @id @default(cuid())
+  learningReportId String
+  createdByUserId  String?
+  tokenHash        String         @unique
+  expiresAt        DateTime?
+  revokedAt        DateTime?
+  createdAt        DateTime       @default(now())
+  learningReport   LearningReport @relation(fields: [learningReportId], references: [id], onDelete: Cascade)
+  createdBy        User?          @relation("ReportShareCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([learningReportId])
+  @@index([expiresAt])
+}
