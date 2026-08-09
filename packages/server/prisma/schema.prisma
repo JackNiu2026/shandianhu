@@ -19,6 +19,12 @@ enum SessionStatus {
   EXPIRED
 }
 
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
 enum FileVisibility {
   PRIVATE
 }
@@ -45,10 +51,13 @@ enum AsyncJobType {
 }
 
 enum AsyncJobStatus {
+  PENDING
   QUEUED
   RUNNING
+  RETRY_WAIT
   SUCCEEDED
   FAILED
+  DEAD_LETTER
   CANCELLED
 }
 
@@ -121,6 +130,12 @@ enum AssessmentVersionStatus {
   RETIRED
 }
 
+enum AssessmentType {
+  DIAGNOSTIC
+  PRACTICE
+  PROGRESS
+}
+
 enum AssessmentRunStatus {
   CREATED
   RUNNING
@@ -153,6 +168,8 @@ model User {
   id                String             @id @default(cuid())
   wechatOpenId      String             @unique
   wechatUnionId     String?            @unique
+  phone             String?            @unique
+  status            AccountStatus      @default(ACTIVE)
   displayName       String?
   avatarUrl         String?
   createdAt         DateTime           @default(now())
@@ -170,8 +187,9 @@ model User {
 }
 
 model ParentProfile {
-  id            String  @id @default(cuid())
-  userId        String  @unique
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  displayName   String?
   activeChildId String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -191,6 +209,8 @@ model Child {
   name            String
   birthDate       DateTime?
   grade           String?
+  schoolName      String?
+  learningGoals   String[]           @default([])
   deletedAt       DateTime?
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
@@ -237,6 +257,7 @@ model AdminUser {
   auditLogs    AuditLog[]             @relation("AuditActorAdmin")
   definitions  AssessmentDefinition[]
   modelConfigs ModelConfig[]
+  publishedAssessmentVersions AssessmentVersion[] @relation("AssessmentVersionPublisher")
 }
 
 model AdminSession {
@@ -288,7 +309,7 @@ model AsyncJob {
   assessmentRunId   String?
   type              AsyncJobType
   dedupeKey         String         @unique
-  status            AsyncJobStatus @default(QUEUED)
+  status            AsyncJobStatus @default(PENDING)
   attempt           Int            @default(0)
   maxAttempts       Int            @default(3)
   retryAt           DateTime?
@@ -371,11 +392,13 @@ model ModelConfig {
   apiKeyTag        String
   modelName        String
   capabilities     ModelCapability
+  visionEnabled    Boolean                 @default(false)
   timeoutMs        Int                     @default(30000)
   maxOutputTokens  Int                     @default(1024)
   temperature      Decimal                 @default(0.0) @db.Decimal(3, 2)
   inputCostMicros  BigInt                  @default(0)
   outputCostMicros BigInt                  @default(0)
+  imageCostMicros  BigInt                  @default(0)
   enabled          Boolean                 @default(false)
   createdAt        DateTime                @default(now())
   updatedAt        DateTime                @updatedAt
@@ -404,6 +427,7 @@ model ModelUsageLedger {
   modelConfig    ModelConfig       @relation(fields: [modelConfigId], references: [id], onDelete: Restrict)
   user           User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   child          Child?            @relation(fields: [childId], references: [id], onDelete: SetNull)
+  assessmentResult AssessmentResult? @relation("AssessmentResultModelCall")
 
   @@index([modelConfigId, purpose, createdAt])
   @@index([modelConfigId, status, createdAt])
@@ -416,6 +440,7 @@ model AssessmentDefinition {
   slug             String              @unique
   name             String
   description      String?
+  enabled          Boolean             @default(true)
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
   createdByAdmin   AdminUser?          @relation(fields: [createdByAdminId], references: [id], onDelete: SetNull)
@@ -426,14 +451,20 @@ model AssessmentVersion {
   id                     String                  @id @default(cuid())
   assessmentDefinitionId String
   version                Int
+  checksum               String
+  type                   AssessmentType
   status                 AssessmentVersionStatus @default(DRAFT)
   specification          Json
+  configuration          Json
   publishedAt            DateTime?
+  publishedByAdminId     String?
   createdAt              DateTime                @default(now())
   definition             AssessmentDefinition    @relation(fields: [assessmentDefinitionId], references: [id], onDelete: Cascade)
+  publishedByAdmin       AdminUser?              @relation("AssessmentVersionPublisher", fields: [publishedByAdminId], references: [id], onDelete: SetNull)
   runs                   AssessmentRun[]
 
   @@unique([assessmentDefinitionId, version])
+  @@unique([assessmentDefinitionId, checksum])
 }
 
 model AssessmentRun {
@@ -442,6 +473,7 @@ model AssessmentRun {
   childId             String
   idempotencyKey      String
   requestedByUserId   String?
+  subject             String?
   status              AssessmentRunStatus @default(CREATED)
   startedAt           DateTime?
   finishedAt          DateTime?
@@ -479,14 +511,17 @@ model AssessmentArtifact {
 }
 
 model AssessmentResult {
-  id              String        @id @default(cuid())
-  assessmentRunId String        @unique
-  score           Decimal?      @db.Decimal(7, 2)
-  level           String?
-  result          Json
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  assessmentRun   AssessmentRun @relation(fields: [assessmentRunId], references: [id], onDelete: Cascade)
+  id                 String            @id @default(cuid())
+  assessmentRunId    String            @unique
+  modelUsageLedgerId String?           @unique
+  score              Decimal?          @db.Decimal(7, 2)
+  level              String?
+  parentNarrative    String?
+  result             Json
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  assessmentRun      AssessmentRun     @relation(fields: [assessmentRunId], references: [id], onDelete: Cascade)
+  modelUsageLedger   ModelUsageLedger? @relation("AssessmentResultModelCall", fields: [modelUsageLedgerId], references: [id], onDelete: Restrict)
 }
 
 model LearningEvidence {
@@ -570,6 +605,7 @@ model LearningReport {
   sequence                 Int
   fileObjectId             String?
   status                   ReportStatus           @default(DRAFT)
+  narrativeVersion         String                 @default("v1")
   body                     Json
   publishedAt              DateTime?
   createdAt                DateTime               @default(now())

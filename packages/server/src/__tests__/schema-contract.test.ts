@@ -6,6 +6,9 @@ import { describe, expect, it } from "vitest";
 const models = new Map(
   Prisma.dmmf.datamodel.models.map((model) => [model.name, model]),
 );
+const enums = new Map(
+  Prisma.dmmf.datamodel.enums.map((schemaEnum) => [schemaEnum.name, schemaEnum]),
+);
 const migration = fs.readFileSync(
   path.resolve(
     __dirname,
@@ -215,6 +218,55 @@ describe("V2.1 Prisma schema contract", () => {
     expect(migration).toContain(
       'CREATE INDEX "Child_parentProfileId_deletedAt_idx" ON "Child"("parentProfileId", "deletedAt")',
     );
+  });
+
+  it("models onboarding identity and learning goals directly", () => {
+    expect(field("User", "phone")).toMatchObject({ type: "String", isRequired: false, isUnique: true });
+    expect(field("User", "status")).toMatchObject({ type: "AccountStatus" });
+    expect(field("ParentProfile", "displayName")).toMatchObject({ type: "String", isRequired: false });
+    expect(field("Child", "schoolName")).toMatchObject({ type: "String", isRequired: false });
+    expect(field("Child", "learningGoals")).toMatchObject({ type: "String", isList: true });
+  });
+
+  it("preserves assessment and report provenance in relational fields", () => {
+    expect(field("AssessmentDefinition", "enabled")).toMatchObject({ type: "Boolean" });
+    expect(field("AssessmentVersion", "checksum")).toMatchObject({ type: "String" });
+    expect(field("AssessmentVersion", "type")).toMatchObject({ type: "AssessmentType" });
+    expect(field("AssessmentVersion", "configuration")).toMatchObject({ type: "Json" });
+    expect(field("AssessmentVersion", "publishedByAdminId")).toMatchObject({
+      type: "String",
+      isRequired: false,
+    });
+    expect(models.get("AssessmentVersion")?.uniqueFields).toContainEqual([
+      "assessmentDefinitionId",
+      "checksum",
+    ]);
+    expect(field("AssessmentRun", "subject")).toMatchObject({ type: "String", isRequired: false });
+    expect(field("AssessmentResult", "parentNarrative")).toMatchObject({
+      type: "String",
+      isRequired: false,
+    });
+    expect(field("AssessmentResult", "modelUsageLedgerId")).toMatchObject({
+      type: "String",
+      isRequired: false,
+      isUnique: true,
+    });
+    expect(field("AssessmentResult", "modelUsageLedger")).toMatchObject({ type: "ModelUsageLedger" });
+    expect(field("LearningReport", "narrativeVersion")).toMatchObject({ type: "String" });
+    expect(migration).toContain(
+      'FOREIGN KEY ("modelUsageLedgerId") REFERENCES "ModelUsageLedger"("id")',
+    );
+  });
+
+  it("models retry lifecycle and vision usage costs with typed fields", () => {
+    expect(enums.get("AsyncJobStatus")?.values.map((value) => value.name)).toEqual(
+      expect.arrayContaining(["PENDING", "RETRY_WAIT", "DEAD_LETTER", "QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "CANCELLED"]),
+    );
+    expect(field("AsyncJob", "status")).toMatchObject({ type: "AsyncJobStatus" });
+    expect(field("ModelConfig", "visionEnabled")).toMatchObject({ type: "Boolean" });
+    expect(field("ModelConfig", "imageCostMicros")).toMatchObject({ type: "BigInt" });
+    expect(migration).toContain("DEFAULT 'PENDING'");
+    expect(migration).toContain('"imageCostMicros" BIGINT NOT NULL DEFAULT 0');
   });
 
   it("enforces child ownership for uploaded artifacts and report PDFs", () => {

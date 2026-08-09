@@ -8,6 +8,9 @@ CREATE TYPE "AdminRole" AS ENUM ('SUPERADMIN', 'EDITOR', 'AUDITOR');
 CREATE TYPE "SessionStatus" AS ENUM ('ACTIVE', 'REVOKED', 'EXPIRED');
 
 -- CreateEnum
+CREATE TYPE "AccountStatus" AS ENUM ('ACTIVE', 'SUSPENDED', 'DELETED');
+
+-- CreateEnum
 CREATE TYPE "FileVisibility" AS ENUM ('PRIVATE');
 
 -- CreateEnum
@@ -20,7 +23,7 @@ CREATE TYPE "FileStatus" AS ENUM ('ACTIVE', 'DELETED', 'REVOKED');
 CREATE TYPE "AsyncJobType" AS ENUM ('ASSESSMENT_PROCESSING', 'PROFILE_GENERATION', 'REPORT_GENERATION', 'FILE_PROCESSING');
 
 -- CreateEnum
-CREATE TYPE "AsyncJobStatus" AS ENUM ('QUEUED', 'RUNNING', 'SUCCEEDED', 'FAILED', 'CANCELLED');
+CREATE TYPE "AsyncJobStatus" AS ENUM ('PENDING', 'QUEUED', 'RUNNING', 'RETRY_WAIT', 'SUCCEEDED', 'FAILED', 'DEAD_LETTER', 'CANCELLED');
 
 -- CreateEnum
 CREATE TYPE "NotificationType" AS ENUM ('ASSESSMENT_COMPLETE', 'REPORT_READY', 'SYSTEM');
@@ -53,6 +56,9 @@ CREATE TYPE "ModelUsageStatus" AS ENUM ('SUCCEEDED', 'FAILED', 'CANCELLED');
 CREATE TYPE "AssessmentVersionStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'RETIRED');
 
 -- CreateEnum
+CREATE TYPE "AssessmentType" AS ENUM ('DIAGNOSTIC', 'PRACTICE', 'PROGRESS');
+
+-- CreateEnum
 CREATE TYPE "AssessmentRunStatus" AS ENUM ('CREATED', 'RUNNING', 'SUCCEEDED', 'FAILED', 'CANCELLED');
 
 -- CreateEnum
@@ -69,6 +75,8 @@ CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "wechatOpenId" TEXT NOT NULL,
     "wechatUnionId" TEXT,
+    "phone" TEXT,
+    "status" "AccountStatus" NOT NULL DEFAULT 'ACTIVE',
     "displayName" TEXT,
     "avatarUrl" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -81,6 +89,7 @@ CREATE TABLE "User" (
 CREATE TABLE "ParentProfile" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "displayName" TEXT,
     "activeChildId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -95,6 +104,8 @@ CREATE TABLE "Child" (
     "name" TEXT NOT NULL,
     "birthDate" TIMESTAMP(3),
     "grade" TEXT,
+    "schoolName" TEXT,
+    "learningGoals" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -170,7 +181,7 @@ CREATE TABLE "AsyncJob" (
     "assessmentRunId" TEXT,
     "type" "AsyncJobType" NOT NULL,
     "dedupeKey" TEXT NOT NULL,
-    "status" "AsyncJobStatus" NOT NULL DEFAULT 'QUEUED',
+    "status" "AsyncJobStatus" NOT NULL DEFAULT 'PENDING',
     "attempt" INTEGER NOT NULL DEFAULT 0,
     "maxAttempts" INTEGER NOT NULL DEFAULT 3,
     "retryAt" TIMESTAMP(3),
@@ -237,11 +248,13 @@ CREATE TABLE "ModelConfig" (
     "apiKeyTag" TEXT NOT NULL,
     "modelName" TEXT NOT NULL,
     "capabilities" "ModelCapability" NOT NULL,
+    "visionEnabled" BOOLEAN NOT NULL DEFAULT false,
     "timeoutMs" INTEGER NOT NULL DEFAULT 30000,
     "maxOutputTokens" INTEGER NOT NULL DEFAULT 1024,
     "temperature" DECIMAL(3,2) NOT NULL DEFAULT 0.0,
     "inputCostMicros" BIGINT NOT NULL DEFAULT 0,
     "outputCostMicros" BIGINT NOT NULL DEFAULT 0,
+    "imageCostMicros" BIGINT NOT NULL DEFAULT 0,
     "enabled" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -276,6 +289,7 @@ CREATE TABLE "AssessmentDefinition" (
     "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
+    "enabled" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -287,9 +301,13 @@ CREATE TABLE "AssessmentVersion" (
     "id" TEXT NOT NULL,
     "assessmentDefinitionId" TEXT NOT NULL,
     "version" INTEGER NOT NULL,
+    "checksum" TEXT NOT NULL,
+    "type" "AssessmentType" NOT NULL,
     "status" "AssessmentVersionStatus" NOT NULL DEFAULT 'DRAFT',
     "specification" JSONB NOT NULL,
+    "configuration" JSONB NOT NULL,
     "publishedAt" TIMESTAMP(3),
+    "publishedByAdminId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "AssessmentVersion_pkey" PRIMARY KEY ("id")
@@ -302,6 +320,7 @@ CREATE TABLE "AssessmentRun" (
     "childId" TEXT NOT NULL,
     "idempotencyKey" TEXT NOT NULL,
     "requestedByUserId" TEXT,
+    "subject" TEXT,
     "status" "AssessmentRunStatus" NOT NULL DEFAULT 'CREATED',
     "startedAt" TIMESTAMP(3),
     "finishedAt" TIMESTAMP(3),
@@ -329,8 +348,10 @@ CREATE TABLE "AssessmentArtifact" (
 CREATE TABLE "AssessmentResult" (
     "id" TEXT NOT NULL,
     "assessmentRunId" TEXT NOT NULL,
+    "modelUsageLedgerId" TEXT,
     "score" DECIMAL(7,2),
     "level" TEXT,
+    "parentNarrative" TEXT,
     "result" JSONB NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -400,6 +421,7 @@ CREATE TABLE "LearningReport" (
     "sequence" INTEGER NOT NULL,
     "fileObjectId" TEXT,
     "status" "ReportStatus" NOT NULL DEFAULT 'DRAFT',
+    "narrativeVersion" TEXT NOT NULL DEFAULT 'v1',
     "body" JSONB NOT NULL,
     "publishedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -426,6 +448,9 @@ CREATE UNIQUE INDEX "User_wechatOpenId_key" ON "User"("wechatOpenId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_wechatUnionId_key" ON "User"("wechatUnionId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_phone_key" ON "User"("phone");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ParentProfile_userId_key" ON "ParentProfile"("userId");
@@ -533,6 +558,9 @@ CREATE UNIQUE INDEX "AssessmentDefinition_slug_key" ON "AssessmentDefinition"("s
 CREATE UNIQUE INDEX "AssessmentVersion_assessmentDefinitionId_version_key" ON "AssessmentVersion"("assessmentDefinitionId", "version");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "AssessmentVersion_assessmentDefinitionId_checksum_key" ON "AssessmentVersion"("assessmentDefinitionId", "checksum");
+
+-- CreateIndex
 CREATE INDEX "AssessmentRun_childId_createdAt_idx" ON "AssessmentRun"("childId", "createdAt");
 
 -- CreateIndex
@@ -552,6 +580,9 @@ CREATE UNIQUE INDEX "AssessmentArtifact_assessmentRunId_ordinal_key" ON "Assessm
 
 -- CreateIndex
 CREATE UNIQUE INDEX "AssessmentResult_assessmentRunId_key" ON "AssessmentResult"("assessmentRunId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "AssessmentResult_modelUsageLedgerId_key" ON "AssessmentResult"("modelUsageLedgerId");
 
 -- CreateIndex
 CREATE INDEX "LearningEvidence_childId_observedAt_idx" ON "LearningEvidence"("childId", "observedAt");
@@ -689,6 +720,9 @@ ALTER TABLE "AssessmentDefinition" ADD CONSTRAINT "AssessmentDefinition_createdB
 ALTER TABLE "AssessmentVersion" ADD CONSTRAINT "AssessmentVersion_assessmentDefinitionId_fkey" FOREIGN KEY ("assessmentDefinitionId") REFERENCES "AssessmentDefinition"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "AssessmentVersion" ADD CONSTRAINT "AssessmentVersion_publishedByAdminId_fkey" FOREIGN KEY ("publishedByAdminId") REFERENCES "AdminUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "AssessmentRun" ADD CONSTRAINT "AssessmentRun_assessmentVersionId_fkey" FOREIGN KEY ("assessmentVersionId") REFERENCES "AssessmentVersion"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -705,6 +739,9 @@ ALTER TABLE "AssessmentArtifact" ADD CONSTRAINT "AssessmentArtifact_childId_file
 
 -- AddForeignKey
 ALTER TABLE "AssessmentResult" ADD CONSTRAINT "AssessmentResult_assessmentRunId_fkey" FOREIGN KEY ("assessmentRunId") REFERENCES "AssessmentRun"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AssessmentResult" ADD CONSTRAINT "AssessmentResult_modelUsageLedgerId_fkey" FOREIGN KEY ("modelUsageLedgerId") REFERENCES "ModelUsageLedger"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "LearningEvidence" ADD CONSTRAINT "LearningEvidence_childId_fkey" FOREIGN KEY ("childId") REFERENCES "Child"("id") ON DELETE CASCADE ON UPDATE CASCADE;
