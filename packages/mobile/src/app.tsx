@@ -47,7 +47,6 @@ function App({ children }: { children: ReactNode }) {
         family: font.family,
         source: font.source,
         global: true,
-        scopes: ["webview", "native"],
         success: () => console.log(`[font] ${font.family} ${font.weight} loaded`),
         fail: (err) =>
           console.warn(`[font] ${font.family} ${font.weight} failed, fallback to system font`, err),
