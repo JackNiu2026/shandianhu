@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { LearningStyleAnswer } from "@lightning-tiger/shared";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { LEARNING_STYLE_VERSION_CHECKSUM, LEARNING_STYLE_VERSION_CONFIGURATION } from "@lightning-tiger/shared";
 import { LEARNING_STYLE_QUESTIONS, scoreLearningStyle } from "./learning-style";
 
 function answers(option: "A" | "B" = "A") {
@@ -7,6 +10,15 @@ function answers(option: "A" | "B" = "A") {
 }
 
 describe("learning-style scoring", () => {
+  it("pins the complete v1 question rules independently of legacy UI questions", () => {
+    const contractSource = readFileSync(resolve(__dirname, "../../../shared/api/assessments.ts"), "utf8");
+
+    expect(contractSource).not.toContain('from "../constants"');
+    expect(LEARNING_STYLE_VERSION_CONFIGURATION.questions).toHaveLength(28);
+    expect(LEARNING_STYLE_VERSION_CONFIGURATION.legalOptions).toEqual(["A", "B"]);
+    expect(LEARNING_STYLE_VERSION_CHECKSUM).toMatch(/^[a-f0-9]{64}$/);
+  });
+
   it("scores all four dimensions without model influence", () => {
     const result = scoreLearningStyle(answers());
 

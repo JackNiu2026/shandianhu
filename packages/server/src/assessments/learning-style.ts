@@ -21,7 +21,7 @@ export type LearningStyleResult = {
 export function scoreLearningStyle(answers: readonly LearningStyleAnswer[]): LearningStyleResult {
   if (answers.length !== LEARNING_STYLE_QUESTIONS.length) invalidAnswers();
 
-  const known = new Map(LEARNING_STYLE_QUESTIONS.map((question) => [question.id, question]));
+  const known = new Map<string, typeof LEARNING_STYLE_QUESTIONS[number]>(LEARNING_STYLE_QUESTIONS.map((question) => [question.id, question]));
   const selected = new Set<string>();
   const letters: string[] = [];
   for (const answer of answers) {

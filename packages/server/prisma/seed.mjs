@@ -1,6 +1,18 @@
+import { createHash } from "node:crypto";
 import { AssessmentType, AssessmentVersionStatus, ModelCapability, ModelProvider, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
+const learningStyleConfiguration = {
+  version: "learning-style-v1",
+  legalOptions: ["A", "B"],
+  questionRules: Array.from({ length: 28 }, (_, index) => ({
+    id: `q${index + 1}`,
+    dimension: ["EI", "SN", "TF", "JP"][Math.floor(index / 7)],
+    options: index < 7 ? ["E", "I"] : index < 14 ? ["S", "N"] : index < 21 ? ["T", "F"] : ["J", "P"],
+  })),
+  scorer: "deterministic-learning-style-v1",
+};
+const learningStyleChecksum = createHash("sha256").update(JSON.stringify(learningStyleConfiguration)).digest("hex");
 
 try {
   await prisma.adminUser.upsert({
@@ -51,18 +63,11 @@ try {
     create: {
       assessmentDefinitionId: definition.id,
       version: 1,
-      checksum: "learning-style-v1-28-question-deterministic",
+      checksum: learningStyleChecksum,
       type: AssessmentType.DIAGNOSTIC,
       status: AssessmentVersionStatus.PUBLISHED,
-      specification: {
-        version: "learning-style-v1",
-        questionIds: Array.from({ length: 28 }, (_, index) => `q${index + 1}`),
-        legalOptions: ["A", "B"],
-      },
-      configuration: {
-        scorer: "deterministic-learning-style-v1",
-        dimensions: ["interaction", "information", "decision", "rhythm"],
-      },
+      specification: learningStyleConfiguration,
+      configuration: learningStyleConfiguration,
       publishedAt: new Date(),
     },
   });

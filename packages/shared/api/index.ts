@@ -43,6 +43,8 @@ export type ApiResult<T> =
 export {
   LEARNING_STYLE_QUESTIONS,
   LEARNING_STYLE_VERSION,
+  LEARNING_STYLE_VERSION_CHECKSUM,
+  LEARNING_STYLE_VERSION_CONFIGURATION,
   type LearningStyleAnswer,
   type LearningStyleOption,
   type LearningStyleSubmission,
