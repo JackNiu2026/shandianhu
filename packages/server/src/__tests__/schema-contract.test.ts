@@ -47,6 +47,7 @@ describe("V2.1 Prisma schema contract", () => {
         "LearningEvidence",
         "LearningProfile",
         "LearningProfileVersion",
+        "LearningProfileVersionEvidence",
         "LearningReport",
         "ReportShare",
       ]),
@@ -81,7 +82,25 @@ describe("V2.1 Prisma schema contract", () => {
 
   it("keeps private files, jobs, notifications, audit, and model usage relational", () => {
     expect(field("FileObject", "ownerUserId")).toMatchObject({ type: "String" });
+    expect(field("FileObject", "parentProfileId")).toMatchObject({
+      type: "String",
+      isRequired: false,
+    });
+    expect(field("FileObject", "childId")).toMatchObject({ type: "String", isRequired: false });
+    expect(field("FileObject", "purpose")).toMatchObject({ type: "FilePurpose" });
+    expect(field("FileObject", "status")).toMatchObject({ type: "FileStatus" });
+    expect(field("FileObject", "deletedAt")).toMatchObject({ type: "DateTime", isRequired: false });
+    expect(field("FileObject", "revokedAt")).toMatchObject({ type: "DateTime", isRequired: false });
+    expect(field("FileObject", "child")).toMatchObject({
+      type: "Child",
+      relationFromFields: ["parentProfileId", "childId"],
+      relationToFields: ["parentProfileId", "id"],
+    });
     expect(field("AsyncJob", "requestedByUserId")).toMatchObject({ type: "String", isRequired: false });
+    expect(field("AsyncJob", "dedupeKey")).toMatchObject({ isUnique: true, type: "String" });
+    expect(field("AsyncJob", "attempt")).toMatchObject({ type: "Int" });
+    expect(field("AsyncJob", "maxAttempts")).toMatchObject({ type: "Int" });
+    expect(field("AsyncJob", "retryAt")).toMatchObject({ type: "DateTime", isRequired: false });
     expect(field("Notification", "userId")).toMatchObject({ type: "String" });
     expect(field("AuditLog", "actorUserId")).toMatchObject({ type: "String", isRequired: false });
     expect(field("ModelUsageLedger", "modelConfigId")).toMatchObject({ type: "String" });
@@ -91,6 +110,11 @@ describe("V2.1 Prisma schema contract", () => {
     expect(field("AssessmentVersion", "assessmentDefinitionId")).toMatchObject({ type: "String" });
     expect(field("AssessmentRun", "assessmentVersionId")).toMatchObject({ type: "String" });
     expect(field("AssessmentRun", "childId")).toMatchObject({ type: "String" });
+    expect(field("AssessmentRun", "idempotencyKey")).toMatchObject({ type: "String" });
+    expect(models.get("AssessmentRun")?.uniqueFields).toContainEqual([
+      "childId",
+      "idempotencyKey",
+    ]);
     expect(field("AssessmentArtifact", "fileObjectId")).toMatchObject({ type: "String" });
     expect(field("AssessmentResult", "assessmentRunId")).toMatchObject({ isUnique: true, type: "String" });
     expect(field("LearningEvidence", "childId")).toMatchObject({ type: "String" });
@@ -104,6 +128,15 @@ describe("V2.1 Prisma schema contract", () => {
       "source",
       "sourceId",
     ]);
+    expect(field("LearningEvidence", "assessmentRun")).toMatchObject({
+      type: "AssessmentRun",
+      relationFromFields: ["childId", "assessmentRunId"],
+      relationToFields: ["childId", "id"],
+    });
+    expect(models.get("LearningEvidence")?.uniqueFields).toContainEqual([
+      "childId",
+      "id",
+    ]);
     expect(field("LearningProfile", "childId")).toMatchObject({ isUnique: true, type: "String" });
     expect(field("LearningProfileVersion", "learningProfileId")).toMatchObject({ type: "String" });
     expect(field("LearningProfile", "currentVersion")).toMatchObject({
@@ -115,6 +148,21 @@ describe("V2.1 Prisma schema contract", () => {
       "learningProfileId",
       "id",
     ]);
+    expect(field("LearningProfileVersionEvidence", "learningProfileVersion")).toMatchObject({
+      type: "LearningProfileVersion",
+      relationFromFields: ["learningProfileId", "learningProfileVersionId"],
+      relationToFields: ["learningProfileId", "id"],
+    });
+    expect(field("LearningProfileVersionEvidence", "learningEvidence")).toMatchObject({
+      type: "LearningEvidence",
+      relationFromFields: ["childId", "learningEvidenceId"],
+      relationToFields: ["childId", "id"],
+    });
+    expect(field("LearningProfileVersionEvidence", "learningProfile")).toMatchObject({
+      type: "LearningProfile",
+      relationFromFields: ["childId", "learningProfileId"],
+      relationToFields: ["childId", "id"],
+    });
     expect(field("LearningReport", "learningProfileId")).toMatchObject({ type: "String" });
     expect(field("LearningReport", "childId")).toMatchObject({ type: "String" });
     expect(field("LearningReport", "sequence")).toMatchObject({ type: "Int" });
@@ -140,6 +188,18 @@ describe("V2.1 Prisma schema contract", () => {
     );
     expect(migration).toContain(
       'FOREIGN KEY ("childId", "learningProfileId") REFERENCES "LearningProfile"("childId", "id")',
+    );
+    expect(migration).toContain(
+      'FOREIGN KEY ("childId", "assessmentRunId") REFERENCES "AssessmentRun"("childId", "id")',
+    );
+    expect(migration).toContain(
+      'FOREIGN KEY ("childId", "learningEvidenceId") REFERENCES "LearningEvidence"("childId", "id")',
+    );
+    expect(migration).toContain(
+      'CREATE UNIQUE INDEX "LearningEvidence_assessment_source_key" ON "LearningEvidence"("source", "sourceId") WHERE "source" = \'ASSESSMENT\'',
+    );
+    expect(migration).toContain(
+      'CONSTRAINT "FileObject_child_requires_parent_profile_check" CHECK ("childId" IS NULL OR "parentProfileId" IS NOT NULL)',
     );
     expect(migration).toContain('CREATE TRIGGER "LearningProfileVersion_immutable"');
     expect(migration).toContain('current_setting(\'app.allow_learning_profile_version_purge\', true)');

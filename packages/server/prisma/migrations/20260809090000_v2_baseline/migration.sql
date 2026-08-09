@@ -11,6 +11,12 @@ CREATE TYPE "SessionStatus" AS ENUM ('ACTIVE', 'REVOKED', 'EXPIRED');
 CREATE TYPE "FileVisibility" AS ENUM ('PRIVATE');
 
 -- CreateEnum
+CREATE TYPE "FilePurpose" AS ENUM ('ASSESSMENT_UPLOAD', 'ASSESSMENT_ARTIFACT', 'REPORT_EXPORT', 'AVATAR', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "FileStatus" AS ENUM ('ACTIVE', 'DELETED', 'REVOKED');
+
+-- CreateEnum
 CREATE TYPE "AsyncJobType" AS ENUM ('ASSESSMENT_PROCESSING', 'PROFILE_GENERATION', 'REPORT_GENERATION', 'FILE_PROCESSING');
 
 -- CreateEnum
@@ -128,11 +134,17 @@ CREATE TABLE "AdminSession" (
 CREATE TABLE "FileObject" (
     "id" TEXT NOT NULL,
     "ownerUserId" TEXT NOT NULL,
+    "parentProfileId" TEXT,
+    "childId" TEXT,
     "objectKey" TEXT NOT NULL,
     "contentType" TEXT NOT NULL,
     "byteSize" INTEGER NOT NULL,
     "visibility" "FileVisibility" NOT NULL DEFAULT 'PRIVATE',
+    "purpose" "FilePurpose" NOT NULL,
+    "status" "FileStatus" NOT NULL DEFAULT 'ACTIVE',
     "checksumSha256" TEXT,
+    "deletedAt" TIMESTAMP(3),
+    "revokedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "FileObject_pkey" PRIMARY KEY ("id")
@@ -145,7 +157,11 @@ CREATE TABLE "AsyncJob" (
     "childId" TEXT,
     "assessmentRunId" TEXT,
     "type" "AsyncJobType" NOT NULL,
+    "dedupeKey" TEXT NOT NULL,
     "status" "AsyncJobStatus" NOT NULL DEFAULT 'QUEUED',
+    "attempt" INTEGER NOT NULL DEFAULT 0,
+    "maxAttempts" INTEGER NOT NULL DEFAULT 3,
+    "retryAt" TIMESTAMP(3),
     "payload" JSONB,
     "result" JSONB,
     "errorCode" TEXT,
@@ -250,6 +266,7 @@ CREATE TABLE "AssessmentRun" (
     "id" TEXT NOT NULL,
     "assessmentVersionId" TEXT NOT NULL,
     "childId" TEXT NOT NULL,
+    "idempotencyKey" TEXT NOT NULL,
     "requestedByUserId" TEXT,
     "status" "AssessmentRunStatus" NOT NULL DEFAULT 'CREATED',
     "startedAt" TIMESTAMP(3),
@@ -323,6 +340,18 @@ CREATE TABLE "LearningProfileVersion" (
 );
 
 -- CreateTable
+CREATE TABLE "LearningProfileVersionEvidence" (
+    "id" TEXT NOT NULL,
+    "childId" TEXT NOT NULL,
+    "learningProfileId" TEXT NOT NULL,
+    "learningProfileVersionId" TEXT NOT NULL,
+    "learningEvidenceId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "LearningProfileVersionEvidence_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "LearningReport" (
     "id" TEXT NOT NULL,
     "childId" TEXT NOT NULL,
@@ -365,6 +394,9 @@ CREATE UNIQUE INDEX "ParentProfile_userId_key" ON "ParentProfile"("userId");
 CREATE UNIQUE INDEX "ParentProfile_id_activeChildId_key" ON "ParentProfile"("id", "activeChildId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "ParentProfile_userId_id_key" ON "ParentProfile"("userId", "id");
+
+-- CreateIndex
 CREATE INDEX "Child_parentProfileId_idx" ON "Child"("parentProfileId");
 
 -- CreateIndex
@@ -401,7 +433,16 @@ CREATE UNIQUE INDEX "FileObject_objectKey_key" ON "FileObject"("objectKey");
 CREATE INDEX "FileObject_ownerUserId_createdAt_idx" ON "FileObject"("ownerUserId", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "AsyncJob_status_availableAt_idx" ON "AsyncJob"("status", "availableAt");
+CREATE INDEX "FileObject_ownerUserId_status_deletedAt_idx" ON "FileObject"("ownerUserId", "status", "deletedAt");
+
+-- CreateIndex
+CREATE INDEX "FileObject_childId_purpose_status_idx" ON "FileObject"("childId", "purpose", "status");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "AsyncJob_dedupeKey_key" ON "AsyncJob"("dedupeKey");
+
+-- CreateIndex
+CREATE INDEX "AsyncJob_status_retryAt_availableAt_idx" ON "AsyncJob"("status", "retryAt", "availableAt");
 
 -- CreateIndex
 CREATE INDEX "AsyncJob_childId_createdAt_idx" ON "AsyncJob"("childId", "createdAt");
@@ -437,6 +478,12 @@ CREATE INDEX "AssessmentRun_childId_createdAt_idx" ON "AssessmentRun"("childId",
 CREATE INDEX "AssessmentRun_status_createdAt_idx" ON "AssessmentRun"("status", "createdAt");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "AssessmentRun_childId_id_key" ON "AssessmentRun"("childId", "id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "AssessmentRun_childId_idempotencyKey_key" ON "AssessmentRun"("childId", "idempotencyKey");
+
+-- CreateIndex
 CREATE INDEX "AssessmentArtifact_assessmentRunId_kind_idx" ON "AssessmentArtifact"("assessmentRunId", "kind");
 
 -- CreateIndex
@@ -455,6 +502,9 @@ CREATE INDEX "LearningEvidence_source_sourceId_revokedAt_idx" ON "LearningEviden
 CREATE UNIQUE INDEX "LearningEvidence_childId_source_sourceId_key" ON "LearningEvidence"("childId", "source", "sourceId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "LearningEvidence_childId_id_key" ON "LearningEvidence"("childId", "id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "LearningProfile_childId_key" ON "LearningProfile"("childId");
 
 -- CreateIndex
@@ -468,6 +518,12 @@ CREATE UNIQUE INDEX "LearningProfileVersion_learningProfileId_version_key" ON "L
 
 -- CreateIndex
 CREATE UNIQUE INDEX "LearningProfileVersion_learningProfileId_id_key" ON "LearningProfileVersion"("learningProfileId", "id");
+
+-- CreateIndex
+CREATE INDEX "LearningProfileVersionEvidence_learningEvidenceId_idx" ON "LearningProfileVersionEvidence"("learningEvidenceId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "LearningProfileVersionEvidence_learningProfileVersionId_lea_key" ON "LearningProfileVersionEvidence"("learningProfileVersionId", "learningEvidenceId");
 
 -- CreateIndex
 CREATE INDEX "LearningReport_learningProfileId_createdAt_idx" ON "LearningReport"("learningProfileId", "createdAt");
@@ -501,6 +557,12 @@ ALTER TABLE "AdminSession" ADD CONSTRAINT "AdminSession_adminUserId_fkey" FOREIG
 
 -- AddForeignKey
 ALTER TABLE "FileObject" ADD CONSTRAINT "FileObject_ownerUserId_fkey" FOREIGN KEY ("ownerUserId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "FileObject" ADD CONSTRAINT "FileObject_ownerUserId_parentProfileId_fkey" FOREIGN KEY ("ownerUserId", "parentProfileId") REFERENCES "ParentProfile"("userId", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "FileObject" ADD CONSTRAINT "FileObject_parentProfileId_childId_fkey" FOREIGN KEY ("parentProfileId", "childId") REFERENCES "Child"("parentProfileId", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AsyncJob" ADD CONSTRAINT "AsyncJob_requestedByUserId_fkey" FOREIGN KEY ("requestedByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -575,7 +637,7 @@ ALTER TABLE "AssessmentResult" ADD CONSTRAINT "AssessmentResult_assessmentRunId_
 ALTER TABLE "LearningEvidence" ADD CONSTRAINT "LearningEvidence_childId_fkey" FOREIGN KEY ("childId") REFERENCES "Child"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "LearningEvidence" ADD CONSTRAINT "LearningEvidence_assessmentRunId_fkey" FOREIGN KEY ("assessmentRunId") REFERENCES "AssessmentRun"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "LearningEvidence" ADD CONSTRAINT "LearningEvidence_childId_assessmentRunId_fkey" FOREIGN KEY ("childId", "assessmentRunId") REFERENCES "AssessmentRun"("childId", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "LearningProfile" ADD CONSTRAINT "LearningProfile_childId_fkey" FOREIGN KEY ("childId") REFERENCES "Child"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -585,6 +647,15 @@ ALTER TABLE "LearningProfile" ADD CONSTRAINT "LearningProfile_id_currentVersionI
 
 -- AddForeignKey
 ALTER TABLE "LearningProfileVersion" ADD CONSTRAINT "LearningProfileVersion_learningProfileId_fkey" FOREIGN KEY ("learningProfileId") REFERENCES "LearningProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "LearningProfileVersionEvidence" ADD CONSTRAINT "LearningProfileVersionEvidence_childId_learningProfileId_fkey" FOREIGN KEY ("childId", "learningProfileId") REFERENCES "LearningProfile"("childId", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "LearningProfileVersionEvidence" ADD CONSTRAINT "LearningProfileVersionEvidence_learningProfileId_learningP_fkey" FOREIGN KEY ("learningProfileId", "learningProfileVersionId") REFERENCES "LearningProfileVersion"("learningProfileId", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "LearningProfileVersionEvidence" ADD CONSTRAINT "LearningProfileVersionEvidence_childId_learningEvidenceId_fkey" FOREIGN KEY ("childId", "learningEvidenceId") REFERENCES "LearningEvidence"("childId", "id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "LearningReport" ADD CONSTRAINT "LearningReport_childId_fkey" FOREIGN KEY ("childId") REFERENCES "Child"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -603,6 +674,12 @@ ALTER TABLE "ReportShare" ADD CONSTRAINT "ReportShare_learningReportId_fkey" FOR
 
 -- AddForeignKey
 ALTER TABLE "ReportShare" ADD CONSTRAINT "ReportShare_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- Keep assessment evidence sources globally idempotent without constraining other source types.
+CREATE UNIQUE INDEX "LearningEvidence_assessment_source_key" ON "LearningEvidence"("source", "sourceId") WHERE "source" = 'ASSESSMENT';
+
+-- A child file must be associated with that child's parent profile.
+ALTER TABLE "FileObject" ADD CONSTRAINT "FileObject_child_requires_parent_profile_check" CHECK ("childId" IS NULL OR "parentProfileId" IS NOT NULL);
 
 -- Preserve immutable profile snapshots while allowing an explicit privacy purge.
 CREATE FUNCTION "prevent_learning_profile_version_mutation"()
