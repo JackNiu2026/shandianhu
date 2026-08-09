@@ -4,6 +4,8 @@ import { describe, expect, it } from "vitest";
 
 const adminSource = (relativePath: string) =>
   readFileSync(resolve(__dirname, "..", relativePath), "utf8");
+const workspaceSource = (relativePath: string) =>
+  readFileSync(resolve(__dirname, "../../../..", relativePath), "utf8");
 
 describe("release hardening", () => {
   it("uses opaque, hashed AdminSession tokens instead of JWTs", () => {
@@ -43,5 +45,14 @@ describe("release hardening", () => {
     expect(changePassword).toContain("passwordHash");
     expect(changePassword).toContain("prisma.adminSession.updateMany");
     expect(changePassword).toContain("clearAuthCookie");
+  });
+
+  it("keeps Docker health checks on an existing unauthenticated endpoint", () => {
+    const dockerfile = adminSource("../Dockerfile");
+    const compose = workspaceSource("docker-compose.yml");
+
+    expect(dockerfile).toContain("http://localhost:3000/login");
+    expect(compose).toContain("http://localhost:3000/login");
+    expect(compose).not.toContain("/api/public/stats");
   });
 });

@@ -3,12 +3,16 @@ import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@lightning-tiger/server/src/db/client";
 import { SESSION_MAX_AGE, setAuthCookie } from "@/lib/auth";
-import { getLoginThrottleKey } from "@/lib/login-throttle";
+import {
+  getLoginThrottleKey,
+  pruneLoginAttempts,
+  type LoginAttempt,
+} from "@/lib/login-throttle";
 import { loginSchema } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
 
-const loginAttempts = new Map<string, { count: number; lastAttempt: number }>();
+const loginAttempts = new Map<string, LoginAttempt>();
 const MAX_ATTEMPTS = 5;
 const WINDOW_MS = 15 * 60 * 1000;
 
@@ -19,19 +23,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: result.error.issues[0]?.message || "Invalid request" }, { status: 400 });
     }
 
+    const now = Date.now();
+    pruneLoginAttempts(loginAttempts, now, WINDOW_MS);
+
     const loginIdentifier = result.data.username.trim().toLowerCase();
     const clientKey = getLoginThrottleKey(request, loginIdentifier);
     const attempts = loginAttempts.get(clientKey);
-    if (attempts && attempts.count >= MAX_ATTEMPTS && Date.now() - attempts.lastAttempt < WINDOW_MS) {
+    if (attempts && attempts.count >= MAX_ATTEMPTS && now - attempts.lastAttempt < WINDOW_MS) {
       return NextResponse.json({ error: "Too many login attempts" }, { status: 429 });
     }
-    if (attempts && Date.now() - attempts.lastAttempt >= WINDOW_MS) loginAttempts.delete(clientKey);
 
     const adminUser = await prisma.adminUser.findUnique({ where: { email: result.data.username } });
     const isValid = adminUser && await bcrypt.compare(result.data.password, adminUser.passwordHash);
     if (!isValid || !adminUser) {
       const current = loginAttempts.get(clientKey);
-      loginAttempts.set(clientKey, { count: (current?.count || 0) + 1, lastAttempt: Date.now() });
+      loginAttempts.set(clientKey, { count: (current?.count || 0) + 1, lastAttempt: now });
+      pruneLoginAttempts(loginAttempts, now, WINDOW_MS);
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 

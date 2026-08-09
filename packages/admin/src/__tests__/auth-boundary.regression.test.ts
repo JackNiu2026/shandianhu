@@ -1,6 +1,10 @@
 import { NextRequest } from "next/server";
 import { describe, expect, it } from "vitest";
-import { getLoginThrottleKey } from "../lib/login-throttle";
+import {
+  getLoginThrottleKey,
+  pruneLoginAttempts,
+  type LoginAttempt,
+} from "../lib/login-throttle";
 import { middleware } from "../middleware";
 
 describe("admin authentication boundaries", () => {
@@ -36,5 +40,19 @@ describe("admin authentication boundaries", () => {
 
     if (previousTrustProxy === undefined) delete process.env.TRUST_PROXY;
     else process.env.TRUST_PROXY = previousTrustProxy;
+  });
+
+  it("evicts expired and oldest login attempts to bound memory", () => {
+    const attempts = new Map<string, LoginAttempt>([
+      ["expired", { count: 1, lastAttempt: 0 }],
+      ["oldest", { count: 1, lastAttempt: 80 }],
+      ["middle", { count: 1, lastAttempt: 90 }],
+      ["newest", { count: 1, lastAttempt: 100 }],
+    ]);
+
+    pruneLoginAttempts(attempts, 120, 50, 2);
+
+    expect([...attempts.keys()]).toEqual(["middle", "newest"]);
+    expect(attempts.size).toBeLessThanOrEqual(2);
   });
 });
