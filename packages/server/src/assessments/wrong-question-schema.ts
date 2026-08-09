@@ -1,0 +1,3 @@
+import { z } from "zod";
+export const wrongQuestionResultSchema = z.object({ questions: z.array(z.object({ ordinal: z.number().int().positive(), recognizedText: z.string().min(1), knowledgePoints: z.array(z.string().min(1)), errorType: z.enum(["CONCEPT", "CALCULATION", "READING", "METHOD", "CARELESS", "UNKNOWN"]), analysis: z.string().min(1), mastery: z.number().min(0).max(100), suggestion: z.string().min(1) })).min(1), weakPoints: z.array(z.object({ name: z.string(), mastery: z.number().min(0).max(100) })), summary: z.string().min(1) });
+export type WrongQuestionResult = z.infer<typeof wrongQuestionResultSchema>;

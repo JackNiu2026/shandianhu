@@ -5,6 +5,8 @@ export { FileService } from "./files/file-service";
 export { JobProcessingError, JobService } from "./jobs/job-service";
 export { scoreLearningStyle } from "./assessments/learning-style";
 export { LearningStyleAssessmentService } from "./assessments/assessment-service";
+export { WrongQuestionService } from "./assessments/wrong-question-service";
+export { wrongQuestionResultSchema } from "./assessments/wrong-question-schema";
 export { ASYNC_JOB_QUEUE_NAME, BullMqJobQueue, createRedisConnection } from "./jobs/queue";
 export { ModelConfigService } from "./models/model-config-service";
 export { OpenAiCompatibleGateway } from "./models/openai-gateway";
