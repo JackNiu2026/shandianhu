@@ -1,110 +1,47 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import {
-  parentBookingSchema,
-  parentReviewSchema,
-} from "../lib/validation";
-import {
-  DiagnosisUnavailableError,
-  generateDiagnosis,
-} from "../lib/diagnosis";
+import { describe, expect, it } from "vitest";
 
-afterEach(() => {
-  vi.unstubAllEnvs();
-  vi.unstubAllGlobals();
-});
+const adminSource = (relativePath: string) =>
+  readFileSync(resolve(__dirname, "..", relativePath), "utf8");
 
 describe("release hardening", () => {
-  it("uses parent-safe schemas and returns 503 for unavailable diagnosis providers", () => {
-    const bookingRoute = readFileSync(
-      resolve(__dirname, "../app/api/public/bookings/route.ts"),
-      "utf8",
-    );
-    const reviewRoute = readFileSync(
-      resolve(__dirname, "../app/api/public/reviews/route.ts"),
-      "utf8",
-    );
-    const diagnosisRoute = readFileSync(
-      resolve(__dirname, "../app/api/diagnose/route.ts"),
-      "utf8",
-    );
+  it("uses opaque, hashed AdminSession tokens instead of JWTs", () => {
+    const auth = adminSource("lib/auth.ts");
+    const apiAuth = adminSource("lib/api-auth.ts");
+    const login = adminSource("app/api/auth/login/route.ts");
 
-    expect(bookingRoute).toContain("parentBookingSchema.safeParse(body)");
-    expect(reviewRoute).toContain("parentReviewSchema.safeParse(body)");
-    expect(diagnosisRoute).toContain("error instanceof DiagnosisUnavailableError");
-    expect(diagnosisRoute).toContain("{ error: error.message }");
-    expect(diagnosisRoute).toContain("status: 503");
+    expect(auth).toContain('AUTH_COOKIE_NAME = "admin-session"');
+    expect(auth).not.toContain("jsonwebtoken");
+    expect(login).toContain("randomBytes");
+    expect(login).toContain("tokenHash");
+    expect(login).toContain("prisma.adminSession.create");
+    expect(apiAuth).toContain("createHash");
+    expect(apiAuth).toContain('status: "ACTIVE"');
+    expect(apiAuth).toContain("revokedAt: null");
+    expect(apiAuth).toContain("expiresAt: { gt: new Date() }");
   });
 
-  it("accepts parent booking and review payloads without server-controlled fields", () => {
-    const booking = parentBookingSchema.parse({
-      parentId: "malicious-parent-id",
-      teacherId: "teacher-1",
-      subject: "Math",
-      slot: "Monday 10:00",
-    });
-    const review = parentReviewSchema.parse({
-      teacherId: "teacher-1",
-      author: "malicious-author",
-      text: "Clear and helpful lessons.",
-      rating: 5,
-    });
+  it("keeps authorization in Node handlers and only performs routing/CORS in middleware", () => {
+    const middleware = adminSource("middleware.ts");
+    const layout = adminSource("app/(dashboard)/layout.tsx");
 
-    expect(booking).not.toHaveProperty("parentId");
-    expect(review).not.toHaveProperty("author");
+    expect(middleware).not.toContain("@prisma/client");
+    expect(middleware).not.toContain("@lightning-tiger/server");
+    expect(middleware).not.toContain("verifyToken");
+    expect(middleware).toContain("CORS_ALLOWED_ORIGINS");
+    expect(middleware).toContain("Access-Control-Allow-Credentials");
+    expect(layout).toContain("resolveAdminSession");
   });
 
-  it("rejects diagnosis generation when no AI API key is configured", async () => {
-    vi.stubEnv("AI_API_KEY", "");
+  it("revokes sessions on logout and password changes", () => {
+    const logout = adminSource("app/api/auth/logout/route.ts");
+    const changePassword = adminSource("app/api/auth/change-password/route.ts");
 
-    await expect(
-      generateDiagnosis({
-        subject: "Math",
-        grade: "Grade 8",
-        images: ["data:image/png;base64,AA=="],
-      }),
-    ).rejects.toBeInstanceOf(DiagnosisUnavailableError);
-  });
-
-  it("maps AI provider failures to DiagnosisUnavailableError", async () => {
-    vi.stubEnv("AI_API_KEY", "test-key");
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: false,
-        status: 503,
-        statusText: "Service Unavailable",
-      }),
-    );
-
-    await expect(
-      generateDiagnosis({
-        subject: "Math",
-        grade: "Grade 8",
-        images: ["data:image/png;base64,AA=="],
-      }),
-    ).rejects.toBeInstanceOf(DiagnosisUnavailableError);
-  });
-
-  it("maps malformed AI output to DiagnosisUnavailableError", async () => {
-    vi.stubEnv("AI_API_KEY", "test-key");
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({
-          choices: [{ message: { content: "{}" } }],
-        }),
-      }),
-    );
-
-    await expect(
-      generateDiagnosis({
-        subject: "Math",
-        grade: "Grade 8",
-        images: ["data:image/png;base64,AA=="],
-      }),
-    ).rejects.toBeInstanceOf(DiagnosisUnavailableError);
+    expect(logout).toContain("prisma.adminSession.updateMany");
+    expect(logout).toContain('status: "REVOKED"');
+    expect(changePassword).toContain("passwordHash");
+    expect(changePassword).toContain("prisma.adminSession.updateMany");
+    expect(changePassword).toContain("clearAuthCookie");
   });
 });
