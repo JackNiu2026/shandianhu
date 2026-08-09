@@ -23,13 +23,13 @@ describe("JobWorker", () => {
     const jobs = {
       start: vi.fn().mockResolvedValue({ id: "job-1", type: "ASSESSMENT_PROCESSING", payload: {} }),
       succeed: vi.fn().mockResolvedValue(undefined),
-      fail: vi.fn().mockResolvedValue(undefined),
+      fail: vi.fn().mockResolvedValue("RETRY"),
       reconcile: vi.fn().mockResolvedValue(undefined),
     };
     const processor: JobProcessor = { process: vi.fn().mockRejectedValue(error) };
     const worker = new JobWorker(jobs, processor);
 
-    await worker.process("job-1");
+    await expect(worker.process("job-1")).rejects.toThrow(error);
     await worker.reconcile();
 
     expect(jobs.fail).toHaveBeenCalledWith("job-1", error);

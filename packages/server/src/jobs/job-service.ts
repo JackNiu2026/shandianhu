@@ -34,6 +34,10 @@ export type AsyncJobRecord = {
   finishedAt: Date | null;
 };
 
+type JobClaimWhere =
+  | { id: string; status: "PENDING"; availableAt: { lte: Date } }
+  | { id: string; status: "RETRY_WAIT"; retryAt: { lte: Date } };
+
 type JobCreateInput = Omit<AsyncJobRecord, "id" | "result" | "errorCode" | "errorDetail" | "startedAt" | "finishedAt">;
 
 export interface JobDatabase {
@@ -45,11 +49,17 @@ export interface JobDatabase {
     }): Promise<AsyncJobRecord>;
     findUnique(args: { where: { id: string } }): Promise<AsyncJobRecord | null>;
     findMany(args: {
-      where: { status: "PENDING"; availableAt: { lte: Date } };
+      where: { status: { in: Array<"PENDING" | "RETRY_WAIT"> } };
     }): Promise<AsyncJobRecord[]>;
     update(args: { where: { id: string }; data: Partial<AsyncJobRecord> }): Promise<AsyncJobRecord>;
+    updateMany(args: {
+      where: JobClaimWhere;
+      data: Partial<AsyncJobRecord>;
+    }): Promise<{ count: number }>;
   };
 }
+
+export type JobFailureDisposition = "RETRY" | "TERMINAL";
 
 export class JobProcessingError extends Error {
   constructor(
@@ -96,18 +106,31 @@ export class JobService {
   }
 
   async start(jobId: string): Promise<AsyncJobRecord | null> {
-    const job = await this.requireJob(jobId);
-    if (job.status !== "PENDING" || job.availableAt > this.now()) return null;
+    const claimedAt = this.now();
+    let job = await this.requireJob(jobId);
 
-    return this.database.asyncJob.update({
-      where: { id: job.id },
+    if (job.status === "RETRY_WAIT") {
+      const madePending = await this.database.asyncJob.updateMany({
+        where: { id: job.id, status: "RETRY_WAIT", retryAt: { lte: claimedAt } },
+        data: { status: "PENDING", availableAt: claimedAt, retryAt: null },
+      });
+      if (!madePending.count) return null;
+      job = await this.requireJob(jobId);
+    }
+
+    if (job.status !== "PENDING") return null;
+    const claimed = await this.database.asyncJob.updateMany({
+      where: { id: job.id, status: "PENDING", availableAt: { lte: claimedAt } },
       data: {
         status: "RUNNING",
         attempt: job.attempt + 1,
-        startedAt: this.now(),
+        startedAt: claimedAt,
         retryAt: null,
       },
     });
+    if (!claimed.count) return null;
+
+    return this.requireJob(jobId);
   }
 
   async succeed(jobId: string, result: unknown): Promise<void> {
@@ -119,7 +142,7 @@ export class JobService {
     });
   }
 
-  async fail(jobId: string, error: unknown): Promise<void> {
+  async fail(jobId: string, error: unknown): Promise<JobFailureDisposition> {
     const job = await this.requireJob(jobId);
     this.requireRunning(job);
     const failure = this.failureDetails(error);
@@ -129,7 +152,7 @@ export class JobService {
         where: { id: job.id },
         data: { status: "FAILED", ...failure, finishedAt: this.now() },
       });
-      return;
+      return "TERMINAL";
     }
 
     if (job.attempt >= job.maxAttempts) {
@@ -137,7 +160,7 @@ export class JobService {
         where: { id: job.id },
         data: { status: "DEAD_LETTER", ...failure, finishedAt: this.now() },
       });
-      return;
+      return "TERMINAL";
     }
 
     const retryAt = new Date(this.now().getTime() + this.retryDelayMs());
@@ -145,21 +168,20 @@ export class JobService {
       where: { id: job.id },
       data: { status: "RETRY_WAIT", ...failure, retryAt },
     });
-    await this.database.asyncJob.update({
-      where: { id: job.id },
-      data: { status: "PENDING", availableAt: retryAt },
-    });
-    await this.queue.enqueue(job.id, { delayMs: this.retryDelayMs() });
+    return "RETRY";
   }
 
   async reconcile(): Promise<void> {
+    const reconciledAt = this.now();
     const pendingJobs = await this.database.asyncJob.findMany({
-      where: { status: "PENDING", availableAt: { lte: this.now() } },
+      where: { status: { in: ["PENDING", "RETRY_WAIT"] } },
     });
 
     for (const job of pendingJobs) {
       if (!await this.queue.has(job.id)) {
-        await this.queue.enqueue(job.id, { delayMs: 0 });
+        const availableAt = job.status === "RETRY_WAIT" ? job.retryAt : job.availableAt;
+        if (!availableAt) continue;
+        await this.queue.enqueue(job.id, { delayMs: Math.max(0, availableAt.getTime() - reconciledAt.getTime()) });
       }
     }
   }

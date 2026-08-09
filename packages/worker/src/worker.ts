@@ -44,7 +44,8 @@ export class JobWorker {
       const result = await this.processor.process(job);
       await this.jobs.succeed(job.id, result);
     } catch (error) {
-      await this.jobs.fail(job.id, error);
+      const disposition = await this.jobs.fail(job.id, error);
+      if (disposition === "RETRY") throw error;
     }
   }
 

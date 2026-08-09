@@ -24,6 +24,8 @@ export class BullMqJobQueue implements JobQueue {
     await this.getQueue().add("async-job", { jobId }, {
       jobId,
       delay: options.delayMs,
+      attempts: 3,
+      backoff: { type: "fixed", delay: 1_000 },
     });
   }
 

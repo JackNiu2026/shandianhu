@@ -41,15 +41,31 @@ function createDatabase(records: AsyncJobRecord[] = []): JobDatabase & { updates
         return created;
       }),
       findUnique: vi.fn(async ({ where }) => records.find((record) => record.id === where.id) ?? null),
-      findMany: vi.fn(async ({ where }) => records.filter((record) =>
-        where.status === "PENDING" && record.availableAt <= where.availableAt.lte,
-      )),
+      findMany: vi.fn(async ({ where }) => records.filter((record) => {
+        const statuses = typeof where.status === "string" ? [where.status] : where.status.in;
+        const dueAt = record.status === "RETRY_WAIT" ? record.retryAt : record.availableAt;
+        return statuses.includes(record.status) && Boolean(dueAt);
+      })),
       update: vi.fn(async ({ where, data }) => {
         const record = records.find((candidate) => candidate.id === where.id);
         if (!record) throw new Error("job not found");
         Object.assign(record, data);
         updates.push(data);
         return record;
+      }),
+      updateMany: vi.fn(async ({ where, data }) => {
+        const record = records.find((candidate) => candidate.id === where.id);
+        const dueAt = record?.status === "RETRY_WAIT" ? record.retryAt : record?.availableAt;
+        if (
+          !record
+          || record.status !== where.status
+          || (where.dueAt && (!dueAt || dueAt > where.dueAt.lte))
+        ) {
+          return { count: 0 };
+        }
+        Object.assign(record, data);
+        updates.push(data);
+        return { count: 1 };
       }),
     },
   };
@@ -76,10 +92,10 @@ describe("JobService", () => {
     expect(queue.enqueue).toHaveBeenCalledWith(first.id, { delayMs: 0 });
   });
 
-  it("records transient retry transitions before re-enqueuing a pending job", async () => {
+  it("records transient retry state and claims it again only after it becomes due", async () => {
     const database = createDatabase([job()]);
     const queue = createQueue();
-    const now = new Date("2026-08-09T00:00:00.000Z");
+    let now = new Date("2026-08-09T00:00:00.000Z");
     const jobs = new JobService(database, queue, { now: () => now, retryDelayMs: 1_000 });
 
     await jobs.start("job-1");
@@ -88,9 +104,42 @@ describe("JobService", () => {
     expect(database.updates).toEqual(expect.arrayContaining([
       expect.objectContaining({ status: "RUNNING", attempt: 1 }),
       expect.objectContaining({ status: "RETRY_WAIT", retryAt: new Date("2026-08-09T00:00:01.000Z") }),
-      expect.objectContaining({ status: "PENDING", availableAt: new Date("2026-08-09T00:00:01.000Z") }),
     ]));
-    expect(queue.enqueue).toHaveBeenCalledWith("job-1", { delayMs: 1_000 });
+    expect(queue.enqueue).not.toHaveBeenCalled();
+
+    now = new Date("2026-08-09T00:00:01.000Z");
+    await jobs.start("job-1");
+
+    expect(database.updates).toEqual(expect.arrayContaining([
+      expect.objectContaining({ status: "PENDING", availableAt: now }),
+      expect.objectContaining({ status: "RUNNING", attempt: 2 }),
+    ]));
+  });
+
+  it("atomically grants at most one concurrent pending claim", async () => {
+    const database = createDatabase([job()]);
+    const jobs = new JobService(database, createQueue(), { now: () => new Date("2026-08-09T00:00:00.000Z") });
+    let releaseReads: () => void;
+    const bothReads = new Promise<void>((resolve) => { releaseReads = resolve; });
+    let reads = 0;
+    (database.asyncJob.findUnique as unknown as {
+      mockImplementation: (implementation: (input: { where: { id: string } }) => Promise<AsyncJobRecord | null>) => void;
+    }).mockImplementation(async (input) => {
+      if (input.where.id === "job-1" && reads++ < 2) {
+        await bothReads;
+        return job();
+      }
+      return job({ status: "RUNNING", attempt: 1 });
+    });
+
+    const claimsPromise = Promise.all([jobs.start("job-1"), jobs.start("job-1")]);
+    await Promise.resolve();
+    expect(reads).toBe(2);
+    releaseReads!();
+    const claims = await claimsPromise;
+
+    expect(claims.filter(Boolean)).toHaveLength(1);
+    expect(claims.find(Boolean)).toMatchObject({ status: "RUNNING", attempt: 1 });
   });
 
   it("fails permanent work and dead-letters exhausted transient work", async () => {
@@ -107,14 +156,29 @@ describe("JobService", () => {
     expect(exhaustedDatabase.updates).toContainEqual(expect.objectContaining({ status: "DEAD_LETTER" }));
   });
 
-  it("requeues pending database jobs absent from Redis", async () => {
-    const database = createDatabase([job()]);
+  it("requeues pending and retry-wait database jobs absent from Redis", async () => {
+    const now = new Date("2026-08-09T00:00:00.000Z");
+    const database = createDatabase([
+      job({ id: "pending-now" }),
+      job({
+        id: "pending-later",
+        dedupeKey: "later",
+        availableAt: new Date("2026-08-09T00:01:00.000Z"),
+      }),
+      job({
+        id: "retry-later",
+        dedupeKey: "retry",
+        status: "RETRY_WAIT",
+        retryAt: new Date("2026-08-09T00:00:30.000Z"),
+      }),
+    ]);
     const queue = createQueue();
-    const jobs = new JobService(database, queue, { now: () => new Date("2026-08-09T00:00:00.000Z") });
+    const jobs = new JobService(database, queue, { now: () => now });
 
     await jobs.reconcile();
 
-    expect(queue.has).toHaveBeenCalledWith("job-1");
-    expect(queue.enqueue).toHaveBeenCalledWith("job-1", { delayMs: 0 });
+    expect(queue.enqueue).toHaveBeenCalledWith("pending-now", { delayMs: 0 });
+    expect(queue.enqueue).toHaveBeenCalledWith("pending-later", { delayMs: 60_000 });
+    expect(queue.enqueue).toHaveBeenCalledWith("retry-later", { delayMs: 30_000 });
   });
 });
