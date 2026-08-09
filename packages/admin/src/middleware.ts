@@ -14,10 +14,6 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (pathname === "/login" && hasSessionCookie) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
   const response = NextResponse.next();
   if (pathname.startsWith("/api/")) setCorsHeaders(request, response);
   return response;

@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@lightning-tiger/server/src/db/client";
 import { SESSION_MAX_AGE, setAuthCookie } from "@/lib/auth";
+import { getLoginThrottleKey } from "@/lib/login-throttle";
 import { loginSchema } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
@@ -11,13 +12,6 @@ const loginAttempts = new Map<string, { count: number; lastAttempt: number }>();
 const MAX_ATTEMPTS = 5;
 const WINDOW_MS = 15 * 60 * 1000;
 
-function getThrottleKey(request: NextRequest): string {
-  if (process.env.TRUST_PROXY === "true") {
-    return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anonymous";
-  }
-  return "anonymous";
-}
-
 export async function POST(request: NextRequest) {
   try {
     const result = loginSchema.safeParse(await request.json());
@@ -25,7 +19,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: result.error.issues[0]?.message || "Invalid request" }, { status: 400 });
     }
 
-    const clientKey = getThrottleKey(request);
+    const loginIdentifier = result.data.username.trim().toLowerCase();
+    const clientKey = getLoginThrottleKey(request, loginIdentifier);
     const attempts = loginAttempts.get(clientKey);
     if (attempts && attempts.count >= MAX_ATTEMPTS && Date.now() - attempts.lastAttempt < WINDOW_MS) {
       return NextResponse.json({ error: "Too many login attempts" }, { status: 429 });
