@@ -129,6 +129,7 @@ describe("FileService", () => {
     expect(signer.signPut).toHaveBeenCalledWith({
       objectKey: "families/parent-a/children/child-a/ASSESSMENT_UPLOAD/file-1",
       contentType: "image/jpeg",
+      contentLength: 100,
       expiresInSeconds: 600,
     });
   });

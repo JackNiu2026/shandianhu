@@ -89,6 +89,7 @@ export class FileService {
     const uploadUrl = await this.signer.signPut({
       objectKey: file.objectKey,
       contentType: file.contentType,
+      contentLength: file.byteSize,
       expiresInSeconds: FILE_URL_TTL_SECONDS,
     });
     return { fileId: file.id, uploadUrl, expiresInSeconds: FILE_URL_TTL_SECONDS };

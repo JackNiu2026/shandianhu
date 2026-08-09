@@ -15,4 +15,29 @@ describe("CosFileSigner", () => {
     await expect(signer.signGet({ objectKey: "families/parent/children/child/ASSESSMENT_UPLOAD/file", expiresInSeconds: 600 }))
       .rejects.toThrow("COS configuration is incomplete");
   });
+
+  it("binds the upload content type and length into the signed request", async () => {
+    const signer = new CosFileSigner({
+      bucket: "bucket-123",
+      region: "ap-shanghai",
+      secretId: "secret-id",
+      secretKey: "secret-key",
+    });
+    const getObjectUrl = vi.fn().mockResolvedValue("https://cos.example/upload");
+    (signer as unknown as { client: { getObjectUrl: typeof getObjectUrl } }).client = { getObjectUrl };
+
+    await signer.signPut({
+      objectKey: "families/parent/children/child/ASSESSMENT_UPLOAD/file",
+      contentType: "image/jpeg",
+      contentLength: 100,
+      expiresInSeconds: 600,
+    });
+
+    expect(getObjectUrl).toHaveBeenCalledWith(expect.objectContaining({
+      Headers: {
+        "Content-Type": "image/jpeg",
+        "Content-Length": "100",
+      },
+    }));
+  });
 });

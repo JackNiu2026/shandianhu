@@ -3,7 +3,12 @@ import COS from "cos-nodejs-sdk-v5";
 export const FILE_URL_TTL_SECONDS = 10 * 60;
 
 export interface FileSigner {
-  signPut(input: { objectKey: string; contentType: string; expiresInSeconds: number }): Promise<string>;
+  signPut(input: {
+    objectKey: string;
+    contentType: string;
+    contentLength: number;
+    expiresInSeconds: number;
+  }): Promise<string>;
   signGet(input: { objectKey: string; expiresInSeconds: number }): Promise<string>;
 }
 
@@ -34,7 +39,12 @@ export class CosFileSigner implements FileSigner {
 
   constructor(private readonly configuration?: CosConfiguration) {}
 
-  async signPut({ objectKey, expiresInSeconds }: Parameters<FileSigner["signPut"]>[0]): Promise<string> {
+  async signPut({
+    objectKey,
+    contentType,
+    contentLength,
+    expiresInSeconds,
+  }: Parameters<FileSigner["signPut"]>[0]): Promise<string> {
     const { client, configuration } = this.getClient();
     return client.getObjectUrl({
       Bucket: configuration.bucket,
@@ -43,6 +53,10 @@ export class CosFileSigner implements FileSigner {
       Method: "PUT",
       Sign: true,
       Expires: expiresInSeconds,
+      Headers: {
+        "Content-Type": contentType,
+        "Content-Length": String(contentLength),
+      },
     });
   }
 
