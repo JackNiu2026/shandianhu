@@ -15,7 +15,7 @@
   right: 12px;
   /* 大写 PX 避免 pxtransform 转换后与 env() 混排导致 postcss-calc 解析失败 */
   bottom: calc(12PX + env(safe-area-inset-bottom, 0PX));
-  height: 62px;
+  height: 72px;
   padding: 6px;
   gap: 4px;
   display: flex;
@@ -39,14 +39,14 @@
 
 .bottom-nav .nav-btn {
   flex: 1;
-  min-height: 50px;
+  min-height: 54px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 4px;
   border-radius: 15px;
-  color: #837B73;
+  color: #8A827A;
   transition: transform 0.16s ease, background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
 }
 
@@ -66,7 +66,7 @@
   font-weight: 800;
 }
 
-/* 四色选中态（与 Figma 收敛层一致） */
+/* 统一橙色选中态（对齐 Figma 设计） */
 .bottom-nav .nav-btn:nth-child(1).active {
   background: #EEE9FF;
   color: #7056BD;
@@ -78,11 +78,6 @@
 }
 
 .bottom-nav .nav-btn:nth-child(3).active {
-  background: #E8F4E9;
-  color: #348052;
-}
-
-.bottom-nav .nav-btn:nth-child(4).active {
   background: #EAF0FF;
   color: #4E70AD;
 }

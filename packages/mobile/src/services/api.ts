@@ -3,7 +3,7 @@
  * 基于 Taro.request，兼容小程序和 H5
  */
 import Taro from "@tarojs/taro";
-import type { Teacher, Prefs } from "@lightning-tiger/shared";
+import type { Teacher, Prefs, DiagnosisReport } from "@lightning-tiger/shared";
 
 /** API 基础地址 */
 const API_BASE = process.env.TARO_APP_API_BASE || "http://localhost:3000";
@@ -163,31 +163,22 @@ export async function createReview(data: {
   });
 }
 
-/** 获取消息列表 */
-export async function fetchMessages(contactId?: string): Promise<{
-  data: Array<{
-    id: string;
-    senderId: string;
-    content: string;
-    read: boolean;
-    time: string;
-    mine: boolean;
-  }>;
-  total: number;
-}> {
-  const params = contactId ? `?contactId=${contactId}` : "";
-  return request(`/api/messages${params}`);
+/** 提交学情诊断（上传错题图片） */
+export async function submitDiagnosis(data: {
+  subject: string;
+  grade: string;
+  images: string[];
+}): Promise<DiagnosisReport> {
+  return request("/api/diagnose", {
+    method: "POST",
+    data: JSON.stringify(data),
+  });
 }
 
-/** 发送消息 */
-export async function sendMessage(receiverId: string, content: string): Promise<{
-  id: string;
-  content: string;
-  time: string;
-  mine: boolean;
+/** 获取历史诊断报告列表 */
+export async function fetchDiagnosisHistory(): Promise<{
+  data: DiagnosisReport[];
+  total: number;
 }> {
-  return request("/api/messages", {
-    method: "POST",
-    data: JSON.stringify({ receiverId, content }),
-  });
+  return request("/api/diagnose");
 }

@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, Text, Image, Button } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { GearIcon, WorkIcon } from "@/components/Icons";
 import { TopBar } from "@/components/TopBar";
+import { Skeleton } from "@/components/Skeleton";
 import { RoleModal, SettingsModal, PosterModal, SubscribeModal, BookSheet, ReviewSheet } from "@/components/Modals";
 import { LoginModal } from "@/components/LoginModal";
 import { useAppStore } from "@/store";
@@ -46,9 +47,9 @@ function ParentDashboard({
       <View className="workbench-grid">
         <View className={`function-card ${openConnected ? "expanded" : ""}`}>
           <View className="function-trigger" onClick={() => setOpenConnected(!openConnected)}>
-            <Text className="card-icon coral">
+            <View className="card-icon coral">
               <WorkIcon name="users" />
-            </Text>
+            </View>
             <Text className="span">
               <Text className="small">老师管理</Text>
               <Text className="b">已对接老师</Text>
@@ -81,10 +82,10 @@ function ParentDashboard({
                 <View className="button" onClick={onReview}>
                   <Text>★ 评价老师</Text>
                 </View>
-                <View className="button">
+                <View className="button" onClick={() => onOpenUtility("打赏老师")}>
                   <Text>¥ 打赏老师</Text>
                 </View>
-                <View className="button">
+                <View className="button" onClick={() => onOpenUtility("查看课程")}>
                   <Text>查看课程</Text>
                 </View>
               </View>
@@ -94,9 +95,9 @@ function ParentDashboard({
 
         <View className={`function-card ${openLiked ? "expanded" : ""}`}>
           <View className="function-trigger" onClick={() => setOpenLiked(!openLiked)}>
-            <Text className="card-icon blush">
+            <View className="card-icon blush">
               <WorkIcon name="heart" />
-            </Text>
+            </View>
             <Text className="span">
               <Text className="small">我的收藏</Text>
               <Text className="b">感兴趣的老师</Text>
@@ -147,9 +148,9 @@ function ParentDashboard({
           className="function-card function-trigger"
           onClick={() => onOpenUtility("成长记录")}
         >
-          <Text className="card-icon mint">
+          <View className="card-icon mint">
             <WorkIcon name="chart" />
-          </Text>
+          </View>
           <Text className="span">
             <Text className="small">成长记录</Text>
             <Text className="b">学习动态</Text>
@@ -162,9 +163,9 @@ function ParentDashboard({
           className="function-card function-trigger"
           onClick={() => onOpenUtility("孩子档案")}
         >
-          <Text className="card-icon lilac">
+          <View className="card-icon lilac">
             <WorkIcon name="folder" />
-          </Text>
+          </View>
           <Text className="span">
             <Text className="small">孩子档案</Text>
             <Text className="b">孩子的成长档案</Text>
@@ -185,10 +186,6 @@ function TeacherDashboard({
   name,
   avatar,
   school,
-  students,
-  rating,
-  totalLessons,
-  revenue,
 }: {
   onSettings: () => void;
   onOpenPoster: () => void;
@@ -196,10 +193,6 @@ function TeacherDashboard({
   name: string;
   avatar: string;
   school?: string;
-  students?: string;
-  rating?: string;
-  totalLessons?: string;
-  revenue?: string;
 }) {
   return (
     <>
@@ -227,15 +220,15 @@ function TeacherDashboard({
         </View>
         <View className="teacher-profile-stats">
           <Text className="span">
-            <Text className="b">{students || "—"}</Text>
+            <Text className="b">暂不可用</Text>
             <Text className="small">累计学生</Text>
           </Text>
           <Text className="span">
-            <Text className="b">{rating || "—"}</Text>
+            <Text className="b">暂不可用</Text>
             <Text className="small">综合评分</Text>
           </Text>
           <Text className="span">
-            <Text className="b">{totalLessons || "—"}</Text>
+            <Text className="b">建设中</Text>
             <Text className="small">授课课时</Text>
           </Text>
         </View>
@@ -251,7 +244,7 @@ function TeacherDashboard({
         <View className="revenue-grid">
           <Text className="span">
             <Text className="small">总佣金</Text>
-            <Text className="b">{revenue || "—"}</Text>
+            <Text className="b">暂不可用</Text>
           </Text>
           <Text className="span">
             <Text className="small">待入账</Text>
@@ -276,13 +269,13 @@ function TeacherDashboard({
             className="function-card function-trigger"
             onClick={() => onOpenUtility("学生管理")}
           >
-            <Text className="card-icon coral">
+            <View className="card-icon coral">
               <WorkIcon name="users" />
-            </Text>
+            </View>
             <Text className="span">
               <Text className="small">学生管理</Text>
               <Text className="b">已对接家长</Text>
-              <Text className="em">{students || "—"} 位家长 · 学生正在学习</Text>
+              <Text className="em">数据暂不可用 · 功能建设中</Text>
             </Text>
             <Text className="i">›</Text>
           </View>
@@ -290,9 +283,9 @@ function TeacherDashboard({
             className="function-card function-trigger"
             onClick={() => onOpenUtility("课程安排")}
           >
-            <Text className="card-icon mint">
+            <View className="card-icon mint">
               <WorkIcon name="calendar" />
-            </Text>
+            </View>
             <Text className="span">
               <Text className="small">课程安排</Text>
               <Text className="b">本周课程</Text>
@@ -304,9 +297,9 @@ function TeacherDashboard({
             className="function-card function-trigger"
             onClick={() => onOpenUtility("我的资料")}
           >
-            <Text className="card-icon lilac">
+            <View className="card-icon lilac">
               <WorkIcon name="edit" />
-            </Text>
+            </View>
             <Text className="span">
               <Text className="small">我的资料</Text>
               <Text className="b">授课信息与展示页</Text>
@@ -318,13 +311,13 @@ function TeacherDashboard({
             className="function-card function-trigger"
             onClick={() => onOpenUtility("专业成长")}
           >
-            <Text className="card-icon blush">
+            <View className="card-icon blush">
               <WorkIcon name="star" />
-            </Text>
+            </View>
             <Text className="span">
               <Text className="small">专业成长</Text>
               <Text className="b">教学评价</Text>
-              <Text className="em">{rating ? `${rating} 综合评分` : "完善资料提升匹配度"}</Text>
+              <Text className="em">评价数据暂不可用</Text>
             </Text>
             <Text className="i">›</Text>
           </View>
@@ -332,9 +325,9 @@ function TeacherDashboard({
             className="function-card function-trigger personal-card"
             onClick={onOpenPoster}
           >
-            <Text className="card-icon lilac">
+            <View className="card-icon lilac">
               <WorkIcon name="shield" />
-            </Text>
+            </View>
             <Text className="span">
               <Text className="small">个人名片</Text>
               <Text className="b">生成介绍海报</Text>
@@ -366,6 +359,8 @@ export default function MePage() {
     bookingCount: number;
     likedTeachers: string[];
   } | null>(null);
+  const [parentLoading, setParentLoading] = useState(false);
+  const [parentError, setParentError] = useState("");
 
   // 是否已登录（家长端：有 parentId 且有 token）
   const isLoggedIn = !!state.parentId && !!Taro.getStorageSync("auth-token");
@@ -374,45 +369,52 @@ export default function MePage() {
     if (!role) setRoleOpen(true);
   }, []);
 
-  useEffect(() => {
-    if (state.parentId) {
-      fetchParentInfo()
-        .then((data) => {
-          setParentInfo({
-            bookingCount: data.bookingCount,
-            likedTeachers: data.likedTeachers,
-          });
-          if (data.name) {
-            dispatch({ type: "SET_PARENT_NAME", name: data.name });
-          }
-        })
-        .catch((err) => {
-          console.error("[Me] 获取家长信息失败", err);
-        });
+  const loadParentInfo = useCallback(async () => {
+    if (!state.parentId) return;
+    setParentLoading(true);
+    setParentError("");
+    try {
+      const data = await fetchParentInfo();
+      setParentInfo({
+        bookingCount: data.bookingCount,
+        likedTeachers: data.likedTeachers,
+      });
+      if (data.name) dispatch({ type: "SET_PARENT_NAME", name: data.name });
+    } catch (err) {
+      setParentInfo(null);
+      setParentError("个人资料加载失败，请检查网络后重试");
+      console.error("[Me] parent profile load failed", err);
+    } finally {
+      setParentLoading(false);
     }
-  }, [state.parentId]);
+  }, [dispatch, state.parentId]);
+
+  useEffect(() => {
+    loadParentInfo();
+  }, [loadParentInfo]);
 
   const onOpenUtility = (title: string) => {
-    Taro.showToast({ title, icon: "none" });
+    Taro.showToast({ title: `${title}功能正在开发中，敬请期待`, icon: "none" });
   };
 
+  // P1-1: 老师端演示数据（后端 API 就绪前用硬编码，展示完整 UI 效果）
   const teacherProfile: Teacher = {
     name: teacherName,
     age: "",
-    school: "",
-    subject: "",
-    grades: [],
-    mode: "",
-    tags: [],
+    school: "复旦大学",
+    subject: "数学",
+    grades: ["初中"],
+    mode: "线上",
+    tags: ["985/211", "中考数学", "竞赛启蒙"],
     color: "#967AE9",
-    note: "",
-    rating: "",
-    students: "",
-    years: "",
-    price: 0,
-    slots: [],
+    note: "用心陪伴每一位学生，让数学不再可怕",
+    rating: "4.9",
+    students: "32",
+    years: "6年",
+    price: 220,
+    slots: ["周六 10:00", "周日 14:00"],
     video: "",
-    checks: [],
+    checks: ["教师资格证", "学历认证", "无犯罪记录"],
     reviews: [],
   };
 
@@ -427,32 +429,51 @@ export default function MePage() {
           name={teacherName}
           avatar={teacherAvatar}
           school={teacherProfile.school}
-          students={teacherProfile.students}
-          rating={teacherProfile.rating}
         />
-      ) : isLoggedIn ? (
+      ) : (
         <>
-          <View className="profile-banner profile-hero">
-            <View className="profile-setting button" onClick={() => setSettingsOpen(true)}>
+          {isLoggedIn && parentLoading && !parentInfo ? (
+            <Skeleton variant="profile-hero" />
+          ) : isLoggedIn && parentError ? (
+            <View className="data-state profile-data-state">
+              <Text className="b">暂时无法加载个人资料</Text>
+              <Text className="p">{parentError}</Text>
+              <View className="button primary" onClick={loadParentInfo}>
+                <Text>重新加载</Text>
+              </View>
+            </View>
+          ) : (
+            <View className="profile-banner profile-hero">
+            <View
+              className="profile-setting button"
+              onClick={() => (isLoggedIn ? setSettingsOpen(true) : setLoginOpen(true))}
+            >
               <GearIcon />
             </View>
-            <View className="my-avatar">
-              <Text>{parentAvatar}</Text>
+            <View className="my-avatar" onClick={() => !isLoggedIn && setLoginOpen(true)}>
+              <Text>{isLoggedIn ? parentAvatar : "⚡"}</Text>
             </View>
-            <View className="profile-info">
-              <Text className="p">下午好，{parentName}</Text>
+            <View className="profile-info" onClick={() => !isLoggedIn && setLoginOpen(true)}>
+              <Text className="p">{isLoggedIn ? `下午好，${parentName}` : "未登录"}</Text>
               <Text className="h1">
-                正在陪孩子 <Text className="span">家长</Text>
+                {isLoggedIn ? "正在陪孩子 " : "登录后查看 "}
+                <Text className="span">{isLoggedIn ? "家长" : "点击登录"}</Text>
               </Text>
-              <Text className="small">{parentInfo ? `已陪伴孩子学习 ${parentInfo.bookingCount} 次课程` : "查看档案 ›"}</Text>
+              <Text className="small">
+                {isLoggedIn
+                  ? parentInfo
+                    ? `已陪伴孩子学习 ${parentInfo.bookingCount} 次课程`
+                    : "查看档案 ›"
+                  : "登录后管理孩子的学习、收藏老师、预约试听"}
+              </Text>
             </View>
             <View className="profile-stats">
               <Text className="span">
-                <Text className="b">{String(parentInfo?.bookingCount || 0).padStart(2, "0")}</Text>
+                <Text className="b">{isLoggedIn && parentInfo ? String(parentInfo.bookingCount).padStart(2, "0") : "—"}</Text>
                 <Text className="small">完成课程</Text>
               </Text>
               <Text className="span">
-                <Text className="b">{String(liked.length).padStart(2, "0")}</Text>
+                <Text className="b">{isLoggedIn ? String(liked.length).padStart(2, "0") : "—"}</Text>
                 <Text className="small">收藏老师</Text>
               </Text>
               <Text className="span">
@@ -461,30 +482,20 @@ export default function MePage() {
               </Text>
             </View>
           </View>
+          )}
           <ParentDashboard
             liked={liked}
             booked={booked}
             openConnected={openConnected}
-            setOpenConnected={setOpenConnected}
+            setOpenConnected={(v) => (isLoggedIn ? setOpenConnected(v) : setLoginOpen(true))}
             openLiked={openLiked}
-            setOpenLiked={setOpenLiked}
-            onBook={setBookFor}
-            onSubscribe={() => setSubscribeOpen(true)}
-            onOpenUtility={onOpenUtility}
-            onReview={() => setReviewFor(true)}
+            setOpenLiked={(v) => (isLoggedIn ? setOpenLiked(v) : setLoginOpen(true))}
+            onBook={(t) => (isLoggedIn ? setBookFor(t) : setLoginOpen(true))}
+            onSubscribe={() => (isLoggedIn ? setSubscribeOpen(true) : setLoginOpen(true))}
+            onOpenUtility={(title) => (isLoggedIn ? onOpenUtility(title) : setLoginOpen(true))}
+            onReview={() => (isLoggedIn ? setReviewFor(true) : setLoginOpen(true))}
           />
         </>
-      ) : (
-        <View className="guest-banner">
-          <View className="guest-icon">
-            <Text>⚡</Text>
-          </View>
-          <Text className="guest-title">登录后查看</Text>
-          <Text className="guest-desc">登录或注册后，可以管理孩子的学习、收藏老师和预约试听课程</Text>
-          <Button className="guest-login-btn" onClick={() => setLoginOpen(true)}>
-            登录 / 注册
-          </Button>
-        </View>
       )}
 
       {roleOpen && (

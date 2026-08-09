@@ -1,0 +1,145 @@
+/* ============================================================
+   Skeleton.scss — 骨架屏样式
+   灰底 + shimmer 扫光动画，模拟卡片轮廓占位
+   ============================================================ */
+
+/* ---- shimmer 扫光动画 ---- */
+@keyframes skel-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ---- 基础灰块 ---- */
+.skeleton-teacher-card,
+.skeleton-profile-hero,
+.skeleton-text,
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.skel-line,
+.skel-avatar,
+.skel-avatar-sm,
+.skel-avatar-lg,
+.skel-tag,
+.skel-grid-cell,
+.skel-stat,
+.skel-list-item .skel-avatar-sm {
+  background: linear-gradient(
+    90deg,
+    #EDE9E0 0%,
+    #F5F2EC 40%,
+    #F5F2EC 60%,
+    #EDE9E0 100%
+  );
+  background-size: 200% 100%;
+  animation: skel-shimmer 1.4s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skel-line, .skel-avatar, .skel-avatar-sm, .skel-avatar-lg,
+  .skel-tag, .skel-grid-cell, .skel-stat {
+    animation: none;
+    background: #EDE9E0;
+  }
+}
+
+/* ---- 教师卡骨架 ---- */
+.skeleton-teacher-card {
+  margin-top: 14px;
+  border: 2PX solid #E4DDD6;
+  border-radius: 22px;
+  background: var(--surface-paper, #fffdf9);
+  overflow: hidden;
+  box-shadow: 5px 6px 0 var(--ink, #263334);
+  min-height: 400px;
+}
+.skel-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #EEEAFE, #DED5FA);
+}
+.skel-avatar {
+  width: 59px;
+  height: 59px;
+  border-radius: 20px;
+  border: 3px solid rgba(255,255,255,.9);
+  flex-shrink: 0;
+}
+.skel-identity-text { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.skel-tags {
+  display: flex;
+  gap: 7px;
+  padding: 0 16px 14px;
+}
+.skel-tag { width: 70px; height: 27px; border-radius: 10px; }
+.skel-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.skel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 4px;
+}
+.skel-grid-cell { height: 44px; border-radius: 7px; }
+
+/* ---- 通用线条 ---- */
+.skel-line { height: 13px; border-radius: 4px; }
+.skel-w40 { width: 40%; }
+.skel-w50 { width: 50%; }
+.skel-w60 { width: 60%; }
+.skel-w70 { width: 70%; }
+.skel-w80 { width: 80%; }
+
+/* ---- 聊天气泡骨架 ---- */
+.skel-avatar-sm { width: 27px; height: 27px; border-radius: 9px; flex-shrink: 0; }
+
+/* ---- 家长 profile-hero 骨架 ---- */
+.skeleton-profile-hero {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 12px;
+  padding: 19px;
+  border-radius: 20px;
+  border: 2PX solid var(--ink, #263334);
+  background: linear-gradient(135deg, #C4B6FF, #A896F0, #685f9c);
+  box-shadow: 4px 5px 0 var(--ink, #263334);
+  min-height: 120px;
+}
+.skel-avatar-lg {
+  width: 62px;
+  height: 62px;
+  border-radius: 22px;
+  border: 2px solid rgba(255,255,255,.8);
+  grid-row: 1;
+}
+.skel-hero-text { grid-column: 2; display: flex; flex-direction: column; gap: 8px; }
+.skel-stats-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 11px;
+  border-top: 1px solid rgba(255,255,255,.2);
+}
+.skel-stat { height: 34px; border-radius: 4px; }
+
+/* ---- 列表项骨架 ---- */
+.skeleton-list { gap: 10px; }
+.skel-list-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px;
+  border: 1.5px solid #E4DDD6;
+  border-radius: 19px;
+  background: var(--surface-paper, #fffdf9);
+}
+.skel-list-text { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+
+/* ---- 纯文本骨架 ---- */
+.skeleton-text { gap: 8px; }

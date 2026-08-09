@@ -49,7 +49,7 @@
 .teacher-stat .b { display: block; color: #3a5148; font-size: 20px; }
 .teacher-tools { margin-top: 12px; display: grid; gap: 8px; }
 .teacher-tools .button { display: flex; align-items: center; gap: 11px; padding: 13px; text-align: left; border: 1PX solid #e5e4db; border-radius: 11px; background: #fff; color: #45534e; font-size: 12px; }
-.teacher-tools .b { color: #ed7358; font-size: 16px; }
+.teacher-tools .b { color: var(--action-deep); font-size: 16px; }
 .teacher-tools .span { margin-left: auto; color: #98a19a; }
 
 /* ---- 卡片化家长仪表盘 ---- */
@@ -76,7 +76,7 @@
 .likes-hint { margin: 9px 0 0 49px; color: #969e98; font-size: 9px; }
 .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 11px; }
 .quick-grid .button { min-height: 66px; display: grid; place-content: center; gap: 4px; border: 1PX solid #e7e5dd; border-radius: 13px; background: #fffdf9; color: #68736d; font-size: 9px; }
-.quick-grid .b { color: #ed7358; font-size: 17px; }
+.quick-grid .b { color: var(--action-deep); font-size: 17px; }
 
 /* ---- 个人中心与折叠功能卡 ---- */
 .profile-hero { min-height: 175px; display: flex; align-items: flex-start; padding: 19px; border-radius: 20px; background: #2c5148; color: white; overflow: hidden; position: relative; }
@@ -88,6 +88,15 @@
 .profile-hero .h1 .span { background: #456c60; color: #dce9dd; }
 .profile-hero .small { color: #c5d6cc; }
 .profile-hero > .button { position: absolute; right: 17px; bottom: 70px; color: #dbe8df; }
+
+/* Keep profile failures in the same visual slot as the loaded profile surface. */
+.profile-data-state {
+  min-height: 175px;
+  margin: 0;
+  border-color: var(--state-border);
+  background: var(--surface-paper);
+  box-shadow: 4px 5px 0 var(--ink);
+}
 .profile-stats { position: absolute; left: 19px; right: 19px; bottom: 13px; display: flex; justify-content: space-between; }
 .profile-stats .span { border-right: 1PX solid rgba(255,255,255,.17); padding-right: 19px; color: #c7d8ce; font-size: 8px; }
 .profile-stats .span:last-child { border: 0; padding: 0; }
@@ -143,33 +152,33 @@
 .teacher-profile-stats .b { font-size: 18px; }
 
 /* ---- 全局 lavender：me 屏幕背景 ---- */
-.me-screen { background: var(--creem-bone); }
+.me-screen { background: var(--surface-base); }
 
 /* ---- lavender 卡片基底（me 部分） ---- */
-.function-card, .dashboard-card, .interest-card, .note-card, .quick-grid > .button { border: 2PX solid var(--creem-ink); background: var(--creem-lilac); color: var(--creem-ink); box-shadow: 3px 4px 0 var(--creem-ink); }
+.function-card, .dashboard-card, .interest-card, .note-card, .quick-grid > .button { border: 2PX solid var(--ink); background: var(--growth-soft); color: var(--ink); box-shadow: 3px 4px 0 var(--ink); }
 
-/* ---- 紫色承载 dashboard / chat / profile ---- */
-.profile-banner, .profile-hero, .teacher-profile-card, .teacher-dashboard { border: 2PX solid var(--creem-ink); background: linear-gradient(135deg, #B09CFB, #967AE9); color: var(--creem-ink); box-shadow: 4px 5px 0 var(--creem-ink); }
+/* ---- 紫色承载 dashboard / profile ---- */
+.profile-banner, .profile-hero, .teacher-profile-card, .teacher-dashboard { border: 2PX solid var(--ink); background: linear-gradient(135deg, #685f9c, #685f9c); color: var(--ink); box-shadow: 4px 5px 0 var(--ink); }
 .profile-banner view, .profile-banner text, .profile-hero view, .profile-hero text, .teacher-profile-card view, .teacher-profile-card text, .teacher-dashboard view, .teacher-dashboard text { color: inherit; }
-.profile-banner .i, .teacher-profile-card .i { background: var(--creem-ink); color: var(--creem-peach); }
+.profile-banner .i, .teacher-profile-card .i { background: var(--ink); color: var(--action); }
 
 /* ---- 二级信息背景 ---- */
-.teacher-expand { background-color: var(--creem-paper); }
+.teacher-expand { background-color: var(--surface-paper); }
 
 /* ---- 老师与家长仪表盘层级 ---- */
-.teacher-dashboard { border: 0; background: transparent; box-shadow: none; color: var(--creem-ink); }
-.teacher-profile-card { background: linear-gradient(135deg, #B09CFB, #967AE9); color: var(--creem-ink); }
+.teacher-dashboard { border: 0; background: transparent; box-shadow: none; color: var(--ink); }
+.teacher-profile-card { background: linear-gradient(135deg, #685f9c, #685f9c); color: var(--ink); }
 .teacher-profile-card .teacher-profile-main .p, .teacher-profile-card .teacher-profile-main .small, .teacher-profile-card .teacher-profile-stats .span { color: rgba(21,22,23,.7); }
-.teacher-profile-card .teacher-profile-tags .span, .teacher-profile-card .teacher-profile-top .span { border: 1PX solid var(--creem-ink); background: rgba(255,252,249,.52); color: var(--creem-ink); }
-.teacher-profile-card .teacher-profile-main .h1 .i { background: var(--creem-ink); color: var(--creem-peach); }
+.teacher-profile-card .teacher-profile-tags .span, .teacher-profile-card .teacher-profile-top .span { border: 1PX solid var(--ink); background: rgba(255,252,249,.52); color: var(--ink); }
+.teacher-profile-card .teacher-profile-main .h1 .i { background: var(--ink); color: var(--action); }
 .teacher-profile-card .teacher-profile-stats { border-color: rgba(21,22,23,.28); }
-.teacher-profile-card .teacher-profile-stats .b { color: var(--creem-ink); }
-.teacher-dashboard .function-card, .card-dashboard .function-card { background: var(--creem-lilac); border-color: var(--creem-ink); box-shadow: 3px 4px 0 var(--creem-ink); }
-.teacher-dashboard .function-card .card-icon, .card-dashboard .function-card .card-icon { border: 1.5px solid var(--creem-ink); background: var(--creem-peach); color: var(--creem-ink); }
+.teacher-profile-card .teacher-profile-stats .b { color: var(--ink); }
+.teacher-dashboard .function-card, .card-dashboard .function-card { background: var(--growth-soft); border-color: var(--ink); box-shadow: 3px 4px 0 var(--ink); }
+.teacher-dashboard .function-card .card-icon, .card-dashboard .function-card .card-icon { border: 1.5px solid var(--ink); background: var(--action); color: var(--ink); }
 
 /* ---- 设置入口（profile-setting / teacher-profile-top button） ---- */
 .profile-decoration { display: none; }
-.profile-setting, .teacher-profile-top .button { position: relative; z-index: 2; display: grid; place-items: center; width: 29px; height: 29px; margin-left: auto; border: 1.5px solid var(--creem-ink); border-radius: 8px; background: #FFFCF9; color: var(--creem-ink); font-size: 15px; box-shadow: 2px 2px 0 var(--creem-ink); }
+.profile-setting, .teacher-profile-top .button { position: relative; z-index: 2; display: grid; place-items: center; width: 29px; height: 29px; margin-left: auto; border: 1.5px solid var(--ink); border-radius: 8px; background: #fffdf9; color: var(--ink); font-size: 15px; box-shadow: 2px 2px 0 var(--ink); }
 
 /* ---- 老师资料卡缩短 ---- */
 .teacher-profile-card { min-height: 176px; padding: 11px 15px 12px; }
@@ -191,13 +200,13 @@
 
 /* ---- 工作台网格 ---- */
 .workbench-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-top: 12px; }
-.workbench-grid > .function-card { min-width: 0; margin: 0; border: 1.5px solid var(--creem-ink); border-radius: 14px; background: #FFFCF9; box-shadow: 2px 3px 0 var(--creem-ink); overflow: hidden; }
+.workbench-grid > .function-card { min-width: 0; margin: 0; border: 1.5px solid var(--ink); border-radius: 14px; background: #fffdf9; box-shadow: 2px 3px 0 var(--ink); overflow: hidden; }
 .workbench-grid > .function-card.expanded { grid-column: 1 / -1; }
 .workbench-grid .function-trigger { display: grid; justify-items: center; align-content: center; min-height: 102px; padding: 10px 4px; text-align: center; }
-.workbench-grid .function-trigger .card-icon { display: grid; place-items: center; width: 31px; height: 31px; margin: 0 0 7px; border: 1.5px solid var(--creem-ink); border-radius: 10px; font-size: 16px; }
+.workbench-grid .function-trigger .card-icon { display: grid; place-items: center; width: 31px; height: 31px; margin: 0 0 7px; border: 1.5px solid var(--ink); border-radius: 10px; font-size: 16px; }
 .workbench-grid .function-trigger > .span:nth-child(2) { display: block; min-width: 0; }
 .workbench-grid .function-trigger .small, .workbench-grid .function-trigger .em, .workbench-grid .function-trigger > .i { display: none; }
-.workbench-grid .function-trigger .b { display: block; color: var(--creem-ink); font-size: 11px; line-height: 1.25; }
+.workbench-grid .function-trigger .b { display: block; color: var(--ink); font-size: 11px; line-height: 1.25; }
 .workbench-grid .teacher-expand { text-align: left; }
 .workbench-grid .function-card.expanded .function-trigger { grid-template-columns: 31px 1fr auto; justify-items: start; align-items: center; min-height: 64px; padding: 11px 12px; text-align: left; }
 .workbench-grid .function-card.expanded .function-trigger .card-icon { margin: 0; }
@@ -205,18 +214,18 @@
 .workbench-grid .function-card.expanded .function-trigger > .i { justify-self: end; }
 
 /* ---- 老师收益卡 ---- */
-.revenue-card { position: relative; margin-top: 13px; padding: 14px; overflow: hidden; border: 2PX solid var(--creem-ink); border-radius: 18px; background: linear-gradient(135deg, #E8E4F8, #DCD4FC); box-shadow: 4px 5px 0 var(--creem-ink); }
+.revenue-card { position: relative; margin-top: 13px; padding: 14px; overflow: hidden; border: 2PX solid var(--ink); border-radius: 18px; background: linear-gradient(135deg, #e7e4f5, #DCD4FC); box-shadow: 4px 5px 0 var(--ink); }
 .revenue-card::after { content: "¥"; position: absolute; right: -7px; top: -28px; color: rgba(112,87,196,.12); font: 800 112px "DM Mono", monospace; line-height: 1; pointer-events: none; }
 .revenue-head { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; }
-.revenue-head .p { margin: 0 0 2px; color: #7057C4; font: 500 10px "DM Mono", monospace; letter-spacing: .08em; }
-.revenue-head .b { color: var(--creem-ink); font-size: 14px; }
-.revenue-head .button { display: grid; place-items: center; width: 27px; height: 27px; border: 1.5px solid var(--creem-ink); border-radius: 8px; background: #FFBE98; color: var(--creem-ink); font-size: 20px; line-height: 1; box-shadow: 2px 2px 0 var(--creem-ink); }
+.revenue-head .p { margin: 0 0 2px; color: #685f9c; font: 500 10px "DM Mono", monospace; letter-spacing: .08em; }
+.revenue-head .b { color: var(--ink); font-size: 14px; }
+.revenue-head .button { display: grid; place-items: center; width: 27px; height: 27px; border: 1.5px solid var(--ink); border-radius: 8px; background: #ed7358; color: var(--ink); font-size: 20px; line-height: 1; box-shadow: 2px 2px 0 var(--ink); }
 .revenue-grid { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 13px; }
-.revenue-grid .span { min-width: 0; padding: 9px 7px; border: 1.5px solid var(--creem-ink); border-radius: 10px; background: #FFFCF9; }
+.revenue-grid .span { min-width: 0; padding: 9px 7px; border: 1.5px solid var(--ink); border-radius: 10px; background: #fffdf9; }
 .revenue-grid .small, .revenue-grid .b, .revenue-grid .i { display: block; }
 .revenue-grid .small { color: #776F68; font-size: 9px; }
-.revenue-grid .b { margin: 4px 0 2px; color: var(--creem-ink); font: 500 14px "DM Mono", monospace; letter-spacing: -.06em; }
-.revenue-grid .i { overflow: hidden; color: #7057C4; font-size: 8px; font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
+.revenue-grid .b { margin: 4px 0 2px; color: var(--ink); font: 500 14px "DM Mono", monospace; letter-spacing: -.06em; }
+.revenue-grid .i { overflow: hidden; color: #685f9c; font-size: 8px; font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ---- 收益数值优先 ---- */
 .revenue-card { padding: 16px; background: linear-gradient(135deg, #EDE9FF 0%, #D7CAFF 100%); }
@@ -231,12 +240,11 @@
 /* ---- 我的页精修：工作台图标 + 家长资料 ---- */
 .workbench-grid .function-trigger { min-height: 112px; }
 .workbench-grid .function-trigger .card-icon { width: 40px; height: 40px; margin-bottom: 8px; border-radius: 12px; font-size: 21px; }
-.profile-hero { border: 2PX solid var(--creem-ink); background: linear-gradient(135deg, #B09CFB, #967AE9); color: var(--creem-ink); box-shadow: 4px 5px 0 var(--creem-ink); }
-.profile-hero .profile-setting { top: 11px; right: 15px; width: 29px; height: 29px; border: 1.5px solid var(--creem-ink); border-radius: 8px; background: #FFFCF9; color: var(--creem-ink); box-shadow: 2px 2px 0 var(--creem-ink); }
+.profile-hero .profile-setting { top: 11px; right: 15px; width: 29px; height: 29px; border: 1.5px solid var(--ink); border-radius: 8px; background: #fffdf9; color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
 .profile-hero .profile-stats { left: 19px; right: 19px; bottom: 13px; display: grid; grid-template-columns: repeat(3, 1fr); align-items: start; text-align: center; }
 .profile-hero .profile-stats .span { min-width: 0; padding: 0 6px; border-right: 1PX solid rgba(21,22,23,.25); color: rgba(21,22,23,.68); font-size: 10px; }
 .profile-hero .profile-stats .span:last-child { border-right: 0; }
-.profile-hero .profile-stats .b { margin-bottom: 3px; color: var(--creem-ink); font-size: 18px; line-height: 1; }
+.profile-hero .profile-stats .b { margin-bottom: 3px; color: var(--ink); font-size: 18px; line-height: 1; }
 
 /* ---- 真实老师肖像（teacher-big-avatar 等 base 在 app.scss） ---- */
 .teacher-avatar image { transform: scale(1.1); }
@@ -251,18 +259,18 @@
 .profile-banner .p, .profile-banner .small, .profile-hero .p, .profile-hero .small, .teacher-profile-card .teacher-profile-main .small, .teacher-profile-card .teacher-profile-stats .span { color: var(--ink-muted); }
 .profile-banner .h1, .profile-hero .h1, .teacher-profile-card .teacher-profile-main .h1, .teacher-profile-card .teacher-profile-stats .b { color: var(--ink); }
 .profile-hero .my-avatar, .teacher-big-avatar { border-color: var(--ink); background: var(--action); color: var(--ink); }
-.profile-hero .h1 .span { background: var(--growth-soft); color: #6049AD; }
-.teacher-profile-card .teacher-profile-tags .span { background: var(--growth-soft); color: #6049AD; border-color: #C6B8F5; }
+.profile-hero .h1 .span { background: var(--growth-soft); color: #685f9c; }
+.teacher-profile-card .teacher-profile-tags .span { background: var(--growth-soft); color: #685f9c; border-color: #e7e4f5; }
 .teacher-profile-card .teacher-profile-main .h1 .i { background: var(--success); color: var(--ink); }
 .workbench-grid > .function-card { background: var(--surface-paper); }
-.workbench-grid .function-trigger .card-icon { background: var(--growth-soft); color: #6049AD; }
+.workbench-grid .function-trigger .card-icon { background: var(--growth-soft); color: #685f9c; }
 .workbench-grid .function-card:nth-child(2) .card-icon { background: var(--action-soft); color: #BE6844; }
-.workbench-grid .function-card:nth-child(3) .card-icon { background: var(--success-soft); color: #287B45; }
+.workbench-grid .function-card:nth-child(3) .card-icon { background: var(--success-soft); color: #3f6a54; }
 .workbench-grid .function-card:nth-child(4) .card-icon { background: var(--notice-soft); color: #A7770B; }
 .revenue-card { background: linear-gradient(135deg, #F0ECFF, #E3DBFC); }
 .revenue-grid .span { background: var(--surface-paper); }
 .revenue-grid .span:nth-child(3) { border-color: #9BD8AD; background: var(--success-soft); }
-.revenue-grid .span:nth-child(3) .small, .revenue-grid .span:nth-child(3) .b { color: #236341; }
+.revenue-grid .span:nth-child(3) .small, .revenue-grid .span:nth-child(3) .b { color: #3f6a54; }
 
 /* ---- 收敛：me 散落橙值 ---- */
 .note-card .span { color: var(--growth); }
@@ -271,14 +279,14 @@
 .teacher-tools .b { color: var(--growth); }
 
 /* ---- 收敛：profile heroes 统一 lavender 身份卡 ---- */
-.profile-hero { background: linear-gradient(135deg, #C4B6FF 0%, #A896F0 55%, #967AE9 100%); color: var(--ink); border: 2PX solid var(--ink); box-shadow: 4px 5px 0 var(--ink); }
+.profile-hero { min-height: 175px; display: flex; align-items: flex-start; background: linear-gradient(135deg, #C4B6FF 0%, #A896F0 55%, #685f9c 100%); color: var(--ink); border: 2PX solid var(--ink); box-shadow: 4px 5px 0 var(--ink); }
 .profile-hero .h1, .profile-hero .h1 .span, .profile-hero .profile-stats .b { color: var(--ink); }
 .profile-hero .p, .profile-hero .small, .profile-hero .profile-stats .span { color: rgba(21,22,23,.62); }
 .profile-hero .h1 .span { background: rgba(255,252,249,.35); border: 1PX solid rgba(21,22,23,.22); }
 .profile-hero .my-avatar { border: 2PX solid var(--ink); background: var(--action); color: var(--ink); }
 .profile-hero .profile-stats { border-top: 1PX solid rgba(21,22,23,.2); }
 .profile-hero .profile-stats .span { border-right-color: rgba(21,22,23,.2); }
-.teacher-profile-card { background: linear-gradient(135deg, #C4B6FF 0%, #A896F0 55%, #967AE9 100%); color: var(--ink); border: 2PX solid var(--ink); box-shadow: 4px 5px 0 var(--ink); }
+.teacher-profile-card { background: linear-gradient(135deg, #C4B6FF 0%, #A896F0 55%, #685f9c 100%); color: var(--ink); border: 2PX solid var(--ink); box-shadow: 4px 5px 0 var(--ink); }
 .teacher-profile-card .teacher-profile-main .p, .teacher-profile-card .teacher-profile-main .small, .teacher-profile-card .teacher-profile-stats .span { color: rgba(21,22,23,.62); }
 .teacher-profile-card .teacher-profile-main .h1, .teacher-profile-card .teacher-profile-stats .b { color: var(--ink); }
 .teacher-profile-card .teacher-profile-tags .span { border: 1PX solid rgba(21,22,23,.3); background: rgba(255,252,249,.52); color: var(--ink); }
@@ -337,15 +345,47 @@
    Figma 最终覆盖层（同步缺失的覆盖）
    ============================================================ */
 
-/* ---- 家长 profile：CSS Grid 布局（头像 + 信息并排，统计独占一行） ---- */
-.profile-hero { display: grid; grid-template-columns: 64px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 11px; }
-.profile-hero .my-avatar { grid-column: 1; grid-row: 1; }
-.profile-hero .profile-info { grid-column: 2; grid-row: 1; min-width: 0; }
-
-/* ---- profile-stats：从绝对定位改为静态网格行 ---- */
-.profile-hero .profile-stats { position: static; grid-column: 1 / -1; grid-row: 2; margin-top: 13px; padding-top: 11px; border-top: 1px solid rgba(21,22,23,.2); }
-.profile-hero .profile-stats .span { min-height: 34px; padding: 0 5px; }
+/* ---- 家长 profile：Flex 布局（严格对齐 Figma） ---- */
+.profile-hero { display: flex; align-items: flex-start; }
+.profile-hero .profile-stats { position: absolute; left: 19px; right: 19px; bottom: 13px; display: flex; justify-content: space-between; }
 
 /* ---- 收益卡第3项（可提现）：中性色（覆盖原绿色） ---- */
 .revenue-grid .span:nth-child(3) { border-color: var(--ink); background: var(--surface-paper); }
 .revenue-grid .span:nth-child(3) .small, .revenue-grid .span:nth-child(3) .b { color: var(--ink); }
+
+/* ---- P0-6 :active 触控反馈（Figma :hover 微动效改为 :active） ---- */
+.function-card .function-trigger:active { transform: translateY(0); }
+.workbench-grid .function-card:active { transform: translateY(-1px); box-shadow: 2px 3px 0 var(--ink); }
+.profile-setting:active { transform: scale(.95); }
+.teacher-profile-top .button:active { transform: scale(.95); }
+.teacher-expand-actions .button:active { transform: scale(.97); }
+.compare-row .button:active { border-color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+.mini-teacher .button:active { border-color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+
+/* ---- P1-A: 字号可读性提升（8-10px → 11-12px，确保真机可读） ---- */
+/* 微信小程序建议最小字号 12px，绝对不低于 11px */
+.function-trigger .small { font-size: 11px; }
+.function-trigger .em { font-size: 11px; }
+.teacher-expand .p { font-size: 11px; }
+.teacher-expand-actions .button { font-size: 11px; }
+.dashboard-card .small, .interest-card .small { font-size: 11px; }
+.dashboard-card .p { font-size: 11px; }
+.quick-grid .button { font-size: 11px; }
+.likes-hint { font-size: 11px; }
+.connected-teacher .p { font-size: 11px; }
+.connected-teacher .span { font-size: 11px; }
+.connected-teacher .button { font-size: 11px; }
+.profile-banner .small { font-size: 11px; }
+.profile-banner .h1 .span { font-size: 11px; }
+.profile-stats .span { font-size: 11px; }
+.profile-hero .profile-stats .span > .small { font-size: 11px; }
+.teacher-profile-top .span { font-size: 11px; }
+.teacher-profile-main .p { font-size: 11px; }
+.teacher-profile-main .small { font-size: 11px; }
+.teacher-profile-main .h1 .i { font-size: 11px; }
+.teacher-profile-tags .span { font-size: 11px; }
+.teacher-profile-stats .span { font-size: 11px; }
+.teacher-profile-stats .span > .small { font-size: 11px; }
+.revenue-grid .small { font-size: 11px; }
+.revenue-grid .i { font-size: 11px; }
+.revenue-head .small { font-size: 11px; }

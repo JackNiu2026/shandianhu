@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { View, Text, Image } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { ActionIcon } from "@/components/Icons";
+import { ActionIcon, FilterIcon } from "@/components/Icons";
 import { TopBar } from "@/components/TopBar";
+import { Skeleton } from "@/components/Skeleton";
 import { NeedsSheet, TrustSheet, BookSheet, VideoPlayer } from "@/components/Modals";
 import { useAppStore } from "@/store";
 import { useTeachers, usePlatformStats } from "@/hooks";
@@ -16,8 +17,8 @@ export default function MatchPage() {
   const { prefs, liked } = state;
 
   // 从 API 获取老师列表和平台统计
-  const { teachers: apiTeachers, loading, error, reload } = useTeachers(prefs);
-  const { stats } = usePlatformStats();
+  const { teachers: apiTeachers, loading, error, retry } = useTeachers(prefs);
+  const { stats, loading: statsLoading, error: statsError, retry: retryStats } = usePlatformStats();
 
   const [cursor, setCursor] = useState(0);
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
@@ -81,16 +82,49 @@ export default function MatchPage() {
       <TopBar />
       <View className="intro-row platform-stat">
         <Text className="h1">
-          已有 <Text className="strong">{stats.teacherCount}</Text> 位优秀老师入驻平台
+          {stats ? (
+            <>已有 <Text className="strong">{stats.teacherCount}</Text> 位优秀老师入驻平台</>
+          ) : statsLoading ? (
+            "正在加载平台老师数据"
+          ) : (
+            "暂未获得平台老师数据"
+          )}
         </Text>
         <View className="filter-btn platform-filter" onClick={() => setNeedsOpen(true)}>
+          <FilterIcon color="#263334" />
           <Text>筛选</Text>
         </View>
       </View>
+      {statsError && (
+        <View className="data-state data-state-inline">
+          <Text>{statsError}</Text>
+          <View className="button" onClick={retryStats}>
+            <Text>重试</Text>
+          </View>
+        </View>
+      )}
       {loading ? (
-        <View className="deck-end">
-          <Text className="span">✦</Text>
-          <Text className="b">正在为你匹配老师...</Text>
+        <Skeleton variant="teacher-card" />
+      ) : error ? (
+        <View className="data-state">
+          <Text className="b">暂时无法加载老师</Text>
+          <Text className="p">{error}</Text>
+          <View className="button primary" onClick={retry}>
+            <Text>重新加载</Text>
+          </View>
+        </View>
+      ) : apiTeachers.length === 0 ? (
+        <View className="data-state">
+          <Text className="b">暂未找到合适的老师</Text>
+          <Text className="p">可以调整筛选条件，或稍后重新加载。</Text>
+          <View className="data-state-actions">
+            <View className="button" onClick={() => setNeedsOpen(true)}>
+              <Text>调整筛选</Text>
+            </View>
+            <View className="button primary" onClick={retry}>
+              <Text>重新加载</Text>
+            </View>
+          </View>
         </View>
       ) : relaxed && (
         <Text className="relax-note">符合预算的老师已看完，以下为放宽预算后的推荐</Text>
@@ -110,7 +144,7 @@ export default function MatchPage() {
                 <Text className="swipe-arrow right">›</Text>
               </View>
             )}
-            <View className="teacher-identity">
+            <View className="teacher-identity" style={{ backgroundColor: teacher.color }}>
               <View className="identity-top">
                 <Text>
                   {teacher.subject} · {teacher.grades.join("/")}
@@ -147,15 +181,18 @@ export default function MatchPage() {
               </View>
               <Text className="teacher-note">“{teacher.note}”</Text>
               <View className="decision-grid">
-                <Text className="span">
-                  <Text className="b">{teacher.years}</Text>教龄
-                </Text>
-                <Text className="span">
-                  <Text className="b">¥{teacher.price}</Text>起 / 60 分钟
-                </Text>
-                <Text className="span">
-                  <Text className="b">{teacher.slots[0]}</Text>最近可约
-                </Text>
+                <View className="span">
+                  <Text className="b">{teacher.years}</Text>
+                  <Text>教龄</Text>
+                </View>
+                <View className="span">
+                  <Text className="b">¥{teacher.price}</Text>
+                  <Text>起 / 60 分钟</Text>
+                </View>
+                <View className="span">
+                  <Text className="b">{teacher.slots[0]}</Text>
+                  <Text>最近可约</Text>
+                </View>
               </View>
               <View className="trust-line" onClick={() => setTrustFor(teacher)}>
                 <Text className="span">✓ 4 项资质已核验</Text>

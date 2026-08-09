@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@lightning-tiger/shared": "*",
+    "@lightning-tiger/shared": "workspace:*",
     "@tarojs/components": "4.x",
     "@tarojs/helper": "4.x",
     "@tarojs/plugin-framework-react": "4.x",

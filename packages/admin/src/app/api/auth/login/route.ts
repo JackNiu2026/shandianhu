@@ -17,6 +17,20 @@ const loginAttempts = new Map<string, { count: number; lastAttempt: number }>();
 const MAX_ATTEMPTS = 5;
 const WINDOW_MS = 15 * 60 * 1000; // 15 分钟
 
+function getThrottleKey(request: NextRequest): string {
+  if (process.env.TRUST_PROXY === "true") {
+    const forwardedFor = request.headers
+      .get("x-forwarded-for")
+      ?.split(",")[0]
+      ?.trim();
+    if (forwardedFor) {
+      return forwardedFor;
+    }
+  }
+
+  return "anonymous";
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -33,7 +47,7 @@ export async function POST(request: NextRequest) {
     const { username, password } = result.data;
 
     // 速率限制检查
-    const clientKey = request.headers.get("x-forwarded-for") || "unknown";
+    const clientKey = getThrottleKey(request);
     const attempts = loginAttempts.get(clientKey);
     if (attempts && attempts.count >= MAX_ATTEMPTS) {
       const elapsed = Date.now() - attempts.lastAttempt;

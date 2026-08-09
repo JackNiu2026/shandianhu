@@ -39,7 +39,7 @@ export default function TestPage() {
           </Text>
           <View className="welcome-benefits">
             <Text className="span">
-              <Text className="b">约 3 分钟</Text>
+              <Text className="b">约 5 分钟</Text>
               <Text className="small">无需跳转</Text>
             </Text>
             <Text className="span">
@@ -54,7 +54,7 @@ export default function TestPage() {
           <View className="welcome-notice">
             <Text className="i">✓</Text>
             <Text className="span">
-              测评结果会在当前 App 内生成；正式授权题库与计分规则接入后，将按授权版本输出报告。
+              基于 MBTI 四维性格类型指标，28 题覆盖能量来源、信息获取、决策方式、生活节奏，帮助孩子找到最适合的学习风格。
             </Text>
           </View>
           <View className="start-assessment" onClick={() => setAssessmentStarted(true)}>
@@ -74,7 +74,7 @@ export default function TestPage() {
               <Text className="small">第</Text>
               <Text className="b">
                 {answered + 1}
-                <Text className="i">/12</Text>
+                <Text className="i">/28</Text>
               </Text>
               <Text className="small">题</Text>
             </View>
@@ -89,18 +89,19 @@ export default function TestPage() {
               <Text className="span">理解方式</Text>
               <Text className="span">反馈偏好</Text>
               <Text className="span">学习节奏</Text>
-              <Text className="b">12 题 · 约 3 分钟</Text>
+              <Text className="b">28 题 · 约 5 分钟</Text>
             </View>
           </View>
           <View className="question-card magnetic-question">
             <View className="question-head">
               <Text className="question-no">
-                QUESTION {String(answered + 1).padStart(2, "0")} / 12
+                QUESTION {String(answered + 1).padStart(2, "0")} / 28
               </Text>
               <View className="stepper">
-                {questions.map((_, i) => (
-                  <View className={i <= answered ? "active span" : "span"} key={i} />
-                ))}
+                <View
+                  className="stepper-fill"
+                  style={{ width: `${((answered + 1) / questions.length) * 100}%` }}
+                />
               </View>
             </View>
             <Text className="h2">{questions[answered].title}</Text>
@@ -141,6 +142,7 @@ export default function TestPage() {
               <Text className="eyebrow">孩子的学习风格</Text>
               <Text className="h1">{result.code}</Text>
               <Text className="p">{result.label}</Text>
+              <Text className="p">{result.profile}</Text>
             </View>
             <View className="button" onClick={() => setAnswers([])}>
               <Text>重新测试 ↻</Text>
@@ -149,6 +151,17 @@ export default function TestPage() {
           <Text className="disclaimer">
             这是学习风格参考，不是心理诊断，也不代表孩子的能力上限。
           </Text>
+          <View
+            className="diagnosis-cta"
+            onClick={() => Taro.navigateTo({ url: "/pages/diagnose/index" })}
+          >
+            <View className="diagnosis-cta-copy">
+              <Text className="diagnosis-cta-kicker">AI 学情诊断</Text>
+              <Text className="diagnosis-cta-title">继续定位孩子的学习薄弱点</Text>
+              <Text className="diagnosis-cta-desc">上传错题照片，获取针对性的分析和学习建议。</Text>
+            </View>
+            <Text className="diagnosis-cta-arrow">→</Text>
+          </View>
           <View className="match-explainer">
             <Text className="span">✦</Text>
             <View>

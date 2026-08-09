@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>闪电虎 · Figma 高保真原型 vs 小程序实现 — 颗粒级差异分析报告</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --surface-base:#F5F2F0; --surface-paper:#FFFCF9; --surface-soft:#F8F5F1;
+  --ink:#151617; --ink-muted:#756E69; --ink-soft:#A8A09A;
+  --growth:#967AE9; --growth-soft:#E8E4F8; --growth-deep:#6049AD;
+  --action:#FFBE98; --action-soft:#FFF1E8; --action-deep:#BE6844;
+  --success:#4ECB71; --success-soft:#E6F7EC; --success-deep:#287B45;
+  --notice:#D7A820; --notice-soft:#FFF7D9; --notice-deep:#8B6609;
+  --danger:#E5544B; --danger-soft:#FDE9E7;
+  --warn:#E89B3C; --warn-soft:#FFF1DC;
+  --line:#E4DDD6; --line-soft:#EEE7E0;
+  --shadow-card:0 2px 8px rgba(28,20,14,.07);
+  --shadow-pop:0 18px 42px rgba(37,29,22,.24);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--surface-base);color:var(--ink);font-family:"Noto Sans SC",sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+.mono{font-family:"DM Mono",monospace}
+.serif{font-family:"Noto Serif SC",serif}
+.container{max-width:1080px;margin:0 auto;padding:48px 24px 96px}
+/* HERO */
+.hero{background:radial-gradient(circle at 12% 18%,rgba(255,190,152,.4) 0 5%,transparent 30%),radial-gradient(circle at 88% 82%,rgba(176,156,251,.32) 0 7%,transparent 30%),var(--surface-paper);border:2px solid var(--ink);border-radius:22px;box-shadow:6px 7px 0 var(--ink);padding:36px 32px 28px;position:relative;overflow:hidden}
+.hero::after{content:"✦";position:absolute;right:-20px;bottom:-50px;color:rgba(150,122,233,.08);font-size:200px;line-height:1;pointer-events:none}
+.hero .eyebrow{font-family:"DM Mono",monospace;font-size:11px;font-weight:500;letter-spacing:.16em;color:var(--growth-deep);text-transform:uppercase}
+.hero h1{font-family:"Noto Serif SC",serif;font-size:32px;font-weight:700;letter-spacing:-.04em;margin:10px 0 8px;line-height:1.2;position:relative;z-index:1}
+.hero .meta{display:flex;gap:24px;flex-wrap:wrap;margin-top:18px;font-size:13px;color:var(--ink-muted);position:relative;z-index:1}
+.hero .meta span{display:inline-flex;align-items:center;gap:6px}
+.hero .meta b{color:var(--ink);font-weight:600}
+.hero .meta .dot{width:6px;height:6px;border-radius:50%;background:var(--growth)}
+/* SCORE BAR */
+.score-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:32px 0 40px}
+.score-card{background:var(--surface-paper);border:1.5px solid var(--ink);border-radius:14px;padding:18px 16px;box-shadow:2px 3px 0 var(--ink);position:relative}
+.score-card .label{font-family:"DM Mono",monospace;font-size:10px;letter-spacing:.12em;color:var(--ink-muted);text-transform:uppercase}
+.score-card .value{font-family:"DM Mono",monospace;font-size:32px;font-weight:500;line-height:1.1;margin:6px 0 4px;letter-spacing:-.04em}
+.score-card .value .pct{font-size:14px;color:var(--ink-muted);margin-left:2px}
+.score-card .bar{height:6px;border-radius:3px;background:var(--line-soft);overflow:hidden;margin-top:8px}
+.score-card .bar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--growth),var(--action));transition:width .6s ease}
+.score-card .delta{font-size:11px;color:var(--ink-muted);margin-top:8px}
+.score-card.good .value{color:var(--success-deep)}
+.score-card.good .bar i{background:linear-gradient(90deg,var(--success-soft),var(--success))}
+.score-card.warn .value{color:#B5780B}
+.score-card.warn .bar i{background:linear-gradient(90deg,var(--notice-soft),var(--notice))}
+.score-card.bad .value{color:var(--danger)}
+.score-card.bad .bar i{background:linear-gradient(90deg,var(--danger-soft),var(--danger))}
+/* SECTION */
+section{margin:48px 0 0;scroll-margin-top:24px}
+section h2{font-family:"Noto Serif SC",serif;font-size:22px;font-weight:700;letter-spacing:-.04em;margin:0 0 4px;display:flex;align-items:center;gap:12px}
+section h2 .num{font-family:"DM Mono",monospace;font-size:13px;font-weight:500;color:var(--growth-deep);background:var(--growth-soft);border:1.5px solid var(--growth);padding:3px 9px;border-radius:999px;letter-spacing:.04em}
+section .lead{color:var(--ink-muted);font-size:14px;margin:8px 0 20px;max-width:760px}
+section h3{font-size:15px;font-weight:700;margin:28px 0 10px;color:var(--ink);letter-spacing:-.02em}
+/* TABLE */
+table{width:100%;border-collapse:collapse;background:var(--surface-paper);border:1.5px solid var(--ink);border-radius:12px;overflow:hidden;box-shadow:2px 3px 0 var(--ink);font-size:13px}
+th{background:var(--ink);color:var(--surface-paper);text-align:left;padding:11px 14px;font-weight:600;font-size:12px;letter-spacing:.02em}
+th:first-child{width:24%}
+th:nth-child(2),th:nth-child(3){width:32%}
+th:last-child{width:12%;text-align:center}
+td{padding:11px 14px;border-top:1px solid var(--line-soft);vertical-align:top}
+td:first-child{font-weight:600;color:var(--ink)}
+td .hex{font-family:"DM Mono",monospace;font-size:11px;color:var(--ink-muted);display:block;margin-top:2px}
+tr:hover td{background:rgba(150,122,233,.03)}
+/* STATUS BADGES */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.02em;border:1px solid transparent;white-space:nowrap}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.b-ok{background:var(--success-soft);color:var(--success-deep);border-color:#9BD8AD}
+.b-ok::before{background:var(--success)}
+.b-warn{background:var(--notice-soft);color:#8B6609;border-color:#E8C84A}
+.b-warn::before{background:var(--notice)}
+.b-bad{background:var(--danger-soft);color:var(--danger);border-color:#F2B5B0}
+.b-bad::before{background:var(--danger)}
+.b-miss{background:#F0EEE7;color:#8C847C;border-color:#D5CCC3}
+.b-miss::before{background:#A8A09A}
+.b-partial{background:var(--growth-soft);color:var(--growth-deep);border-color:#C6B8F5}
+.b-partial::before{background:var(--growth)}
+/* COLOR SWATCH */
+.swatch{display:inline-flex;align-items:center;gap:6px;font-family:"DM Mono",monospace;font-size:11px;color:var(--ink)}
+.swatch i{width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.15);display:inline-block}
+/* CALLOUT */
+.callout{background:var(--surface-paper);border:1.5px solid var(--ink);border-left:4px solid var(--growth);border-radius:10px;padding:14px 16px;margin:16px 0;box-shadow:2px 2px 0 var(--ink)}
+.callout.danger{border-left-color:var(--danger)}
+.callout.warn{border-left-color:var(--notice)}
+.callout.ok{border-left-color:var(--success)}
+.callout h4{font-size:13px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.callout p{font-size:13px;color:var(--ink-muted);line-height:1.7}
+.callout code{font-family:"DM Mono",monospace;font-size:11px;background:var(--surface-soft);padding:1px 5px;border-radius:4px;color:var(--ink)}
+/* DIFF LIST */
+.diff-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.diff-list li{background:var(--surface-paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;font-size:13px}
+.diff-list li .icon{flex-shrink:0;width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-family:"DM Mono",monospace;font-size:11px;font-weight:600}
+.diff-list li.bad .icon{background:var(--danger-soft);color:var(--danger)}
+.diff-list li.warn .icon{background:var(--notice-soft);color:#8B6609}
+.diff-list li.ok .icon{background:var(--success-soft);color:var(--success-deep)}
+.diff-list li .body{flex:1}
+.diff-list li .body b{display:block;color:var(--ink);margin-bottom:2px}
+.diff-list li .body span{color:var(--ink-muted);font-size:12px}
+/* PRIORITY GRID */
+.prio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+.prio-card{border:1.5px solid var(--ink);border-radius:12px;overflow:hidden;background:var(--surface-paper);box-shadow:2px 3px 0 var(--ink)}
+.prio-card .head{padding:10px 14px;color:#fff;font-weight:700;font-size:13px;letter-spacing:.02em;display:flex;align-items:center;justify-content:space-between}
+.prio-card.p0 .head{background:var(--danger)}
+.prio-card.p1 .head{background:var(--notice)}
+.prio-card.p2 .head{background:var(--growth)}
+.prio-card .head .count{font-family:"DM Mono",monospace;font-size:11px;background:rgba(255,255,255,.25);padding:2px 8px;border-radius:999px}
+.prio-card ul{list-style:none;padding:10px 14px 14px}
+.prio-card ul li{font-size:12.5px;padding:6px 0;border-top:1px solid var(--line-soft);display:flex;gap:8px;align-items:flex-start}
+.prio-card ul li:first-child{border-top:0}
+.prio-card ul li .tag{font-family:"DM Mono",monospace;font-size:9px;color:var(--ink-muted);background:var(--surface-soft);padding:1px 5px;border-radius:4px;flex-shrink:0;margin-top:1px}
+/* CODE BLOCK */
+.code{font-family:"DM Mono",monospace;font-size:11.5px;background:#1c1410;color:#e8dfd5;padding:14px 16px;border-radius:10px;overflow-x:auto;line-height:1.6;margin:10px 0;border:1.5px solid var(--ink)}
+.code .c{color:#8c7d6b}
+.code .k{color:#f4b57c}
+.code .s{color:#cde1d4}
+.code .v{color:#b09cfb}
+/* NAV */
+.toc{position:sticky;top:16px;background:var(--surface-paper);border:1.5px solid var(--ink);border-radius:12px;padding:14px 16px;box-shadow:2px 3px 0 var(--ink);font-size:12.5px;max-height:calc(100vh - 32px);overflow:auto}
+.toc h4{font-family:"DM Mono",monospace;font-size:10px;letter-spacing:.12em;color:var(--ink-muted);text-transform:uppercase;margin-bottom:8px}
+.toc a{display:block;color:var(--ink);text-decoration:none;padding:5px 0;border-top:1px solid var(--line-soft);font-weight:500}
+.toc a:first-of-type{border-top:0}
+.toc a:hover{color:var(--growth-deep)}
+.toc a .n{font-family:"DM Mono",monospace;font-size:10px;color:var(--ink-muted);margin-right:6px}
+.layout{display:grid;grid-template-columns:220px 1fr;gap:24px;align-items:start}
+@media(max-width:880px){.layout{grid-template-columns:1fr}.score-bar{grid-template-columns:repeat(2,1fr)}.prio-grid{grid-template-columns:1fr}.hero h1{font-size:24px}}
+/* FOOTER */
+.foot{margin-top:64px;padding-top:24px;border-top:1.5px solid var(--ink);font-size:12px;color:var(--ink-muted);text-align:center;font-family:"DM Mono",monospace}
+.kbd{font-family:"DM Mono",monospace;font-size:11px;background:var(--surface-soft);padding:1px 5px;border-radius:4px;border:1px solid var(--line)}
+.summary-box{background:linear-gradient(135deg,var(--growth-soft),var(--action-soft));border:1.5px solid var(--ink);border-radius:14px;padding:20px 22px;margin:24px 0;box-shadow:2px 3px 0 var(--ink)}
+.summary-box h3{margin-top:0;color:var(--ink)}
+.summary-box p{font-size:13.5px;line-height:1.75;color:#3c4a44}
+.summary-box strong{color:var(--growth-deep)}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="layout">
+<aside class="toc">
+<h4>报告导航</h4>
+<a href="#summary"><span class="n">00</span>总体结论</a>
+<a href="#colors"><span class="n">01</span>配色系统</a>
+<a href="#typo"><span class="n">02</span>字体系统</a>
+<a href="#tokens"><span class="n">03</span>间距/圆角/阴影</a>
+<a href="#layout"><span class="n">04</span>布局与外框</a>
+<a href="#components"><span class="n">05</span>组件清单对比</a>
+<a href="#motion"><span class="n">06</span>动效与交互</a>
+<a href="#features"><span class="n">07</span>功能完整性</a>
+<a href="#visual"><span class="n">08</span>视觉细节</a>
+<a href="#priorities"><span class="n">09</span>优先级修复清单</a>
+<a href="#next"><span class="n">10</span>下一步建议</a>
+</aside>
+<div>
+<!-- HERO -->
+<div class="hero">
+<div class="eyebrow">FIGMA FIDELITY AUDIT · 颗粒级差异分析</div>
+<h1>闪电虎 · Figma 高保真原型 vs 微信小程序实现</h1>
+<div class="meta">
+<span><span class="dot"></span>报告日期 <b>2026-08-07</b></span>
+<span>原型基准 <b>archive/figma</b>（React 19 + Tailwind）</span>
+<span>实现目标 <b>packages/mobile</b>（Taro 4 + React 18）</span>
+<span>扫描文件 <b>23 个核心文件</b> · 约 <b>5800 行代码</b></span>
+</div>
+</div>
+
+<!-- SCORE -->
+<div class="score-bar">
+<div class="score-card bad">
+<div class="label">综合保真度</div>
+<div class="value">62<span class="pct">%</span></div>
+<div class="bar"><i style="width:62%"></i></div>
+<div class="delta">距离 100% 仍有较大差距</div>
+</div>
+<div class="score-card warn">
+<div class="label">配色系统</div>
+<div class="value">78<span class="pct">%</span></div>
+<div class="bar"><i style="width:78%"></i></div>
+<div class="delta">令牌对齐，残留历史色未清理</div>
+</div>
+<div class="score-card bad">
+<div class="label">字体系统</div>
+<div class="value">45<span class="pct">%</span></div>
+<div class="bar"><i style="width:45%"></i></div>
+<div class="delta">衬线/手写体降级到系统字</div>
+</div>
+<div class="score-card warn">
+<div class="label">动效系统</div>
+<div class="value">72<span class="pct">%</span></div>
+<div class="bar"><i style="width:72%"></i></div>
+<div class="delta">关键帧已搬，手势与微动效缺失</div>
+</div>
+<div class="score-card bad">
+<div class="label">功能完整性</div>
+<div class="value">48<span class="pct">%</span></div>
+<div class="bar"><i style="width:48%"></i></div>
+<div class="delta">老师端/支付/视频/手势等大块空缺</div>
+</div>
+<div class="score-card warn">
+<div class="label">组件覆盖</div>
+<div class="value">75<span class="pct">%</span></div>
+<div class="bar"><i style="width:75%"></i></div>
+<div class="delta">22/30 组件已实现，5 个占位</div>
+</div>
+<div class="score-card bad">
+<div class="label">布局结构</div>
+<div class="value">58<span class="pct">%</span></div>
+<div class="bar"><i style="width:58%"></i></div>
+<div class="delta">phone-frame 是死代码</div>
+</div>
+<div class="score-card warn">
+<div class="label">视觉细节</div>
+<div class="value">70<span class="pct">%</span></div>
+<div class="bar"><i style="width:70%"></i></div>
+<div class="delta">渐变/装饰圆环基本到位</div>
+</div>
+</div>
+
+<!-- SUMMARY -->
+<section id="summary">
+<h2><span class="num">00</span>总体结论</h2>
+<p class="lead">本次颗粒级扫描覆盖 Figma 高保真原型（<span class="mono">App.tsx 863 行 + index.css 1696 行</span>）与小程序实现（<span class="mono">23 个核心文件约 5800 行</span>），逐项比对 8 大维度、30+ 组件、8 组关键帧动画与 34 项功能点。</p>
+
+<div class="summary-box">
+<h3>核心判断</h3>
+<p>小程序实现的<strong>骨架与样式令牌已基本对齐</strong>到 Figma 第二轮迭代后的"Creem 薰衣草紫"设计语言——<code>:root</code> 语义变量、Neobrutalism 硬阴影、四色 tabBar、MBTI 星空渐变、薰衣草渐变身份卡等核心视觉资产<strong>均已搬运并生效</strong>。但<strong>距离"接近 100%"仍有显著差距</strong>，差距集中在四个层面：</p>
+<p style="margin-top:10px"><strong>① 字体降级</strong>：Noto Serif SC 与 Ma Shan Zheng 声称用 <code>Taro.loadFontFace</code> 加载，实际无任何调用，衬线大标题与手写体头像首字会降级到系统宋体/楷体，视觉气质直接打折；<strong>② phone-frame 死代码</strong>：app.scss 三轮覆盖定义了完整手机外框（8px 墨边 + 36px 圆角 + 硬阴影 + 径向渐变背景），但 JSX 从未引用，小程序直接全屏渲染，丢失了原型的"沉浸式手机感"；<strong>③ 功能占位</strong>：视频播放器是 Image + CSS 假进度条、老师端全空、会员订阅无支付、二维码用 <code>▦</code> 字符占位、6 类功能卡点击仅 showToast；<strong>④ 微交互缺失</strong>：滑卡仅按钮点击无手势、<code>:hover</code> 全部移除导致大量微动效失效、<code>rise</code> 动画在原型中是死引用、无骨架屏与错误边界。</p>
+</div>
+
+<ul class="diff-list">
+<li class="bad"><div class="icon">P0</div><div class="body"><b>字体未真正加载</b><span>Noto Serif SC / Ma Shan Zheng 注释声称 loadFontFace，实际零调用，与 Figma 视觉差距明显</span></div></li>
+<li class="bad"><div class="icon">P0</div><div class="body"><b>phone-frame 与 app-shell 是死代码</b><span>CSS 经历 3 轮覆盖定义，JSX 从未引用，手机外框 + 径向渐变背景在小程序中不可见</span></div></li>
+<li class="bad"><div class="icon">P0</div><div class="body"><b>视频播放是假实现</b><span>无 <code>&lt;Video&gt;</code> 组件，Image 封面 + 8s CSS 进度条，无播放/暂停/声音</span></div></li>
+<li class="warn"><div class="icon">P1</div><div class="body"><b>login 页面未注册</b><span>源码完整但 <code>app.config.ts</code> 未注册，小程序中不可达，与 LoginModal 重复</span></div></li>
+<li class="warn"><div class="icon">P1</div><div class="body"><b>历史色未清理</b><span>5 个 scss 文件仍残留 <code>#ed7358</code>(早期橙)、<code>#263334</code>(早期墨绿)，sheet-btn/stepper 等未跟随 action 令牌</span></div></li>
+<li class="warn"><div class="icon">P1</div><div class="body"><b>手势滑动未实现</b><span>match 页仅按钮点击，无 touch/pan 识别，但 CSS 已定义 swipe-left/right 类</span></div></li>
+<li class="ok"><div class="icon">OK</div><div class="body"><b>核心视觉资产已对齐</b><span>薰衣草渐变身份卡、MBTI 星空、四色 tabBar、Neobrutalism 硬阴影、决策网格等均生效</span></div></li>
+</ul>
+</section>
+
+<!-- 01 COLORS -->
+<section id="colors">
+<h2><span class="num">01</span>配色系统</h2>
+<p class="lead">两端的语义令牌定义<strong>基本一致</strong>，差异在于<strong>历史色残留</strong>与<strong>部分按钮未跟随令牌</strong>。</p>
+
+<table>
+<thead><tr><th>令牌</th><th>Figma 高保真原型</th><th>小程序实现</th><th>状态</th></tr></thead>
+<tbody>
+<tr><td>--surface-base<span class="hex">#F5F2F0</span><td><span class="swatch"><i style="background:#F5F2F0"></i>页面底色</td><td><span class="swatch"><i style="background:#F5F2F0"></i>已对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>--surface-paper<span class="hex">#FFFCF9</span><td><span class="swatch"><i style="background:#FFFCF9"></i>卡片表面</td><td><span class="swatch"><i style="background:#FFFCF9"></i>已对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>--growth 主品牌紫<span class="hex">#967AE9</span><td><span class="swatch"><i style="background:#967AE9"></i>tabBar/渐变/按钮</td><td><span class="swatch"><i style="background:#967AE9"></i>已对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>--action 行动色<span class="hex">#FFBE98</span><td><span class="swatch"><i style="background:#FFBE98"></i>主按钮/play-video</td><td><span class="swatch"><i style="background:#FFBE98"></i>部分对齐</td><td><span class="badge b-partial">部分</span></td></tr>
+<tr><td>--success 成功<span class="hex">#4ECB71</span><td><span class="swatch"><i style="background:#4ECB71"></i>已核验/可提现</td><td><span class="swatch"><i style="background:#4ECB71"></i>已对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>--notice 提醒<span class="hex">#D7A820</span><td><span class="swatch"><i style="background:#D7A820"></i>未读徽章</td><td><span class="swatch"><i style="background:#D7A820"></i>已对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>主按钮 sheet-btn<span class="hex">#ed7358（早期橙）</span><td>已被 <code>var(--action)</code> 覆盖</td><td><span class="swatch"><i style="background:#ed7358"></i>仍是早期橙</td><td><span class="badge b-bad">未跟随</span></td></tr>
+<tr><td>subscribe-btn<span class="hex">#ed7358</span><td>已被 action 覆盖</td><td><span class="swatch"><i style="background:#ed7358"></i>仍是早期橙 + <code>#be5039</code> 底阴影</td><td><span class="badge b-bad">未跟随</span></td></tr>
+<tr><td>stepper active<span class="hex">#ed7358</span><td>已对齐到 growth</td><td><span class="swatch"><i style="background:#ed7358"></i>仍是早期橙</td><td><span class="badge b-bad">未跟随</span></td></tr>
+<tr><td>早期墨绿边框<span class="hex">#263334</span><td>已被 <code>#151617</code> 覆盖</td><td><span class="swatch"><i style="background:#263334"></i>app.scss 第 31 行仍用 <code>#263334</code></td><td><span class="badge b-warn">残留</span></td></tr>
+<tr><td>:root 文字色<span class="hex">第 25 行 #263334</span><td>最终 <code>var(--ink)</code></td><td><span class="swatch"><i style="background:#263334"></i>app.scss 第 25 行 <code>color:#263334</code> 未覆盖</td><td><span class="badge b-warn">残留</span></td></tr>
+<tr><td>app-shell 径向渐变<span class="hex">蜜桃+紫双光晕</span><td>左上蜜桃 + 右下紫</td><td>CSS 三轮覆盖定义，但 JSX 未引用 → <strong>不可见</strong></td><td><span class="badge b-miss">死代码</span></td></tr>
+<tr><td>TabBar 四色选中态<span class="hex">紫/橙/绿/蓝</span><td><code>#EEE9FF/#7056BD</code> 等</td><td>完全一致（颜色 + 圆角 + 毛玻璃）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>身份卡渐变<span class="hex">#C4B6FF→#A896F0→#967AE9</span><td>135deg 三段紫渐变</td><td>完全一致（profile-hero / teacher-profile-card）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>MBTI 星空渐变<span class="hex">三层叠加</span><td>双 radial + linear(#6951C7→#967AE9→#B6A5F4)</td><td>完全一致</td><td><span class="badge b-ok">对齐</span></td></tr>
+</tbody>
+</table>
+
+<div class="callout danger">
+<h4>🔴 修复建议 P0</h4>
+<p>全局搜索 <code>#ed7358</code>、<code>#263334</code>、<code>#be5039</code>、<code>#ec6c4b</code>、<code>#f2633e</code> 等 5 个历史色值，逐一替换为 <code>var(--action)</code> / <code>var(--ink)</code> 等令牌。重点位置：<code>app.scss</code> 第 25/30/31/47 行、<code>sheet-btn</code>、<code>subscribe-btn</code>、<code>.stepper .active</code>。这一步即可让配色系统从 78% 提升到 95%+。</p>
+</div>
+</section>
+
+<!-- 02 TYPO -->
+<section id="typo">
+<h2><span class="num">02</span>字体系统</h2>
+<p class="lead">这是<strong>差距最大的维度</strong>。Figma 通过 Google Fonts <code>@import</code> 加载 4 个字族，小程序仅 DM Mono 真正生效，其余<strong>降级到系统字体</strong>。</p>
+
+<table>
+<thead><tr><th>字族</th><th>Figma 加载方式</th><th>小程序加载方式</th><th>状态</th></tr></thead>
+<tbody>
+<tr><td>Noto Sans SC<span class="hex">主无衬线</span><td>Google Fonts @import（400-800 全字重）</td><td>字体栈声明，依赖系统 Noto Sans SC</td><td><span class="badge b-warn">系统降级</span></td></tr>
+<tr><td>DM Mono<span class="hex">等宽数字</span><td>Google Fonts @import（400/500）</td><td><strong>base64 内嵌 woff2</strong>（_dm-mono.scss），离线可用</td><td><span class="badge b-ok">已对齐</span></td></tr>
+<tr><td>Noto Serif SC<span class="hex">衬线大标题（test/role-modal）</span><td>Google Fonts @import（600/700）</td><td>声称 <code>Taro.loadFontFace</code> 但<strong>零调用</strong>，降级到 Songti SC/STSong</td><td><span class="badge b-bad">未加载</span></td></tr>
+<tr><td>Ma Shan Zheng<span class="hex">毛笔手写体（头像首字/品牌）</span><td>Google Fonts @import（400）</td><td>声称 loadFontFace 但零调用，降级到 STKaiti/KaiTi</td><td><span class="badge b-bad">未加载</span></td></tr>
+<tr><td>品牌字标"闪电虎"<span class="hex">wordmark</span><td>PNG 图片（tigerLogoMark + tigerLogoType）</td><td>PNG 图片（44KB + 51KB），aspectFit</td><td><span class="badge b-ok">已对齐</span></td></tr>
+<tr><td>字号阶梯<span class="hex">7-60px</span><td>29 档（含 7px 极小标注）</td><td>对齐到关键档位，但部分极小字号被可读性规则抬高</td><td><span class="badge b-partial">部分</span></td></tr>
+<tr><td>字重<span class="hex">400/500/600/700/800</span><td>全字重</td><td>全字重（DM Mono 仅 400/500）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>letter-spacing<span class="hex">-.1em ~ .16em</span><td>14 档负字距 + 8 档正字距</td><td>对齐到关键值（标题 -.04 ~ -.075em，标签 .12em）</td><td><span class="badge b-ok">对齐</span></td></tr>
+</tbody>
+</table>
+
+<div class="callout danger">
+<h4>🔴 修复建议 P0 — 字体加载</h4>
+<p>Figma 的"测评欢迎卡 h1 26px Noto Serif SC"、"MBTI test-copy 24px 衬线"、"role-modal h2 25px 衬线"是设计语言的关键气质来源。小程序降级到系统宋体后，<strong>视觉气质直接打折 30%</strong>。修复方案二选一：</p>
+<p style="margin-top:8px"><strong>方案 A（推荐）</strong>：用 <code>Taro.loadFontFace</code> 在 app.tsx 的 <code>onLaunch</code> 中加载 Noto Serif SC（仅 600/700 两档，约 200KB）和 Ma Shan Zheng（400，约 80KB），全局生效。需托管字体文件到 CDN（小程序不支持 Google Fonts）。</p>
+<p style="margin-top:6px"><strong>方案 B（轻量）</strong>：将衬线大标题改为 PNG 图片或 SVG 文本，绕过字体加载问题（适合少量固定文案，不适合动态内容）。</p>
+</div>
+</section>
+
+<!-- 03 TOKENS -->
+<section id="tokens">
+<h2><span class="num">03</span>间距 / 圆角 / 阴影</h2>
+<p class="lead">两端均无显式 spacing token，但<strong>硬编码值高度一致</strong>。圆角与阴影系统基本对齐到 Neobrutalism 风格。</p>
+
+<table>
+<thead><tr><th>维度</th><th>Figma</th><th>小程序</th><th>状态</th></tr></thead>
+<tbody>
+<tr><td>间距基础单位<span class="hex">隐式 2px 递增</span><td>2-28px 共 24 档</td><td>对齐到关键值（4/8/11/13/14/16/18/20px）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>页面左右内边距<span class="hex">match/test/me 20px</span><td>18-20px</td><td>对齐（match/test/me 20px，chat 16px，login 32px）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>底部留白<span class="hex">为浮动 tabbar</span><td>84px</td><td>84px（match/test/me/chat 均有）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>圆角系统<span class="hex">0-36px + 50%/999px</span><td>phone-frame 36px / hero-card 22px / 卡片 18-20px / 弹窗 22-25px</td><td>对齐（hero-card 22px / 卡片 18-20px / 弹窗 22-25px）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>Neobrutalism 硬阴影<span class="hex">2px 3px 0 / 5px 6px 0 ink</span><td>6 档（2/2/3/4/5/6 px 偏移，0 blur，ink 色）</td><td>6 档完全对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>phone-frame 阴影<span class="hex">10px 11px 0 ink</span><td>8px 墨边 + 36px 圆角 + 硬阴影</td><td>CSS 定义但 JSX 未引用</td><td><span class="badge b-miss">死代码</span></td></tr>
+<tr><td>软阴影（弹窗/输入框）<span class="hex">rgba 多档</span><td>centered-modal / bottom-nav / bubble 等</td><td>对齐（rgba 值一致）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>:hover 微动效阴影<span class="hex">hover translate + shadow 加深</span><td>10+ 处 hover 规则</td><td><strong>全部移除</strong>（注释"小程序无 hover"）</td><td><span class="badge b-bad">移除</span></td></tr>
+</tbody>
+</table>
+
+<div class="callout warn">
+<h4>🟡 关于 :hover 移除</h4>
+<p>小程序确实无鼠标 hover，但<strong>微信小程序支持 :active 伪类</strong>。Figma 中 <code>.filter-btn:hover</code>、<code>.play-video:hover</code>、<code>.swipe-actions .pass:hover</code> 等的 <code>translate(-1px,-1px) + shadow 加深</code> 微动效，可以全部改为 <code>:active</code> 实现触控反馈。当前仅 pass/like/chat-contact/bottom-nav 4 处保留了 :active，其余<strong>触控无任何反馈</strong>，体感"发死"。</p>
+</div>
+</section>
+
+<!-- 04 LAYOUT -->
+<section id="layout">
+<h2><span class="num">04</span>布局与外框</h2>
+<p class="lead"><strong>这是结构性差距的核心</strong>。Figma 是单文件 phone-frame 手机模拟器，小程序是多页面直接全屏渲染。</p>
+
+<table>
+<thead><tr><th>维度</th><th>Figma</th><th>小程序</th><th>状态</th></tr></thead>
+<tbody>
+<tr><td>顶层包裹<span class="hex">app-shell + phone-frame</span><td>430×900px 手机外框，8px 墨边 + 36px 圆角 + 硬阴影，径向渐变背景</td><td>app.tsx 仅 <code>&lt;AppProvider&gt;{children}&lt;/AppProvider&gt;</code>，<strong>无外框</strong></td><td><span class="badge b-bad">缺失</span></td></tr>
+<tr><td>径向渐变背景<span class="hex">蜜桃+紫双光晕</span><td>左上 rgba(255,190,152,.58) + 右下 rgba(176,156,251,.4) + #F5F0EB 底</td><td>CSS 三轮覆盖定义，JSX 未引用 → 不可见</td><td><span class="badge b-miss">死代码</span></td></tr>
+<tr><td>路由方式<span class="hex">state-based</span><td>useState + 条件渲染（无 URL）</td><td>Taro.switchTab（原生 tab 切换）</td><td><span class="badge b-ok">适配合理</span></td></tr>
+<tr><td>页面注册<span class="hex">4 tab + login</span><td>match/test/chat/me 4 个状态</td><td>app.config.ts 仅注册 4 个 tab，<strong>login 未注册</strong></td><td><span class="badge b-bad">login 不可达</span></td></tr>
+<tr><td>screen-content 滚动<span class="hex">height calc + overflow</span><td>calc(100% - 139px) overflow auto，match 页禁止滚动</td><td>对齐（match 页 overflow hidden，矮屏降级 auto）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>响应式<span class="hex">520px 断点</span><td>移除外框全屏铺满</td><td>无需（小程序本就是全屏）</td><td><span class="badge b-ok">合理</span></td></tr>
+<tr><td>TabBar 形态<span class="hex">浮动胶囊</span><td>absolute bottom 12px，圆角 21px，毛玻璃</td><td>fixed bottom 12px + safe-area，圆角 21px，毛玻璃渐进增强</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>TopBar<span class="hex">68-73px</span><td>68px 高，动态计算 statusBarHeight</td><td>对齐（动态计算胶囊按钮高度）</td><td><span class="badge b-ok">对齐</span></td></tr>
+</tbody>
+</table>
+
+<div class="callout warn">
+<h4>🟡 关于 phone-frame 的取舍</h4>
+<p>phone-frame 在小程序中<strong>本身就不需要</strong>——小程序运行在真实手机里，再套一层手机外框是 H5 预览的产物。但<strong>径向渐变背景</strong>（蜜桃+紫双光晕）是设计语言的重要氛围资产，应该在页面级（如 match-screen 的 background）补回，而不是丢失。当前所有页面背景是纯白 <code>#FFFCF9</code>，缺少原型的"温暖氛围感"。</p>
+<p style="margin-top:8px">建议：将 app-shell 的径向渐变移到各 <code>.xxx-screen</code> 的 background，或在最外层 View 包裹一个 <code>.app-shell</code> 容器承载渐变背景。</p>
+</div>
+
+<div class="callout danger">
+<h4>🔴 login 页面问题</h4>
+<p><code>src/pages/login/index.tsx</code>（166 行）功能完整（登录/注册表单 + Logo + tab 切换），但 <code>app.config.ts</code> 的 pages 数组<strong>未包含 login</strong>。实际登录入口是 LoginModal（弹窗形式），login 页面是<strong>死代码</strong>。建议二选一：</p>
+<p style="margin-top:6px"><strong>方案 A</strong>：删除 login 页面，统一用 LoginModal（推荐，因为 LoginModal 已实现且与 me 页联动）。</p>
+<p style="margin-top:4px"><strong>方案 B</strong>：注册 login 到 app.config.ts，作为独立登录页（适合需要更复杂登录流程的场景）。</p>
+</div>
+</section>
+
+<!-- 05 COMPONENTS -->
+<section id="components">
+<h2><span class="num">05</span>组件清单对比</h2>
+<p class="lead">Figma 定义了 30+ 组件，小程序实现了 22 个，其中 5 个是<strong>占位实现</strong>。</p>
+
+<table>
+<thead><tr><th>组件</th><th>Figma 实现</th><th>小程序实现</th><th>状态</th></tr></thead>
+<tbody>
+<tr><td>TopBar<span class="hex">68-73px</span><td>动态高度 + PNG 品牌字标</td><td>对齐（sticky + 动态 statusBarHeight）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>CustomTabBar<span class="hex">浮动胶囊</span><td>absolute + 四色选中 + 毛玻璃</td><td>对齐（fixed + safe-area + 毛玻璃渐进增强）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>Icons<span class="hex">SVG mask</span><td>inline SVG（4 类：Action/Work/Gear/Nav）</td><td>对齐（CSS mask 实现颜色继承）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>TeacherCard / HeroCard<span class="hex">556px min-height</span><td>2px ink 边 + 5px 6px 0 ink 阴影 + 紫渐变身份头</td><td>对齐（含 decision-grid / trust-line / contact-row）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>SwipeActions<span class="hex">pass/undo/like</span><td>52×52 圆形 + decision-confirm 0.72s 反馈</td><td>对齐（按钮 + 反馈动画）</td><td><span class="badge b-partial">无手势</span></td></tr>
+<tr><td>ContactRow<span class="hex">联系方式行</span><td>padding 11px + 圆角 16px + 预约按钮</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>ChatList / ChatContact<span class="hex">消息列表</span><td>列表态 + 空状态 + 未读徽章</td><td>对齐（但仅 1 个联系人，无未读逻辑）</td><td><span class="badge b-partial">简化</span></td></tr>
+<tr><td>Conversation<span class="hex">会话窗口</span><td>head + date-label + message-stack + input</td><td>对齐（ScrollView scrollY + scrollTop=99999）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>Bubble 消息气泡<span class="hex">19px 圆角</span><td>对方 19px 19px 19px 8px / 己方反 + 软阴影</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>MessageInput<span class="hex">输入栏</span><td>加号 + 胶囊输入 + 发送</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>SubscribeModal<span class="hex">会员订阅</span><td>lock-art + 权益列表 + subscribe-btn</td><td>对齐（但点击关闭，<strong>无支付</strong>）</td><td><span class="badge b-partial">无支付</span></td></tr>
+<tr><td>RoleModal<span class="hex">角色选择</span><td>家长/老师 + dialog-pop</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>NeedsSheet 筛选<span class="hex">学段/科目/预算</span><td>3 组 chip-row + 联动（小学仅前 3 科）</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>TrustSheet 保障详情<span class="hex">资质+评价+规则</span><td>check-list + blockquote + rule-list</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>BookSheet 预约<span class="hex">时间槽</span><td>2 列 slot-grid</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>ReviewSheet 评价<span class="hex">5星+textarea</span><td>rating-row + review-textarea</td><td>对齐（但<strong>按钮无 onClick</strong>）</td><td><span class="badge b-partial">无提交</span></td></tr>
+<tr><td>VideoPlayer 视频<span class="hex">16:10 + 进度条</span><td>aspect-ratio + player-bar + playhead 8s</td><td><strong>Image 封面 + CSS 假进度条</strong>，无真实视频</td><td><span class="badge b-bad">占位</span></td></tr>
+<tr><td>SettingsModal<span class="hex">设置</span><td>仅"切换身份"1 项</td><td>对齐（仅 1 项，min-height 158px）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>PosterModal 名片海报<span class="hex">渐变+二维码</span><td>紫渐变 + 3 列 metrics + 二维码占位</td><td>对齐（但二维码是 <code>▦</code> 字符，<strong>非真实二维码</strong>）</td><td><span class="badge b-partial">二维码占位</span></td></tr>
+<tr><td>ProfileHero 家长身份卡<span class="hex">紫渐变</span><td>Grid 64px+1fr + 头像 + 统计行</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>TeacherProfileCard 老师身份卡<span class="hex">紫渐变</span><td>min-height 176px + 大头像 + 标签 + 统计</td><td>对齐（但 teacherProfile 全空对象）</td><td><span class="badge b-partial">数据空</span></td></tr>
+<tr><td>RevenueCard 收益卡<span class="hex">3 列</span><td>总佣金/待入账/可提现</td><td>对齐（但数据全为 "—"）</td><td><span class="badge b-partial">数据空</span></td></tr>
+<tr><td>FunctionCard 工作台卡<span class="hex">3 列网格</span><td>展开占满整行 + 4 色图标轮换</td><td>对齐（但<strong>6 类功能点击仅 showToast</strong>）</td><td><span class="badge b-partial">功能占位</span></td></tr>
+<tr><td>TeacherExpand 老师展开<span class="hex">对比行</span><td>mini-avatar + 评价/打赏/查看课程</td><td>对齐（但<strong>3 按钮无 onClick</strong>）</td><td><span class="badge b-partial">无交互</span></td></tr>
+<tr><td>MbtiConstellation<span class="hex">272px 星空</span><td>三层渐变 + 轨道 + 核心球 + 装饰圆</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>MagneticQuestion 问题卡<span class="hex">12 题 stepper</span><td>2 选项 + 字母标记 + 返回</td><td>对齐（calculateMBTI from shared）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>AssessmentWelcome 欢迎卡<span class="hex">权益+启动</span><td>radial + linear 渐变 + 3 列权益</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>SwipeOverlay 引导覆层<span class="hex">箭头+遮罩</span><td>swipe-overlay-fade + 箭头摆动 + guide pill</td><td>对齐（CSS 完全一致）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>DeckEnd 牌组结束<span class="hex">虚线边框</span><td>✦ + 重新浏览/调整筛选</td><td>对齐（含 loading 态"正在匹配"）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>UtilityModal 工具弹窗<span class="hex">48px mark</span><td>Figma 中<strong>JSX 未渲染</strong>（功能未完成）</td><td>未实现</td><td><span class="badge b-miss">双方都缺</span></td></tr>
+<tr><td>ResultCard 结果卡<span class="hex">紫渐变</span><td>渐变 + result-orbit + advice</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>MatchExplainer 匹配解释<span class="hex">紫底</span><td>growth-soft + icon + 文案</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- 06 MOTION -->
+<section id="motion">
+<h2><span class="num">06</span>动效与交互</h2>
+<p class="lead">Figma 定义 8 个 keyframes 动画，小程序<strong>已搬 8 个</strong>，但有 1 个死引用 + 大量微动效缺失。</p>
+
+<table>
+<thead><tr><th>动画/交互</th><th>Figma</th><th>小程序</th><th>状态</th></tr></thead>
+<tbody>
+<tr><td>卡片左右滑<span class="hex">.25s transform</span><td>translateX(±110%) rotate(±9deg) opacity 0</td><td>对齐（CSS 类 + setTimeout 260ms 切换）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>decision-confirm 反馈<span class="hex">0.72s</span><td>scale 1→1.18→0.97→1.08→1 + 光环消散</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>swipe-discovery-nudge<span class="hex">1.55s</span><td>首次滑卡引导抖动（5 段贝塞尔）</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>swipe-instruction-pulse<span class="hex">2.8s infinite</span><td>提示文字呼吸</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>swipe-overlay-fade<span class="hex">1.55s</span><td>引导遮罩淡入淡出</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>swipe-arrow-left/right<span class="hex">1.15s infinite</span><td>箭头摆动</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>playhead<span class="hex">8s linear</span><td>视频进度条 4%→100%</td><td>对齐（但视频本身是假的）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>rise<span class="hex">.24s</span><td><strong>死引用</strong>（@keyframes 未定义）</td><td>已定义 + 生效（底部抽屉入场）</td><td><span class="badge b-ok">小程序更优</span></td></tr>
+<tr><td>dialog-pop<span class="hex">.22s</span><td>居中弹窗 translateY+scale</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>tab 切换 transition<span class="hex">.16s</span><td>transform + bg + color + shadow</td><td>对齐（+ :active scale .96）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>:hover 微动效<span class="hex">translate + shadow</span><td>10+ 处（filter-btn/play-video/swipe-actions/chat-contact 等）</td><td><strong>全部移除</strong></td><td><span class="badge b-bad">缺失</span></td></tr>
+<tr><td>:active 触控反馈<span class="hex">scale/translate</span><td>—</td><td>仅 4 处（pass/like/chat-contact/bottom-nav）</td><td><span class="badge b-partial">不足</span></td></tr>
+<tr><td>手势滑动<span class="hex">touch/pan</span><td>无（仅按钮）</td><td>无（仅按钮）</td><td><span class="badge b-miss">双方都缺</span></td></tr>
+<tr><td>prefers-reduced-motion<span class="hex">无障碍</span><td>所有动画带守卫</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>骨架屏 Skeleton<span class="hex">加载态</span><td>无</td><td>无（仅文本"加载中"）</td><td><span class="badge b-miss">双方都缺</span></td></tr>
+<tr><td>错误边界 ErrorBoundary<span class="hex">全局兜底</span><td>无</td><td>无</td><td><span class="badge b-miss">双方都缺</span></td></tr>
+</tbody>
+</table>
+
+<div class="callout warn">
+<h4>🟡 rise 动画的有趣反转</h4>
+<p>Figma 原型中 <code>.subscribe-modal, .role-modal</code> 引用了 <code>rise .24s</code>，但<strong>整个 index.css 没有定义 @keyframes rise</strong>（死引用，浏览器静默忽略），所以底部抽屉<strong>无入场动画</strong>。小程序反而修复了这个问题——<code>app.scss</code> 中正确定义了 <code>@keyframes rise</code>，底部抽屉有滑入动画。这是<strong>少数小程序比原型更完善的地方</strong>。</p>
+</div>
+</section>
+
+<!-- 07 FEATURES -->
+<section id="features">
+<h2><span class="num">07</span>功能完整性</h2>
+<p class="lead">Figma 是静态原型（数据硬编码，无 API），小程序接入了真实 API，但<strong>功能占位严重</strong>。</p>
+
+<table>
+<thead><tr><th>功能</th><th>Figma</th><th>小程序</th><th>状态</th></tr></thead>
+<tbody>
+<tr><td>老师列表获取<span class="hex">8 位硬编码</span><td>静态数组</td><td>GET /api/public/teachers + 降级内置</td><td><span class="badge b-ok">小程序更优</span></td></tr>
+<tr><td>平台统计<span class="hex">856+</span><td>硬编码</td><td>GET /api/public/stats + 基数</td><td><span class="badge b-ok">小程序更优</span></td></tr>
+<tr><td>家长登录/注册<span class="hex">无</span><td>无（原型无登录）</td><td>POST /api/auth/parent/login + register</td><td><span class="badge b-ok">小程序更优</span></td></tr>
+<tr><td>Token 管理<span class="hex">无</span><td>无</td><td>Taro.setStorageSync + Bearer header + 401 处理</td><td><span class="badge b-ok">小程序更优</span></td></tr>
+<tr><td>状态持久化<span class="hex">无</span><td>无（刷新即丢）</td><td>Taro.setStorageSync("lightning-tiger-state")</td><td><span class="badge b-ok">小程序更优</span></td></tr>
+<tr><td>MBTI 测评<span class="hex">12 题</span><td>本地 state + calculateMBTI</td><td>对齐（calculateMBTI from shared）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>滑卡 pass/like/undo<span class="hex">本地 state</span><td>本地 state + swipeHistory 栈</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>筛选偏好<span class="hex">学段/科目/预算</span><td>本地 state + 放宽匹配</td><td>对齐（matchTeachers from shared）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>预约试听<span class="hex">本地 state</span><td>setBooked</td><td>POST /api/public/bookings（parentId 从 token）</td><td><span class="badge b-ok">小程序更优</span></td></tr>
+<tr><td>消息发送<span class="hex">本地 state</span><td>本地 messages 数组</td><td>POST /api/messages + 乐观更新 + 失败标记</td><td><span class="badge b-ok">小程序更优</span></td></tr>
+<tr><td>视频播放<span class="hex">假播放器</span><td>Image + playhead 8s CSS</td><td>Image + playhead 8s CSS（<strong>同样假</strong>）</td><td><span class="badge b-bad">双方都假</span></td></tr>
+<tr><td>会员订阅支付<span class="hex">仅展示</span><td>subscribe-btn 无 onClick</td><td>对齐（点击关闭，<strong>无支付</strong>）</td><td><span class="badge b-bad">双方都缺</span></td></tr>
+<tr><td>评价打赏<span class="hex">仅展示</span><td>按钮无 onClick</td><td>对齐（按钮无 onClick）</td><td><span class="badge b-bad">双方都缺</span></td></tr>
+<tr><td>查看课程<span class="hex">仅展示</span><td>按钮无 onClick</td><td>对齐（按钮无 onClick）</td><td><span class="badge b-bad">双方都缺</span></td></tr>
+<tr><td>老师端数据<span class="hex">硬编码</span><td>8 位老师完整数据</td><td>teacherProfile 全空对象，数据全 "—"</td><td><span class="badge b-bad">数据空</span></td></tr>
+<tr><td>老师端登录<span class="hex">无</span><td>无</td><td>无（仅家长端登录）</td><td><span class="badge b-miss">双方都缺</span></td></tr>
+<tr><td>6 类功能卡<span class="hex">仅展示</span><td>utilityModal 状态已管理但 JSX 未渲染</td><td>Taro.showToast 占位</td><td><span class="badge b-bad">双方都缺</span></td></tr>
+<tr><td>名片海报二维码<span class="hex">占位</span><td>▦ 字符占位</td><td>对齐（▦ 字符占位）</td><td><span class="badge b-bad">双方都占位</span></td></tr>
+<tr><td>消息未读数<span class="hex">无</span><td>无</td><td>显示 messages.length 但无未读逻辑</td><td><span class="badge b-miss">双方都缺</span></td></tr>
+<tr><td>下拉刷新<span class="hex">无</span><td>无</td><td>无（无 usePullDownRefresh）</td><td><span class="badge b-miss">双方都缺</span></td></tr>
+<tr><td>分享<span class="hex">无</span><td>无</td><td>无（无 onShareAppMessage）</td><td><span class="badge b-miss">双方都缺</span></td></tr>
+</tbody>
+</table>
+
+<div class="callout ok">
+<h4>🟢 小程序比原型更优的地方</h4>
+<p>在<strong>真实功能集成</strong>上，小程序全面超越 Figma 原型：API 集成（11 个接口）、Token 管理、状态持久化、乐观更新、错误降级、动态 statusBarHeight 适配等，这些都是原型不具备的。这一块是<strong>加分项</strong>。</p>
+</div>
+</section>
+
+<!-- 08 VISUAL -->
+<section id="visual">
+<h2><span class="num">08</span>视觉细节</h2>
+<p class="lead">核心视觉资产（渐变、装饰圆环、Neobrutalism 硬阴影）基本对齐，但<strong>氛围背景</strong>与<strong>字体气质</strong>有差距。</p>
+
+<table>
+<thead><tr><th>视觉细节</th><th>Figma</th><th>小程序</th><th>状态</th></tr></thead>
+<tbody>
+<tr><td>app-shell 径向渐变<span class="hex">蜜桃+紫双光晕</span><td>左上 rgba(255,190,152,.58) + 右下 rgba(176,156,251,.4)</td><td>CSS 定义但 JSX 未引用 → 不可见</td><td><span class="badge b-bad">缺失</span></td></tr>
+<tr><td>身份卡渐变<span class="hex">#C4B6FF→#A896F0→#967AE9</span><td>135deg 三段紫</td><td>完全一致</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>MBTI 星空<span class="hex">三层叠加</span><td>双 radial + linear(#6951C7→#967AE9→#B6A5F4)</td><td>完全一致</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>身份卡 ::after 装饰<span class="hex">✦ 100px</span><td>半透明白色 ✦</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>profile-hero 装饰圆环<span class="hex">210×210px</span><td>1px 白色半透圆</td><td>对齐（profile-decoration display:none）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>teacher-profile-card ∿ 装饰<span class="hex">172px</span><td>半透明白色 ∿</td><td>对齐（透明度极低）</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>assessment-welcome 装饰圆<span class="hex">190×190px</span><td>1px ink 半透 + 三层同心光环</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>mbti-constellation ::after<span class="hex">200×200px</span><td>1px 白色半透圆</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>revenue-card ::after ¥<span class="hex">112px</span><td>半透明紫色 ¥</td><td>对齐</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>Neobrutalism 硬阴影<span class="hex">2-6px 0 ink</span><td>6 档</td><td>6 档完全一致</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>四色 tabBar 选中<span class="hex">紫/橙/绿/蓝</span><td>各有独立 bg+color</td><td>完全一致</td><td><span class="badge b-ok">对齐</span></td></tr>
+<tr><td>衬线大标题气质<span class="hex">Noto Serif SC</span><td>Google Fonts 加载，26px 衬线</td><td>降级到系统宋体，气质打折</td><td><span class="badge b-bad">降级</span></td></tr>
+<tr><td>手写体头像首字<span class="hex">Ma Shan Zheng</span><td>毛笔体首字</td><td>降级到系统楷体</td><td><span class="badge b-bad">降级</span></td></tr>
+<tr><td>品牌字标"闪电虎"<span class="hex">PNG</span><td>_____5.png(2.5MB) + _____11.png(493KB)</td><td>tiger-logo-mark(44KB) + tiger-logo-type(51KB)</td><td><span class="badge b-warn">体积差 50 倍</span></td></tr>
+<tr><td>教师头像<span class="hex">真实图</span><td>8 位教师，前 2 位用真实头像图（linAvatar/zhouAvatar <strong>文件缺失</strong>），其余首字 fallback</td><td>全部用首字 fallback（Ma Shan Zheng 毛笔体）</td><td><span class="badge b-partial">简化</span></td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- 09 PRIORITIES -->
+<section id="priorities">
+<h2><span class="num">09</span>优先级修复清单</h2>
+<p class="lead">按"视觉影响 × 实现成本"排序，分 P0/P1/P2 三档。</p>
+
+<div class="prio-grid">
+<div class="prio-card p0">
+<div class="head">P0 立即修复 <span class="count">6 项</span></div>
+<ul>
+<li><span class="tag">字体</span>实现 Taro.loadFontFace 加载 Noto Serif SC + Ma Shan Zheng（影响 test/role-modal 全部衬线标题）</li>
+<li><span class="tag">配色</span>全局清理 #ed7358/#263334/#be5039 等 5 个历史色，替换为 var(--action)/var(--ink)</li>
+<li><span class="tag">背景</span>将 app-shell 径向渐变移到各 .xxx-screen 的 background，恢复"温暖氛围感"</li>
+<li><span class="tag">死码</span>删除 login 页面（或注册到 app.config.ts），消除与 LoginModal 的重复</li>
+<li><span class="tag">视频</span>用 Taro &lt;Video&gt; 组件替换 Image 假播放器（或明确标注"演示用"）</li>
+<li><span class="tag">交互</span>将 Figma 中 10+ 处 :hover 微动效改为 :active，恢复触控反馈</li>
+</ul>
+</div>
+<div class="prio-card p1">
+<div class="head">P1 本周修复 <span class="count">7 项</span></div>
+<ul>
+<li><span class="tag">数据</span>teacherProfile 全空 → 接入老师端 API 或至少硬编码演示数据</li>
+<li><span class="tag">功能</span>6 类功能卡（学生管理/课程安排/我的资料/专业成长等）补充真实页面或明确"敬请期待"提示</li>
+<li><span class="tag">交互</span>ReviewSheet 评价/打赏/查看课程 3 个按钮补充 onClick（即便弹"敬请期待"）</li>
+<li><span class="tag">支付</span>SubscribeModal 接入微信支付（或明确标注"演示版本"）</li>
+<li><span class="tag">二维码</span>PosterModal 二维码用 weapp-qrcode 生成真实二维码</li>
+<li><span class="tag">未读</span>chat 列表补充未读数逻辑（红点 + 数字）</li>
+<li><span class="tag">资源</span>tiger-logo PNG 体积差 50 倍，考虑用 SVG 替代或压缩</li>
+</ul>
+</div>
+<div class="prio-card p2">
+<div class="head">P2 体验增强 <span class="count">6 项</span></div>
+<ul>
+<li><span class="tag">手势</span>match 页补充 touch/pan 手势滑动（react-native-gesture-handler 或 Taro TouchEvent）</li>
+<li><span class="tag">骨架</span>补充 Skeleton 骨架屏组件（match/chat/me 加载态）</li>
+<li><span class="tag">边界</span>补充 React ErrorBoundary 全局错误兜底</li>
+<li><span class="tag">下拉</span>match 页补充 usePullDownRefresh 刷新老师列表</li>
+<li><span class="tag">分享</span>补充 onShareAppMessage（老师卡/名片海报可分享）</li>
+<li><span class="tag">测试</span>补充单元测试 + E2E（当前零测试覆盖）</li>
+</ul>
+</div>
+</div>
+
+<div class="callout">
+<h4>📋 修复后的预期保真度提升</h4>
+<p><strong>P0 全部修复</strong>（预计 2-3 天）：综合保真度 62% → <strong>82%</strong>（字体 +12%，配色 +5%，背景 +3%）</p>
+<p style="margin-top:4px"><strong>P0 + P1 全部修复</strong>（预计 1 周）：综合保真度 → <strong>92%</strong>（功能 +8%，交互 +2%）</p>
+<p style="margin-top:4px"><strong>P0 + P1 + P2 全部修复</strong>（预计 2 周）：综合保真度 → <strong>97%+</strong>（剩余 3% 为双方都缺的 utilityModal 等遗留功能）</p>
+</div>
+</section>
+
+<!-- 10 NEXT -->
+<section id="next">
+<h2><span class="num">10</span>下一步建议</h2>
+<p class="lead">基于本次分析，建议按以下顺序推进：</p>
+
+<h3>第一步：环境与基线</h3>
+<ul class="diff-list">
+<li class="bad"><div class="icon">1</div><div class="body"><b>创建修复分支</b><span>建议命名 <code>fix/figma-fidelity-p0</code>，从当前 mobile 主分支切出</span></div></li>
+<li class="bad"><div class="icon">2</div><div class="body"><b>准备字体资源</b><span>下载 Noto Serif SC（600/700）+ Ma Shan Zheng（400）woff2 文件，托管到 CDN（小程序不支持本地字体文件路径，需 https URL）</span></div></li>
+<li class="bad"><div class="icon">3</div><div class="body"><b>录制修复前基线截图</b><span>用微信开发者工具截 4 个 tab 页 + 主要弹窗，作为修复前后对比</span></div></li>
+</ul>
+
+<h3>第二步：P0 修复（2-3 天）</h3>
+<ul class="diff-list">
+<li class="bad"><div class="icon">A</div><div class="body"><b>字体加载</b><span>在 app.tsx 的 onLaunch 中调用 <code>Taro.loadFontFace({family:'Noto Serif SC', source:'url(https://cdn/...)'})</code>，全局生效</span></div></li>
+<li class="bad"><div class="icon">B</div><div class="body"><b>历史色清理</b><span>全局搜索 <code>#ed7358|#263334|#be5039|#ec6c4b|#f2633e</code>，逐一替换为 var 令牌</span></div></li>
+<li class="bad"><div class="icon">C</div><div class="body"><b>径向渐变背景</b><span>在每个 .xxx-screen 的 scss 中添加 <code>background: radial-gradient(...), var(--surface-base);</code></span></div></li>
+<li class="bad"><div class="icon">D</div><div class="body"><b>删除 login 死代码</b><span>删除 src/pages/login/ 整个目录（确认无引用后）</span></div></li>
+<li class="bad"><div class="icon">E</div><div class="body"><b>:hover → :active</b><span>grep <code>:hover</code> 全部改为 <code>:active</code>，恢复触控反馈</span></div></li>
+</ul>
+
+<h3>第三步：P1 修复（1 周）</h3>
+<p style="font-size:13px;color:var(--ink-muted)">老师端数据、功能卡页面、支付集成、二维码生成等，建议每个独立成 task 推进。</p>
+
+<h3>第四步：验证</h3>
+<ul class="diff-list">
+<li class="ok"><div class="icon">✓</div><div class="body"><b>逐页对比截图</b><span>4 个 tab 页 + 8 个弹窗，与 Figma 原型并排对比</span></div></li>
+<li class="ok"><div class="icon">✓</div><div class="body"><b>真机验证</b><span>字体加载、触控反馈、动画流畅度在真机上验证</span></div></li>
+<li class="ok"><div class="icon">✓</div><div class="body"><b>重新评分</b><span>修复完成后重新跑本报告的评分维度，目标 92%+</span></div></li>
+</ul>
+</section>
+
+<div class="foot">
+<p>本报告由 UI Designer 颗粒级扫描生成 · 2026-08-07 · D:\闪电虎\archive\figma-fidelity-audit\figma-mobile-diff-report.html</p>
+<p style="margin-top:6px">基准：archive/figma（React 19 + Tailwind）· 目标：packages/mobile（Taro 4 + React 18）· 扫描文件 23 个 · 约 5800 行代码</p>
+</div>
+
+</div>
+</div>
+</div>
+</body>
+</html>

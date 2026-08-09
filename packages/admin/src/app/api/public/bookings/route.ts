@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateRequest } from "@/lib/api-auth";
-import { createBookingSchema } from "@/lib/validation";
+import { parentBookingSchema } from "@/lib/validation";
 import { serializeBooking } from "@/lib/serialize";
 
 // Prevent static prerendering
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const result = createBookingSchema.safeParse(body);
+    const result = parentBookingSchema.safeParse(body);
     if (!result.success) {
       return NextResponse.json(
         { error: result.error.issues[0]?.message || "输入参数无效" },

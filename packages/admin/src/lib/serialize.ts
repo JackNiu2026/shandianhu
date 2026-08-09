@@ -3,8 +3,8 @@
  * 将 Prisma 模型（含 Json 字段）转换为前端友好的对象
  * P1-2：JSON 字段已改为 Prisma Json 类型，无需手动 parse
  */
-import type { Teacher, Parent, Booking, Review, Membership, Withdrawal } from "@prisma/client";
-import type { Prefs, MBTIResult } from "@lightning-tiger/shared";
+import type { Teacher, Parent, Booking, Review, Membership, Withdrawal, DiagnosisReport } from "@prisma/client";
+import type { Prefs, MBTIResult, WeakPoint, ErrorTypeStat, QuestionAnalysis } from "@lightning-tiger/shared";
 
 /** 序列化老师数据 */
 export function serializeTeacher(t: Teacher) {
@@ -114,5 +114,21 @@ export function serializeWithdrawal(
     amount: w.amount,
     status: w.status,
     createdAt: w.createdAt.toISOString(),
+  };
+}
+
+/** 序列化学情诊断报告 */
+export function serializeDiagnosisReport(r: DiagnosisReport) {
+  return {
+    id: r.id,
+    subject: r.subject,
+    grade: r.grade,
+    overallScore: r.overallScore,
+    level: r.level,
+    weakPoints: (r.weakPoints as WeakPoint[]) ?? [],
+    errorTypes: (r.errorTypes as ErrorTypeStat[]) ?? [],
+    questionAnalysis: (r.questionAnalysis as QuestionAnalysis[]) ?? [],
+    suggestions: (r.suggestions as string[]) ?? [],
+    createdAt: r.createdAt.toISOString(),
   };
 }

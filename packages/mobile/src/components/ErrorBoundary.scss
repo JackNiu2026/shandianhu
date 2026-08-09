@@ -1,0 +1,75 @@
+/* ErrorBoundary.scss — 错误边界兜底 UI */
+.error-boundary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 32px;
+  text-align: center;
+  background: radial-gradient(circle at 14% 13%, rgba(255,190,152,.58) 0 5%, transparent 24%),
+              radial-gradient(circle at 88% 82%, rgba(176,156,251,.4) 0 7%, transparent 26%),
+              var(--surface-base, #e9e7e1);
+}
+
+.error-icon {
+  display: grid;
+  place-items: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 24px;
+  background: var(--growth-soft, #e7e4f5);
+  border: 2PX solid var(--ink, #263334);
+  box-shadow: 4px 5px 0 var(--ink, #263334);
+  margin-bottom: 24px;
+  font-size: 40px;
+}
+
+.error-title {
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -.04em;
+  color: var(--ink, #263334);
+  margin-bottom: 12px;
+}
+
+.error-desc {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--ink-muted, #7b8381);
+  max-width: 280px;
+  margin-bottom: 28px;
+}
+
+.error-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 160px;
+  min-height: 44px;
+  padding: 12px 28px;
+  border: 2PX solid var(--ink, #263334);
+  border-radius: 12px;
+  background: var(--action, #ed7358);
+  color: var(--ink, #263334);
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 3px 4px 0 var(--ink, #263334);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.error-btn:active {
+  transform: translateY(1px);
+  box-shadow: 1px 2px 0 var(--ink, #263334);
+}
+
+.error-foot {
+  margin-top: 24px;
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+  color: var(--ink-muted, #7b8381);
+  opacity: .6;
+  max-width: 280px;
+  word-break: break-word;
+}

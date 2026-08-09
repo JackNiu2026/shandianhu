@@ -117,6 +117,9 @@ export const createReviewSchema = z.object({
 });
 
 /** 家长注册请求 */
+export const parentBookingSchema = createBookingSchema.omit({ parentId: true });
+export const parentReviewSchema = createReviewSchema.omit({ author: true });
+
 export const parentRegisterSchema = z.object({
   name: z.string().min(1, "姓名不能为空").max(50),
   phone: z.string().regex(/^1[3-9]\d{9}$/, "手机号格式不正确"),
@@ -128,12 +131,6 @@ export const parentRegisterSchema = z.object({
 export const parentLoginSchema = z.object({
   phone: z.string().regex(/^1[3-9]\d{9}$/, "手机号格式不正确"),
   password: z.string().min(1, "密码不能为空"),
-});
-
-/** 发送消息请求 */
-export const sendMessageSchema = z.object({
-  receiverId: z.string().min(1, "接收者 ID 不能为空"),
-  content: z.string().min(1, "消息内容不能为空").max(1000),
 });
 
 /** 更新提现状态请求（含驳回） */
@@ -159,3 +156,10 @@ export function parsePagination(searchParams: URLSearchParams) {
   );
   return { page, pageSize, skip: (page - 1) * pageSize, take: pageSize };
 }
+
+/** 学情诊断请求 */
+export const diagnoseSchema = z.object({
+  subject: z.string().min(1, "学科不能为空").max(20),
+  grade: z.string().min(1, "年级不能为空").max(20),
+  images: z.array(z.string().min(1)).min(1, "至少上传一张错题照片").max(9, "最多上传 9 张照片"),
+});

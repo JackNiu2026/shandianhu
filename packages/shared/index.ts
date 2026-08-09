@@ -1,8 +1,8 @@
 // Types
-export type { Tab, Role, Grade, Prefs, Teacher, Dim, Question, MBTIResult, ChatMessage, BookedInfo } from "./types";
+export type { Tab, Role, Grade, Prefs, Teacher, Dim, Question, MBTIResult, ChatMessage, BookedInfo, WeakPoint, ErrorTypeStat, QuestionAnalysis, DiagnosisReport } from "./types";
 
 // Constants
-export { subjects, grades, budgetOptions, questions, typeNames, styleAdvice } from "./constants";
+export { subjects, grades, budgetOptions, questions, typeNames, styleAdvice, typeProfiles } from "./constants";
 
 // Data
 export { teachers } from "./data/teachers";

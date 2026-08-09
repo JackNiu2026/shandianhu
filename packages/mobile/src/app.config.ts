@@ -2,7 +2,7 @@ export default defineAppConfig({
   pages: [
     "pages/match/index",
     "pages/test/index",
-    "pages/chat/index",
+    "pages/diagnose/index",
     "pages/me/index",
   ],
   window: {
@@ -17,8 +17,8 @@ export default defineAppConfig({
   },
   tabBar: {
     custom: true,
-    color: "#6B6B6B",
-    selectedColor: "#967AE9",
+    color: "#8A827A",
+    selectedColor: "#7056BD",
     borderStyle: "white",
     backgroundColor: "#ffffff",
     list: [
@@ -29,10 +29,6 @@ export default defineAppConfig({
       {
         pagePath: "pages/test/index",
         text: "测评",
-      },
-      {
-        pagePath: "pages/chat/index",
-        text: "消息",
       },
       {
         pagePath: "pages/me/index",

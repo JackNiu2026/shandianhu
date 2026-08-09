@@ -65,12 +65,6 @@ enum OrderStatus {
   refunded
 }
 
-enum MessageRole {
-  parent
-  teacher
-  admin
-}
-
 model AdminUser {
   id        String   @id @default(cuid())
   username  String   @unique
@@ -131,6 +125,7 @@ model Parent {
   bookings  Booking[]
   memberships Membership[]
   orders    Order[]
+  diagnosisReports DiagnosisReport[]
 
   @@index([status])
   @@index([phone])
@@ -230,22 +225,23 @@ model Order {
   @@index([createdAt])
 }
 
-/// 聊天消息
-/// P0-1 修复：多态关联，senderId/receiverId 不设外键约束
-/// ID 指向 Parent 还是 Teacher 由 senderRole/receiverRole 决定，
-/// 应用层负责校验对应实体存在。这样 teacher 发消息不会违反外键约束。
-model Message {
-  id           String   @id @default(cuid())
-  senderId     String   // parentId 或 teacherId（由 senderRole 决定）
-  senderRole   MessageRole
-  receiverId   String   // parentId 或 teacherId（由 receiverRole 决定）
-  receiverRole MessageRole
-  content      String
-  read         Boolean  @default(false)
-  createdAt    DateTime @default(now())
+/// AI 学情诊断报告
+model DiagnosisReport {
+  id            String   @id @default(cuid())
+  parent        Parent   @relation(fields: [parentId], references: [id])
+  parentId      String
+  subject       String
+  grade         String
+  imageCount    Int
+  overallScore  Int
+  level         String
+  weakPoints    Json     // WeakPoint[]
+  errorTypes    Json     // ErrorTypeStat[]
+  questionAnalysis Json  // QuestionAnalysis[]
+  suggestions   Json     // string[]
+  createdAt     DateTime @default(now())
 
-  @@index([senderId])
-  @@index([receiverId])
+  @@index([parentId])
+  @@index([subject])
   @@index([createdAt])
-  @@index([read])
 }

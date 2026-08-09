@@ -1,4 +1,4 @@
-export type Tab = "match" | "test" | "chat" | "me";
+export type Tab = "match" | "test" | "diagnose" | "me";
 export type Role = "parent" | "teacher" | null;
 export type Grade = "小学" | "初中" | "高中";
 
@@ -41,6 +41,7 @@ export type Question = {
 export type MBTIResult = {
   code: string;
   label: string;
+  profile: string;
   advice: string[];
 };
 
@@ -54,4 +55,35 @@ export type BookedInfo = {
   teacher: string;
   slot: string;
   teacherId?: string;
+};
+
+export type WeakPoint = {
+  topic: string;
+  mastery: number;
+};
+
+export type ErrorTypeStat = {
+  type: string;
+  count: number;
+  ratio: number;
+};
+
+export type QuestionAnalysis = {
+  question: string;
+  errorType: string;
+  analysis: string;
+  correctApproach: string;
+};
+
+export type DiagnosisReport = {
+  id: string;
+  subject: string;
+  grade: string;
+  overallScore: number;
+  level: string;
+  weakPoints: WeakPoint[];
+  errorTypes: ErrorTypeStat[];
+  questionAnalysis: QuestionAnalysis[];
+  suggestions: string[];
+  createdAt: string;
 };

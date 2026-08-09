@@ -5,11 +5,12 @@ import { NavIcon } from "../components/Icons";
 import "./index.scss";
 
 const tabs = [
-  { pagePath: "pages/match/index", text: "发现", icon: "discover" as const },
-  { pagePath: "pages/test/index", text: "测评", icon: "assessment" as const },
-  { pagePath: "pages/chat/index", text: "消息", icon: "chat" as const },
-  { pagePath: "pages/me/index", text: "我的", icon: "profile" as const },
+  { pagePath: "pages/match/index", text: "发现", icon: "discover" as const, activeColor: "#7056BD" },
+  { pagePath: "pages/test/index", text: "测评", icon: "assessment" as const, activeColor: "#C96542" },
+  { pagePath: "pages/me/index", text: "我的", icon: "profile" as const, activeColor: "#4E70AD" },
 ];
+
+const INACTIVE_COLOR = "#8A827A";
 
 /** 根据当前路由获取选中的 tab 索引 */
 function getSelectedIndex(): number {
@@ -53,7 +54,10 @@ export default class CustomTabBar extends Component {
             className={`nav-btn ${this.state.selected === index ? "active" : ""}`}
             onClick={() => this.switchTab(index, tab.pagePath)}
           >
-            <NavIcon name={tab.icon} />
+            <NavIcon
+              name={tab.icon}
+              color={this.state.selected === index ? tab.activeColor : INACTIVE_COLOR}
+            />
             <Text className="nav-label">{tab.text}</Text>
           </View>
         ))}

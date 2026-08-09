@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { View, Text, Image, Textarea } from "@tarojs/components";
+import Taro from "@tarojs/taro";
+import { View, Text, Image, Textarea, Video } from "@tarojs/components";
 import type { Prefs, Grade, Teacher, Role } from "@lightning-tiger/shared";
 import { subjects, grades, budgetOptions } from "@lightning-tiger/shared";
 
@@ -229,21 +230,47 @@ export function ReviewSheet({
 }
 
 /* ============ 视频播放弹窗 ============ */
+/**
+ * P0-5 视频播放器真实化
+ * - 有 video URL 时：用 Taro Video 组件播放真实视频（controls + autoplay）
+ * - 无 video URL 时：保留 Image 封面 + CSS 假进度条 + "演示版本"提示
+ *   （当前所有 teacher.video 为空字符串，走降级路径）
+ * 未来后端补充视频 URL 后，自动切换到真实播放
+ */
 export function VideoPlayer({ teacher, onClose }: { teacher: Teacher; onClose: () => void }) {
+  const hasVideo = Boolean(teacher.video && teacher.video.trim().length > 0);
   return (
     <View className="modal-backdrop center" onClick={onClose}>
       <View className="player" catchTap={noop}>
-        <Image src={teacher.video} mode="aspectFill" />
-        <View className="player-shade" />
-        <View className="player-info">
-          <Text className="b">{teacher.name}老师 · 试听片段</Text>
-          <Text className="span">
-            {teacher.subject} · {teacher.tags[2] ?? teacher.tags[0]}
-          </Text>
-        </View>
-        <View className="player-bar">
-          <View className="i" />
-        </View>
+        {hasVideo ? (
+          <Video
+            src={teacher.video}
+            controls
+            autoplay
+            objectFit="cover"
+            showCenterPlayBtn
+            showPlayBtn
+            showFullscreenBtn
+            style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
+          />
+        ) : (
+          <>
+            <Image src={teacher.video || ""} mode="aspectFill" />
+            <View className="player-shade" />
+            <View className="player-info">
+              <Text className="b">{teacher.name}老师 · 试听片段</Text>
+              <Text className="span">
+                {teacher.subject} · {teacher.tags[2] ?? teacher.tags[0]}
+              </Text>
+            </View>
+            <View className="player-bar">
+              <View className="i" />
+            </View>
+            <View className="player-demo-hint">
+              <Text>演示版本 · 视频即将上线</Text>
+            </View>
+          </>
+        )}
         <View className="player-close" onClick={onClose}>
           <Text>×</Text>
         </View>
@@ -253,6 +280,11 @@ export function VideoPlayer({ teacher, onClose }: { teacher: Teacher; onClose: (
 }
 
 /* ============ 会员弹窗 ============ */
+/**
+ * P1-4: 订阅弹窗标注演示版本
+ * 微信支付集成需商户号 + 支付接口，当前为演示版本
+ * 点击"开通会员"按钮显示提示，后续接入 wx.requestPayment
+ */
 export function SubscribeModal({ onClose }: { onClose: () => void }) {
   return (
     <View className="modal-backdrop" onClick={onClose}>
@@ -272,10 +304,15 @@ export function SubscribeModal({ onClose }: { onClose: () => void }) {
           <Text className="span">✓ 30 天内不合适可无限次换老师</Text>
           <Text className="span">✓ 专属顾问帮你筛老师</Text>
         </View>
-        <View className="subscribe-btn" onClick={onClose}>
+        <View
+          className="subscribe-btn"
+          onClick={() => {
+            Taro.showToast({ title: "支付功能即将上线，敬请期待", icon: "none" });
+          }}
+        >
           <Text>开通会员 · ¥19.9 / 月</Text>
         </View>
-        <Text className="small">随时可取消 · 未使用可申请全额退</Text>
+        <Text className="small">演示版本 · 随时可取消 · 未使用可申请全额退</Text>
       </View>
     </View>
   );
@@ -331,7 +368,23 @@ export function PosterModal({
           </View>
           <View className="poster-footer">
             <View className="poster-code">
-              <Text>▦</Text>
+              <View className="poster-code-grid">
+                {/* P1-5: 伪二维码图案（Canvas 绘制真实二维码需引入 weapp-qrcode，
+                     当前用 CSS grid 模拟二维码视觉，标注"扫码查看"） */}
+                {Array.from({ length: 49 }).map((_, i) => (
+                  <View
+                    key={i}
+                    className="poster-code-cell"
+                    style={{
+                      backgroundColor:
+                        // 定位角 + 随机图案模拟
+                        i < 3 || i % 7 < 3 || i % 3 === 0 || (i > 20 && i < 30 && i % 2 === 0)
+                          ? "#151617"
+                          : "#fffdfa",
+                    }}
+                  />
+                ))}
+              </View>
             </View>
             <Text className="p">
               扫码查看老师详情{"\n"}预约免费试听
