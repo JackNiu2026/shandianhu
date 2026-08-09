@@ -45,9 +45,21 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
-        run: pnpm --filter admin exec prisma generate
+        run: pnpm --filter @lightning-tiger/server prisma:generate
         env:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/lightning_tiger_test?schema=public"
+
+      - name: Type check server
+        run: pnpm --filter @lightning-tiger/server typecheck
+
+      - name: Type check worker
+        run: pnpm --filter @lightning-tiger/worker typecheck
+
+      - name: Run server tests
+        run: pnpm --filter @lightning-tiger/server test
+
+      - name: Run worker tests
+        run: pnpm --filter @lightning-tiger/worker test
 
       - name: Type check admin
         run: pnpm --filter admin exec tsc --noEmit
