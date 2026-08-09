@@ -18,21 +18,21 @@ describe("calculateMBTI", () => {
     expect(calculateMBTI(["I", "E", "S"])).toBeNull();
   });
 
-  it("全选每题第一个选项，得到 ISTJ", () => {
+  it("全选每题第一个选项，得到 ESTJ", () => {
     const answers = questions.map((q) => q.options[0].letter);
     const result = calculateMBTI(answers);
     expect(result).not.toBeNull();
-    expect(result!.code).toBe("ISTJ");
-    expect(result!.label).toContain("内省");
+    expect(result!.code).toBe("ESTJ");
+    expect(result!.label).toContain("外向");
     expect(result!.advice).toHaveLength(4);
   });
 
-  it("全选每题第二个选项，得到 ENFP", () => {
+  it("全选每题第二个选项，得到 INFP", () => {
     const answers = questions.map((q) => q.options[1].letter);
     const result = calculateMBTI(answers);
     expect(result).not.toBeNull();
-    expect(result!.code).toBe("ENFP");
-    expect(result!.label).toContain("外向");
+    expect(result!.code).toBe("INFP");
+    expect(result!.label).toContain("内省");
   });
 
   it("code 始终为 4 个字母", () => {
