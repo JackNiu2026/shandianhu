@@ -7,6 +7,8 @@ export { scoreLearningStyle } from "./assessments/learning-style";
 export { LearningStyleAssessmentService } from "./assessments/assessment-service";
 export { WrongQuestionService } from "./assessments/wrong-question-service";
 export { wrongQuestionResultSchema } from "./assessments/wrong-question-schema";
+export { ProfileService } from "./profiles/profile-service";
+export { scoreConfidence } from "./profiles/confidence";
 export { ASYNC_JOB_QUEUE_NAME, BullMqJobQueue, createRedisConnection } from "./jobs/queue";
 export { ModelConfigService } from "./models/model-config-service";
 export { OpenAiCompatibleGateway } from "./models/openai-gateway";
