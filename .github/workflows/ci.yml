@@ -1,6 +1,3 @@
-# 闪电虎 — CI/CD 流水线
-# 触发：push 到 main/develop 分支，或 PR
-
 name: CI
 
 on:
@@ -9,122 +6,152 @@ on:
   pull_request:
     branches: [main]
 
-jobs:
-  # ============ 类型检查 + 构建 ============
-  build:
-    name: Build & Type Check
-    runs-on: ubuntu-latest
+permissions:
+  contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 24.19.0
+  PNPM_VERSION: 11.21.0
+
+jobs:
+  typecheck:
+    name: Typecheck (${{ matrix.workspace }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - workspace: admin
+            filter: admin
+          - workspace: mobile
+            filter: mobile
+          - workspace: server
+            filter: "@lightning-tiger/server"
+          - workspace: worker
+            filter: "@lightning-tiger/worker"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter "${{ matrix.filter }}" typecheck
+
+  test:
+    name: Test (${{ matrix.workspace }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - workspace: admin
+            filter: admin
+          - workspace: mobile
+            filter: mobile
+          - workspace: server
+            filter: "@lightning-tiger/server"
+          - workspace: worker
+            filter: "@lightning-tiger/worker"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter "${{ matrix.filter }}" test
+
+  database:
+    name: Migration and schema contracts
+    runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:16.10-alpine
         env:
           POSTGRES_DB: lightning_tiger_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
+        ports: ["5432:5432"]
         options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24.19.0
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Generate Prisma Client
-        run: pnpm --filter @lightning-tiger/server prisma:generate
-        env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/lightning_tiger_test?schema=public"
-
-      # V2.3 部署前冒烟检查：校验 schema 契约、服务可实例化、状态机转换、推荐评分确定性
-      # 失败则阻止后续构建与部署。不写入任何真实数据。
-      - name: V2.3 smoke check (pre-deploy contract)
-        run: pnpm exec tsx scripts/v2-3-smoke.mjs
-
-      - name: Type check server
-        run: pnpm --filter @lightning-tiger/server typecheck
-
-      - name: Type check worker
-        run: pnpm --filter @lightning-tiger/worker typecheck
-
-      - name: Migrate database
-        run: pnpm --filter @lightning-tiger/server db:migrate
-        env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/lightning_tiger_test?schema=public"
-
-      - name: Run server tests
-        run: pnpm --filter @lightning-tiger/server test
-
-      - name: Run worker tests
-        run: pnpm --filter @lightning-tiger/worker test
-
-      - name: Type check admin
-        run: pnpm --filter admin exec tsc --noEmit
-
-      - name: Type check mobile
-        run: pnpm --filter mobile exec tsc --noEmit
-
-      - name: Run tests
-        run: pnpm --filter admin run test
-
-      - name: Seed database
-        run: pnpm --filter @lightning-tiger/server db:seed
-        env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/lightning_tiger_test?schema=public"
-          JWT_SECRET: "ci-test-secret"
-
-      - name: Build admin
-        run: pnpm --filter admin build
-        env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/lightning_tiger_test?schema=public"
-          JWT_SECRET: "ci-test-secret"
-
-      - name: Build mobile (weapp)
-        run: pnpm --filter mobile build:weapp
-        env:
-          WECHAT_APPID: ${{ secrets.WECHAT_APPID }}
-
-  # ============ Docker 构建 ============
-  docker-build:
-    name: Docker Build
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main'
+          --health-cmd pg_isready --health-interval 5s
+          --health-timeout 5s --health-retries 10
     env:
-      CONTAINER_REGISTRY_TOKEN: ${{ secrets.CONTAINER_REGISTRY_TOKEN }}
-      CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
-      CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
-
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/lightning_tiger_test?schema=public
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @lightning-tiger/server prisma:generate
+      - run: pnpm --filter @lightning-tiger/server db:migrate
+      - run: pnpm exec tsx scripts/v2-2-smoke.mjs
+      - run: pnpm exec tsx scripts/v2-3-smoke.mjs
+      - run: pnpm --filter @lightning-tiger/server exec prisma migrate status --schema prisma/schema.prisma
 
-      - name: Build Admin Docker image
-        run: docker build -f packages/admin/Dockerfile -t lightning-tiger-admin:latest .
+  build:
+    name: Build applications
+    runs-on: ubuntu-latest
+    needs: [typecheck, test, database]
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/build_only?schema=public
+      JWT_SECRET: ci-build-only-secret
+      WECHAT_APPID: ${{ secrets.WECHAT_APPID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @lightning-tiger/server prisma:generate
+      - run: pnpm --filter admin build
+      - run: pnpm --filter mobile build:weapp
 
-      - name: Build Worker Docker image
-        run: docker build -f packages/worker/Dockerfile -t lightning-tiger-worker:latest .
+  container-smoke:
+    name: Build and run production containers
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build release images
+        uses: docker/bake-action@v6
+        with:
+          files: docker-bake.hcl
+          targets: ci
+          load: true
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
+      - name: Run migration and readiness smoke
+        shell: bash
+        run: bash scripts/container-smoke.sh
 
-      - name: Log in to Container Registry
-        if: env.CONTAINER_REGISTRY_TOKEN != ''
-        run: echo "${{ env.CONTAINER_REGISTRY_TOKEN }}" | docker login -u ${{ env.CONTAINER_REGISTRY_USER }} --password-stdin
-
-      - name: Push Admin Docker image
-        if: env.CONTAINER_REGISTRY_TOKEN != ''
-        run: docker tag lightning-tiger-admin:latest ${{ env.CONTAINER_REGISTRY }}/lightning-tiger-admin:latest && docker push ${{ env.CONTAINER_REGISTRY }}/lightning-tiger-admin:latest
-
-      - name: Push Worker Docker image
-        if: env.CONTAINER_REGISTRY_TOKEN != ''
-        run: docker tag lightning-tiger-worker:latest ${{ env.CONTAINER_REGISTRY }}/lightning-tiger-worker:latest && docker push ${{ env.CONTAINER_REGISTRY }}/lightning-tiger-worker:latest
+  ci-success:
+    name: CI success
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [typecheck, test, database, build, container-smoke]
+    steps:
+      - name: Enforce all required jobs
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1

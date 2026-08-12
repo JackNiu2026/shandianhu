@@ -84,9 +84,13 @@ describe("package boundaries", () => {
     );
 
     expect(ci).toContain("pnpm --filter @lightning-tiger/server prisma:generate");
-    expect(ci).toContain("pnpm --filter @lightning-tiger/server typecheck");
-    expect(ci).toContain("pnpm --filter @lightning-tiger/server test");
-    expect(ci).toContain("pnpm --filter @lightning-tiger/worker typecheck");
-    expect(ci).toContain("pnpm --filter @lightning-tiger/worker test");
+    expect(ci).toContain("workspace: admin");
+    expect(ci).toContain("workspace: mobile");
+    expect(ci).toContain("workspace: server");
+    expect(ci).toContain("filter: \"@lightning-tiger/server\"");
+    expect(ci).toContain("workspace: worker");
+    expect(ci).toContain("filter: \"@lightning-tiger/worker\"");
+    expect(ci).toContain('pnpm --filter "${{ matrix.filter }}" typecheck');
+    expect(ci).toContain('pnpm --filter "${{ matrix.filter }}" test');
   });
 });

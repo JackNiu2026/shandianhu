@@ -398,14 +398,14 @@ describe("V2.1 Prisma schema contract", () => {
     expect(migration).toContain('OLD."revokedAt" IS NULL AND NEW."revokedAt" IS NOT NULL');
   });
 
-  it("uses server-owned migration and seed commands in CI", () => {
+  it("uses server-owned migrations without automatically seeding CI", () => {
     const ci = fs.readFileSync(
       path.resolve(__dirname, "../../../../.github/workflows/ci.yml"),
       "utf8",
     );
 
     expect(ci).toContain("pnpm --filter @lightning-tiger/server db:migrate");
-    expect(ci).toContain("pnpm --filter @lightning-tiger/server db:seed");
+    expect(ci).not.toContain("db:seed");
     expect(ci).not.toContain("pnpm --filter admin exec prisma db push");
     expect(ci).not.toContain("pnpm --filter admin run db:seed");
   });

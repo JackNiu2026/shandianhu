@@ -34,14 +34,22 @@ COPY packages/shared/ ./packages/shared/
 COPY packages/server/ ./packages/server/
 COPY packages/admin/ ./packages/admin/
 
+# Next standalone output expects this directory even when the app has no static public assets.
+RUN mkdir -p packages/admin/public
+
 # 生成 Prisma 客户端
 RUN pnpm --filter @lightning-tiger/server prisma:generate
 
 # 构建 admin
 RUN pnpm --filter admin build
 
+# Release job image. It contains the exact schema and migration set from the application commit.
+FROM builder AS migrator
+ENV NODE_ENV=production
+CMD ["pnpm", "--filter", "@lightning-tiger/server", "db:migrate"]
+
 # ============ Stage 3: Runner ============
-FROM node:24.19.0-bookworm-slim AS runner
+FROM node:24.19.0-bookworm-slim AS app
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -73,7 +81,7 @@ ENV HOSTNAME="0.0.0.0"
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD node -e "fetch('http://localhost:3000/login').then(r=>r.ok?process.exit(0):process.exit(1)).catch(()=>process.exit(1))"
+  CMD node -e "fetch('http://127.0.0.1:3000/api/health/ready').then(r=>r.ok?process.exit(0):process.exit(1)).catch(()=>process.exit(1))"
 
 # Database migration and seeding run in the Compose `migrate` release gate.
 CMD ["node", "packages/admin/server.js"]

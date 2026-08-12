@@ -28,6 +28,9 @@ FROM node:24.19.0-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 # tsx 用于直接运行 TypeScript 源码（worker 未做 tsc 编译输出）
-COPY --from=builder /app ./app
-WORKDIR /app
+COPY --from=builder /app /app
+USER node
+EXPOSE 3001
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:3001/ready').then(r=>r.ok?process.exit(0):process.exit(1)).catch(()=>process.exit(1))"
 CMD ["node", "--import", "tsx", "packages/worker/src/main.ts"]

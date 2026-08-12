@@ -1,0 +1,75 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target GitHub environment
+        required: true
+        type: choice
+        options: [staging, production]
+      image_tag:
+        description: Immutable image tag (sha- plus 40-character commit SHA)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.tag.outputs.image_tag }}
+    steps:
+      - id: tag
+        shell: bash
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          [[ "$IMAGE_TAG" =~ ^sha-[0-9a-f]{40}$ ]] || { echo "Invalid immutable image tag"; exit 1; }
+          echo "image_tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ vars.APP_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure SSH
+        shell: bash
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST_KEY: ${{ secrets.DEPLOY_HOST_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_HOST_KEY" > ~/.ssh/known_hosts
+      - name: Upload versioned deployment files
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+        run: |
+          scp -i ~/.ssh/deploy_key docker-compose.yml scripts/deploy-compose.sh "$USER@$HOST:$DEPLOY_PATH/"
+      - name: Deploy and verify with automatic application rollback
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          IMAGE_TAG: ${{ needs.validate.outputs.image_tag }}
+          REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+          REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
+          REGISTRY_TOKEN: ${{ secrets.CONTAINER_REGISTRY_TOKEN }}
+        run: |
+          printf '%s' "$REGISTRY_TOKEN" | ssh -i ~/.ssh/deploy_key "$USER@$HOST" \
+            "docker login '$REGISTRY' -u '$REGISTRY_USER' --password-stdin"
+          ssh -i ~/.ssh/deploy_key "$USER@$HOST" \
+            "cd '$DEPLOY_PATH' && CONTAINER_REGISTRY='$REGISTRY' IMAGE_TAG='$IMAGE_TAG' bash deploy-compose.sh"

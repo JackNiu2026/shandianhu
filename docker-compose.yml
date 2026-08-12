@@ -4,7 +4,7 @@
 services:
   # ============ PostgreSQL 数据库 ============
   db:
-    image: postgres:16-alpine
+    image: postgres:16.10-alpine
     container_name: lightning-tiger-db
     restart: unless-stopped
     environment:
@@ -23,7 +23,7 @@ services:
 
   # ============ Redis 队列（BullMQ） ============
   redis:
-    image: redis:7-alpine
+    image: redis:7.4.5-alpine
     container_name: lightning-tiger-redis
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
@@ -39,25 +39,21 @@ services:
 
   # ============ Database release gate ============
   migrate:
-    build:
-      context: .
-      dockerfile: packages/admin/Dockerfile
-      target: builder
+    image: ${CONTAINER_REGISTRY:?CONTAINER_REGISTRY must be set}/lightning-tiger-migrator:${IMAGE_TAG:?IMAGE_TAG must be set}
+    pull_policy: always
     restart: "no"
     depends_on:
       db:
         condition: service_healthy
     environment:
       DATABASE_URL: "postgresql://postgres:${DB_PASSWORD:?DB_PASSWORD must be set in environment}@db:5432/lightning_tiger?schema=public"
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set in environment}
       NODE_ENV: production
-    command: ["sh", "-c", "pnpm --filter @lightning-tiger/server db:migrate && pnpm --filter @lightning-tiger/server db:seed"]
+    command: ["pnpm", "--filter", "@lightning-tiger/server", "db:migrate"]
 
   # ============ Admin 管理后台 ============
   admin:
-    build:
-      context: .
-      dockerfile: packages/admin/Dockerfile
+    image: ${CONTAINER_REGISTRY:?CONTAINER_REGISTRY must be set}/lightning-tiger-admin:${IMAGE_TAG:?IMAGE_TAG must be set}
+    pull_policy: always
     container_name: lightning-tiger-admin
     restart: unless-stopped
     depends_on:
@@ -83,8 +79,13 @@ services:
       NODE_ENV: production
     ports:
       - "${ADMIN_PORT:-3000}:3000"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
     healthcheck:
-      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000/login').then(r=>r.ok?process.exit(0):process.exit(1)).catch(()=>process.exit(1))\""]
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000/api/health/ready').then(r=>r.ok?process.exit(0):process.exit(1)).catch(()=>process.exit(1))\""]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -92,9 +93,8 @@ services:
 
   # ============ Worker 异步任务消费者 ============
   worker:
-    build:
-      context: .
-      dockerfile: packages/worker/Dockerfile
+    image: ${CONTAINER_REGISTRY:?CONTAINER_REGISTRY must be set}/lightning-tiger-worker:${IMAGE_TAG:?IMAGE_TAG must be set}
+    pull_policy: always
     container_name: lightning-tiger-worker
     restart: unless-stopped
     depends_on:
@@ -113,8 +113,14 @@ services:
       COS_SECRET_ID: ${COS_SECRET_ID:?COS_SECRET_ID must be set in environment}
       COS_SECRET_KEY: ${COS_SECRET_KEY:?COS_SECRET_KEY must be set in environment}
       NODE_ENV: production
+      WORKER_HEALTH_PORT: 3001
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
     healthcheck:
-      test: ["CMD-SHELL", "node -e \"process.exit(0)\""]
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3001/ready').then(r=>r.ok?process.exit(0):process.exit(1)).catch(()=>process.exit(1))\""]
       interval: 30s
       timeout: 5s
       retries: 3

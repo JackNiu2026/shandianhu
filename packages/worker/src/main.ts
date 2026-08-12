@@ -13,6 +13,7 @@
  * 依赖环境变量：DATABASE_URL、REDIS_URL、COS_*、MODEL_KEY_ENCRYPTION_KEY
  */
 import { PrismaClient } from "@prisma/client";
+import { createServer } from "node:http";
 import pino from "pino";
 import {
   CosFileSigner,
@@ -76,6 +77,34 @@ cleanupTimer.unref();
 const worker = startJobWorker(dispatcher, jobs);
 logger.info({ queue: "async-jobs" }, "worker started, consuming jobs");
 
+const healthPort = Number(process.env.WORKER_HEALTH_PORT || 3001);
+const healthServer = createServer(async (request, response) => {
+  if (request.url === "/live") {
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ ok: true }));
+    return;
+  }
+  if (request.url === "/ready") {
+    try {
+      await Promise.all([
+        prisma.$queryRaw`SELECT 1`,
+        worker.isReady ? worker.isReady() : Promise.reject(new Error("queue readiness unavailable")),
+      ]);
+      response.writeHead(200, { "Content-Type": "application/json" });
+      response.end(JSON.stringify({ ok: true, database: "ready", queue: "ready" }));
+    } catch (error) {
+      logger.warn({ error }, "worker readiness check failed");
+      response.writeHead(503, { "Content-Type": "application/json" });
+      response.end(JSON.stringify({ ok: false }));
+    }
+    return;
+  }
+  response.writeHead(404).end();
+});
+healthServer.listen(healthPort, "0.0.0.0", () => {
+  logger.info({ healthPort }, "worker health endpoint listening");
+});
+
 // 启动后立即跑一次隐私清理（补偿启动期间过期的记录）
 privacyCleanup.run().then(
   (result) => logger.info(result, "initial privacy cleanup completed"),
@@ -87,6 +116,8 @@ async function shutdown(signal: string): Promise<void> {
   logger.info({ signal }, "shutting down worker");
   clearInterval(cleanupTimer);
   try {
+    await worker.close?.();
+    await new Promise<void>((resolve) => healthServer.close(() => resolve()));
     await prisma.$disconnect();
   } catch (error) {
     logger.error({ error }, "error disconnecting prisma");

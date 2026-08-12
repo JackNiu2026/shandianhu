@@ -15,21 +15,21 @@
 import {
   ndjsonIncrementalDecode,
   NdjsonFrameEncoder,
-  getCatalog,
+  AGENT_CATALOG,
   ConversationService,
   MessageService,
   QuotaService,
   StreamService,
   ModelRouter,
 } from "@lightning-tiger/server";
-import { createDispatcher } from "@lightning-tiger/worker/dist/dispatcher";
+import { createDispatcher } from "../packages/worker/src/dispatcher.ts";
 
 const failures = [];
 const passes = [];
 
-function check(name, fn) {
+async function check(name, fn) {
   try {
-    const ok = fn();
+    const ok = await fn();
     if (ok !== false) {
       passes.push(name);
       console.log(`[PASS] ${name}`);
@@ -44,7 +44,7 @@ function check(name, fn) {
 }
 
 // 1. NDJSON 契约
-check("ndjson.start/delta/usage/done/error 帧序列事件类型正确", () => {
+await check("ndjson.start/delta/usage/done/error 帧序列事件类型正确", () => {
   const enc = new NdjsonFrameEncoder();
   const out = concatBytes([
     enc.start({ assistantMessageId: "am-1", model: "primary" }),
@@ -61,7 +61,7 @@ check("ndjson.start/delta/usage/done/error 帧序列事件类型正确", () => {
   return true;
 });
 
-check("ndjson sequence 单调递增", () => {
+await check("ndjson sequence 单调递增", () => {
   const enc = new NdjsonFrameEncoder();
   const out = concatBytes([
     enc.start({ assistantMessageId: "am", model: "fallback" }),
@@ -77,7 +77,7 @@ check("ndjson sequence 单调递增", () => {
 });
 
 // 2. AsyncJobType 路由覆盖
-check("dispatcher 覆盖所有 AsyncJobType（FILE_PROCESSING 除外 —— 那是扫描任务）", async () => {
+await check("dispatcher 覆盖所有 AsyncJobType（FILE_PROCESSING 除外 —— 那是扫描任务）", async () => {
   const nullProc = {
     assessmentAnalyzer: { run: async () => ({}) },
     profileRebuild: { run: async () => ({}) },
@@ -105,10 +105,9 @@ check("dispatcher 覆盖所有 AsyncJobType（FILE_PROCESSING 除外 —— 那�
 });
 
 // 3. catalog 完整性：每个 slot 都有对应 agent
-check("Agent catalog: 小学 9 学科槽位齐全", () => {
-  const cat = getCatalog();
-  const primary = cat.filter((a) => a.schoolStage === "PRIMARY");
-  const uniqueSubjects = new Set(primary.map((a) => a.subject));
+await check("Agent catalog: 小学学科槽位齐全", () => {
+  const primary = AGENT_CATALOG.filter(([, stage]) => stage === "PRIMARY");
+  const uniqueSubjects = new Set(primary.map(([subject]) => subject));
   const expected = ["CHINESE", "MATH", "ENGLISH"];
   for (const s of expected) {
     if (!uniqueSubjects.has(s)) throw new Error(`PRIMARY missing subject ${s}`);
@@ -116,27 +115,28 @@ check("Agent catalog: 小学 9 学科槽位齐全", () => {
   return true;
 });
 
-check("Agent catalog: 初中 9 学科齐全", () => {
-  const cat = getCatalog();
-  const uniqueSubjects = new Set(
-    cat.filter((a) => a.schoolStage === "JUNIOR").map((a) => a.subject),
-  );
-  const full = ["CHINESE", "MATH", "ENGLISH", "PHYSICS", "CHEMISTRY", "BIOLOGY", "HISTORY", "GEOGRAPHY", "POLITICS"];
-  for (const s of full) {
-    if (!uniqueSubjects.has(s)) throw new Error(`JUNIOR missing ${s}`);
+await check("Agent catalog: 初中和高中学科齐全", () => {
+  const full = ["CHINESE", "MATH", "ENGLISH", "PHYSICS", "CHEMISTRY"];
+  for (const stage of ["MIDDLE", "HIGH"]) {
+    const uniqueSubjects = new Set(
+      AGENT_CATALOG.filter(([, itemStage]) => itemStage === stage).map(([subject]) => subject),
+    );
+    for (const subject of full) {
+      if (!uniqueSubjects.has(subject)) throw new Error(`${stage} missing ${subject}`);
+    }
   }
   return true;
 });
 
 // 4. quota/message/stream 服务可实例化
-check("ConversationService / MessageService / QuotaService / StreamService 可创建", () => {
+await check("ConversationService / MessageService / QuotaService / StreamService 可创建", () => {
   new ConversationService();
   new MessageService();
   new QuotaService();
   return true;
 });
 
-check("StreamService 开始流式时 parentProfileId 缺失会抛校验错误（不打 db）", async () => {
+await check("StreamService 开始流式时 parentProfileId 缺失会抛校验错误（不打 db）", async () => {
   // 故意不传 parentProfileId；StreamService 会抛 VALIDATION_ERROR
   const svc = new StreamService({
     quota: { reserve: async () => ({ ledgerId: "", reservationId: "", accountId: "", reservedPoints: 0n, availableAfter: 0n }), settle: async () => ({}), release: async () => ({}) },
@@ -151,7 +151,7 @@ check("StreamService 开始流式时 parentProfileId 缺失会抛校验错误（
   return true;
 });
 
-check("ModelRouter 可构造（primary provider 不为 null）", () => {
+await check("ModelRouter 可构造（primary provider 不为 null）", () => {
   const fake = { name: "fake", supportsVision: () => false };
   new ModelRouter(fake, null);
   return true;

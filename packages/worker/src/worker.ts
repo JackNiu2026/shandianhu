@@ -14,6 +14,8 @@ type JobWorkerService = Pick<JobService, "start" | "succeed" | "fail" | "reconci
 
 export interface QueueWorker {
   on(event: "ready", listener: () => void): unknown;
+  isReady?(): Promise<unknown>;
+  close?(): Promise<void>;
 }
 
 export interface QueueWorkerFactory {

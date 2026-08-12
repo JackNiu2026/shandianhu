@@ -62,28 +62,24 @@ pnpm --filter @lightning-tiger/server exec prisma db pull --print | grep -E "mod
 
 ```bash
 # 构建 Admin 镜像
-docker build -f packages/admin/Dockerfile -t lightning-tiger-admin:v2.3 .
+docker build --target app -f packages/admin/Dockerfile -t lightning-tiger-admin:sha-<commit> .
 
 # 构建 Worker 镜像
-docker build -f packages/worker/Dockerfile -t lightning-tiger-worker:v2.3 .
+docker build -f packages/worker/Dockerfile -t lightning-tiger-worker:sha-<commit> .
+
+# 构建同一提交对应的迁移镜像
+docker build --target migrator -f packages/admin/Dockerfile -t lightning-tiger-migrator:sha-<commit> .
 ```
 
 ### 2.3 部署
 
 ```bash
-# 1. 标记当前版本（便于回滚）
-docker tag lightning-tiger-admin:latest lightning-tiger-admin:v2.2-backup
-docker tag lightning-tiger-worker:latest lightning-tiger-worker:v2.2-backup
-
-# 2. 推送 V2.3 镜像
-docker tag lightning-tiger-admin:v2.3 lightning-tiger-admin:latest
-docker tag lightning-tiger-worker:v2.3 lightning-tiger-worker:latest
-
-# 3. 滚动重启
-docker-compose up -d admin worker
-
-# 4. 等待健康检查通过
-curl -f http://localhost:3000/login || exit 1
+# GitHub Actions Deploy 工作流只接受 sha-<40位提交> 的不可变标签。
+# 生产 GitHub Environment 应设置 required reviewer，并禁止 self-review。
+# 部署脚本先运行独立 migrator，再替换 Admin/Worker；健康检查失败自动恢复上一应用镜像。
+CONTAINER_REGISTRY=registry.example.com \
+IMAGE_TAG=sha-<40位提交> \
+bash scripts/deploy-compose.sh
 ```
 
 ### 2.4 运行冒烟测试
@@ -109,12 +105,11 @@ node scripts/v2-3-smoke.mjs
 ### 3.2 回滚步骤
 
 ```bash
-# 1. 切回 V2.2 镜像
-docker tag lightning-tiger-admin:v2.2-backup lightning-tiger-admin:latest
-docker tag lightning-tiger-worker:v2.2-backup lightning-tiger-worker:latest
-
-# 2. 滚动重启
-docker-compose up -d admin worker
+# deploy-compose.sh 自动记录 `.deploy/current-image-tag`。
+# 手工回滚时指定上一不可变标签，数据库 migration 不回滚。
+CONTAINER_REGISTRY=registry.example.com \
+IMAGE_TAG=sha-<上一稳定提交> \
+bash scripts/deploy-compose.sh
 
 # 3. 验证 V2.2 功能正常
 curl -f http://localhost:3000/login
@@ -124,6 +119,8 @@ curl -f http://localhost:3000/login
 ### 3.3 回滚后注意事项
 
 - V2.3 新增的数据库表（TeacherApplication, TrialBooking, Lesson 等）保留在数据库中，不影响 V2.2 运行
+- 所有 migration 必须遵循 expand-contract：当前发布只新增兼容结构，删除旧结构必须延后到确认无旧应用运行的后续发布
+- 生产部署不自动运行 seed；初始化或配置变更必须使用独立、可审计的运维操作
 - 如果需要完全清理 V2.3 数据（可选，非必须）：
   ```sql
   -- 仅在确认不再需要 V2.3 数据时执行
