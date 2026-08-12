@@ -15,19 +15,19 @@
   },
   "dependencies": {
     "@lightning-tiger/shared": "workspace:*",
-    "@prisma/client": "^6.19.3",
+    "@prisma/client": "^7.9.1",
     "bcryptjs": "^3.0.3",
-    "bullmq": "^5.58.5",
-    "cos-nodejs-sdk-v5": "^2.14.7",
-    "ioredis": "^5.7.0",
-    "zod": "^3.25.76"
+    "bullmq": "^6.0.9",
+    "cos-nodejs-sdk-v5": "^3.0.0",
+    "ioredis": "^6.0.0",
+    "zod": "^4.4.3"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "prisma": "^6.19.3",
+    "prisma": "^7.9.1",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"
   }
