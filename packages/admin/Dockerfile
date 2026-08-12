@@ -2,7 +2,7 @@
 # 多阶段构建：依赖安装 → 构建 → 运行
 
 # ============ Stage 1: Dependencies ============
-FROM node:24.19.0-bookworm-slim AS deps
+FROM node:26.7.0-bookworm-slim AS deps
 WORKDIR /app
 
 # 安装 pnpm
@@ -19,7 +19,7 @@ COPY packages/mobile/package.json ./packages/mobile/
 RUN pnpm install --frozen-lockfile
 
 # ============ Stage 2: Build ============
-FROM node:24.19.0-bookworm-slim AS builder
+FROM node:26.7.0-bookworm-slim AS builder
 WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@11.21.0 --activate
@@ -49,7 +49,7 @@ ENV NODE_ENV=production
 CMD ["pnpm", "--filter", "@lightning-tiger/server", "db:migrate"]
 
 # ============ Stage 3: Runner ============
-FROM node:24.19.0-bookworm-slim AS app
+FROM node:26.7.0-bookworm-slim AS app
 WORKDIR /app
 
 ENV NODE_ENV=production
