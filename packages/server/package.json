@@ -26,9 +26,9 @@
     "seed": "node prisma/seed.mjs"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
+    "@types/node": "^26.2.0",
     "prisma": "^6.19.3",
-    "typescript": "^5.7.0",
-    "vitest": "^3.0.0"
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
   }
 }
