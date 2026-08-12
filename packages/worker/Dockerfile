@@ -2,7 +2,7 @@
 # 多阶段构建：deps -> builder(含 prisma client) -> runner
 
 # ============ deps: 安装依赖 ============
-FROM node:24.19.0-bookworm-slim AS deps
+FROM node:26.7.0-bookworm-slim AS deps
 RUN corepack enable
 WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
@@ -12,7 +12,7 @@ COPY packages/shared/package.json packages/shared/
 RUN pnpm install --frozen-lockfile
 
 # ============ builder: 生成 Prisma client ============
-FROM node:24.19.0-bookworm-slim AS builder
+FROM node:26.7.0-bookworm-slim AS builder
 RUN corepack enable
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
@@ -24,7 +24,7 @@ RUN pnpm --filter @lightning-tiger/server prisma:generate
 RUN pnpm --filter @lightning-tiger/worker typecheck
 
 # ============ runner: 生产运行时 ============
-FROM node:24.19.0-bookworm-slim AS runner
+FROM node:26.7.0-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 # tsx 用于直接运行 TypeScript 源码（worker 未做 tsc 编译输出）
