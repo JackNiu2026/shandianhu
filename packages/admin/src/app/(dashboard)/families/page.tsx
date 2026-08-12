@@ -1,0 +1,11 @@
+"use client";
+import { useEffect, useState } from "react";
+import { Card, DataTable, Input } from "@/components/ui";
+
+type Family = { id: string; displayName: string; phoneMasked: string | null; lastActiveAt: string; children: Array<{ id: string; name: string; grade: string | null; deletedAt: string | null }>; quota: { availablePoints: number; reservedPoints: number } | null };
+export default function FamiliesPage() {
+  const [items, setItems] = useState<Family[]>([]); const [search, setSearch] = useState(""); const [loading, setLoading] = useState(true); const [error, setError] = useState("");
+  const load = async () => { setLoading(true); setError(""); try { const response = await fetch(`/api/v2/admin/families?search=${encodeURIComponent(search)}`); const body = await response.json(); if (!body.ok) throw new Error(body.error?.message || "加载失败"); setItems(body.data.items); } catch (reason) { setError(reason instanceof Error ? reason.message : "加载失败"); } finally { setLoading(false); } };
+  useEffect(() => { void load(); }, []);
+  return <div className="space-y-5"><div><h2 className="text-xl font-bold">家庭管理</h2><p className="text-sm text-ink-muted">查询家庭、孩子档案与 AI 配额，不展示敏感身份信息。</p></div><Card><div className="flex gap-2"><Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="家庭 ID、家长或孩子名称" /><button className="rounded-lg border-2 border-ink bg-action px-4 font-bold shadow-nb-sm" onClick={() => void load()}>查询</button></div></Card>{error && <div className="border-2 border-danger bg-white p-3 text-danger">{error}</div>}<DataTable loading={loading} data={items} columns={[{ key: "displayName", header: "家庭" }, { key: "children", header: "孩子", render: (row) => <div className="grid gap-1">{row.children.map((child) => <span key={child.id} className={child.deletedAt ? "text-danger" : ""}>{child.name} · {child.grade ?? "年级待完善"}{child.deletedAt ? "（已删除）" : ""}</span>)}</div> }, { key: "phoneMasked", header: "联系方式", render: (row) => row.phoneMasked ?? "—" }, { key: "quota", header: "AI 配额", render: (row) => row.quota ? `${row.quota.availablePoints} 可用 / ${row.quota.reservedPoints} 预留` : "未开通" }, { key: "lastActiveAt", header: "最近活跃", render: (row) => new Date(row.lastActiveAt).toLocaleString() }]} /></div>;
+}

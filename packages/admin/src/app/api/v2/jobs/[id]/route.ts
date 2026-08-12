@@ -1,17 +1,9 @@
-import { AppError, JobService, resolveSession } from "@lightning-tiger/server";
+import { AppError, JobService } from "@lightning-tiger/server";
 import type { NextRequest } from "next/server";
+import { authenticatedUserId } from "@/lib/v2-auth";
 import { toHttpResponse } from "@/lib/v2-handler";
 
 const jobs = new JobService();
-
-async function authenticatedUserId(request: NextRequest): Promise<string> {
-  const [scheme, token] = request.headers.get("authorization")?.split(" ") ?? [];
-  if (scheme !== "Bearer" || !token) {
-    throw new AppError("UNAUTHENTICATED", 401, "Authentication required");
-  }
-
-  return (await resolveSession(token)).userId;
-}
 
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   return toHttpResponse(async () => {

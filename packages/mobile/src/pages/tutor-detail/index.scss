@@ -1,0 +1,211 @@
+/* 老师详情页样式 */
+.tutor-detail-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--surface-base, #F5F2F0);
+}
+
+.detail-body {
+  flex: 1;
+  padding: 0 16px 80px;
+  overflow-y: auto;
+}
+
+.detail-empty {
+  padding: 40px 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-muted, #767f79);
+}
+
+/* 老师信息卡 */
+.tutor-hero {
+  padding: 18px;
+  margin: 12px 0;
+  border: 2PX solid var(--ink, #151617);
+  border-radius: 18px;
+  background: linear-gradient(135deg, #C4B6FF 0%, #A896F0 55%, #685f9c 100%);
+  box-shadow: 4px 5px 0 var(--ink, #151617);
+}
+
+.tutor-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.tutor-name {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -.05em;
+  color: var(--ink, #151617);
+}
+
+.tutor-rating {
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: rgba(255, 252, 249, .6);
+  font-size: 13px;
+  font-weight: 600;
+  color: #A7770B;
+}
+
+.tutor-bio {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgba(21, 22, 23, .62);
+}
+
+.tutor-stats {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1PX solid rgba(21, 22, 23, .2);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink, #151617);
+}
+
+.stat-label {
+  font-size: 11px;
+  color: rgba(21, 22, 23, .58);
+}
+
+/* 区块 */
+.section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: var(--ink, #151617);
+}
+
+/* 标签列表 */
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  padding: 4px 10px;
+  border: 1PX solid var(--ink, #151617);
+  border-radius: 8px;
+  background: var(--surface-paper, #FFFCF9);
+  font-size: 12px;
+  color: var(--ink-muted, #767f79);
+}
+
+.tag.subject {
+  background: #e7e4f5;
+  color: #685f9c;
+}
+
+.tag.stage {
+  background: #dcebe1;
+  color: #3f6a54;
+}
+
+.tag.mode {
+  background: #fff4e0;
+  color: #A7770B;
+}
+
+.tag.area {
+  background: #f1f2ec;
+  color: #647269;
+}
+
+/* 时段列表 */
+.slot-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.slot-item {
+  padding: 6px 10px;
+  border: 1PX solid var(--ink, #151617);
+  border-radius: 8px;
+  background: var(--surface-paper, #FFFCF9);
+}
+
+.slot-time {
+  font-size: 12px;
+  color: var(--ink, #151617);
+}
+
+/* 评价卡片 */
+.review-card {
+  padding: 14px;
+  margin-bottom: 10px;
+  border: 2PX solid var(--ink, #151617);
+  border-radius: 14px;
+  background: var(--surface-paper, #FFFCF9);
+  box-shadow: 3px 4px 0 var(--ink, #151617);
+}
+
+.review-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.review-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink, #151617);
+}
+
+.review-rating {
+  font-size: 13px;
+  font-weight: 600;
+  color: #A7770B;
+}
+
+.review-content {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink, #151617);
+}
+
+.review-month {
+  font-size: 11px;
+  color: var(--ink-muted, #767f79);
+}
+
+/* 预约按钮 */
+.book-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 16px 0;
+  border: 2PX solid var(--ink, #151617);
+  border-radius: 14px;
+  background: #7056BD;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 3px 4px 0 var(--ink, #151617);
+}

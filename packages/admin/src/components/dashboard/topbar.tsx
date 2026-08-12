@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Breadcrumb } from "./breadcrumb";
+import Link from "next/link";
 
 /**
  * Neo-brutalism 顶部栏
@@ -29,9 +29,13 @@ export default function Topbar() {
   };
 
   return (
-    <header className="h-16 bg-surface-paper border-b-2 border-ink flex items-center justify-between px-6 flex-shrink-0">
+    <header className="min-h-16 bg-surface-paper border-b-2 border-ink flex flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-6 flex-shrink-0">
       {/* 左侧：面包屑 */}
-      <Breadcrumb />
+      <div className="text-sm font-bold text-ink">运营监督台</div>
+
+      <nav className="order-3 flex w-full gap-2 overflow-x-auto pb-1 text-xs md:hidden">
+        {[['/dashboard','概览'],['/families','家庭'],['/assessments','学情'],['/academics','教务'],['/teachers','老师'],['/notifications','通知']].map(([href,label]) => <Link key={href} href={href} className="shrink-0 rounded-md border border-ink px-2 py-1">{label}</Link>)}
+      </nav>
 
       {/* 右侧：管理员信息 + 登出 */}
       <div className="flex items-center gap-4">

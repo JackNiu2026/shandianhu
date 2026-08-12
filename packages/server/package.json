@@ -16,6 +16,7 @@
   "dependencies": {
     "@lightning-tiger/shared": "workspace:*",
     "@prisma/client": "^6.19.3",
+    "bcryptjs": "^3.0.3",
     "bullmq": "^5.58.5",
     "cos-nodejs-sdk-v5": "^2.14.7",
     "ioredis": "^5.7.0",

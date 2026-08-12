@@ -1,19 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@lightning-tiger/server/src/db/client";
+import { revokeAdminSession } from "@lightning-tiger/server";
 import { AUTH_COOKIE_NAME, clearAuthCookie } from "@/lib/auth";
-import { sessionTokenHash } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
     const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
-    if (token) {
-      await prisma.adminSession.updateMany({
-        where: { tokenHash: sessionTokenHash(token), status: "ACTIVE" },
-        data: { status: "REVOKED", revokedAt: new Date() },
-      });
-    }
+    await revokeAdminSession(token);
     const response = NextResponse.json({ success: true });
     clearAuthCookie(response);
     return response;

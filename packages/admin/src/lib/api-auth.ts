@@ -1,47 +1,20 @@
-import { createHash } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@lightning-tiger/server/src/db/client";
+import {
+  AppError,
+  resolveAdminSession as resolveServerAdminSession,
+  type AdminSessionIdentity,
+} from "@lightning-tiger/server";
 import { AUTH_COOKIE_NAME } from "./auth";
 
-export type AdminSessionIdentity = {
-  adminUserId: string;
-  email: string;
-  role: string;
-};
-
-function hashToken(token: string): string {
-  return createHash("sha256").update(token).digest("hex");
-}
+export type { AdminSessionIdentity } from "@lightning-tiger/server";
 
 function extractToken(request: NextRequest): string | undefined {
   return request.cookies.get(AUTH_COOKIE_NAME)?.value;
 }
 
 export async function resolveAdminSession(token: string | undefined): Promise<AdminSessionIdentity | null> {
-  if (!token) return null;
-
-  const session = await prisma.adminSession.findFirst({
-    where: {
-      tokenHash: hashToken(token),
-      status: "ACTIVE",
-      revokedAt: null,
-      expiresAt: { gt: new Date() },
-    },
-    include: { adminUser: true },
-  });
-
-  if (!session) return null;
-
-  void prisma.adminSession.update({
-    where: { id: session.id },
-    data: { lastUsedAt: new Date() },
-  });
-
-  return {
-    adminUserId: session.adminUserId,
-    email: session.adminUser.email,
-    role: session.adminUser.role,
-  };
+  return resolveServerAdminSession(token);
 }
 
 export async function authenticateAdmin(request: NextRequest): Promise<
@@ -61,8 +34,20 @@ export async function authenticateAdmin(request: NextRequest): Promise<
   return { ...identity, response: null };
 }
 
-export function sessionTokenHash(token: string): string {
-  return hashToken(token);
+export async function requireAdmin(request: NextRequest): Promise<{ adminUserId: string; role: string }> {
+  const auth = await authenticateAdmin(request);
+  if (auth.response || !auth.adminUserId) throw new AppError("UNAUTHENTICATED", 401, "Authentication required");
+  return { adminUserId: auth.adminUserId, role: auth.role };
+}
+
+export async function requireSuperadmin(request: NextRequest): Promise<{ adminUserId: string; role: string }> {
+  const admin = await requireAdmin(request);
+  if (admin.role !== "SUPERADMIN") throw new AppError("FORBIDDEN", 403, "Superadmin access required");
+  return admin;
+}
+
+export function makeAdminContext(adminUserId: string): { adminUserId: string; requestId: string } {
+  return { adminUserId, requestId: randomUUID() };
 }
 
 export function withErrorHandler<T extends (...args: never[]) => Promise<NextResponse>>(

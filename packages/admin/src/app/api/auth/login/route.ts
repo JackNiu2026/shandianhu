@@ -1,18 +1,18 @@
-import { createHash, randomBytes } from "node:crypto";
-import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@lightning-tiger/server/src/db/client";
+import {
+  authenticateAdminCredentials,
+  issueAdminSession,
+  RedisLoginThrottle,
+} from "@lightning-tiger/server";
 import { SESSION_MAX_AGE, setAuthCookie } from "@/lib/auth";
 import {
   getLoginThrottleKey,
-  pruneLoginAttempts,
-  type LoginAttempt,
 } from "@/lib/login-throttle";
 import { loginSchema } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
 
-const loginAttempts = new Map<string, LoginAttempt>();
+const loginThrottle = new RedisLoginThrottle();
 const MAX_ATTEMPTS = 5;
 const WINDOW_MS = 15 * 60 * 1000;
 
@@ -23,35 +23,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: result.error.issues[0]?.message || "Invalid request" }, { status: 400 });
     }
 
-    const now = Date.now();
-    pruneLoginAttempts(loginAttempts, now, WINDOW_MS);
-
     const loginIdentifier = result.data.username.trim().toLowerCase();
     const clientKey = getLoginThrottleKey(request, loginIdentifier);
-    const attempts = loginAttempts.get(clientKey);
-    if (attempts && attempts.count >= MAX_ATTEMPTS && now - attempts.lastAttempt < WINDOW_MS) {
+    let allowed: boolean;
+    try {
+      allowed = await loginThrottle.take(clientKey, MAX_ATTEMPTS, WINDOW_MS);
+    } catch (error) {
+      console.error("[Login Throttle Error]", error);
+      return NextResponse.json({ error: "Login temporarily unavailable" }, { status: 503 });
+    }
+    if (!allowed) {
       return NextResponse.json({ error: "Too many login attempts" }, { status: 429 });
     }
 
-    const adminUser = await prisma.adminUser.findUnique({ where: { email: result.data.username } });
-    const isValid = adminUser && await bcrypt.compare(result.data.password, adminUser.passwordHash);
-    if (!isValid || !adminUser) {
-      const current = loginAttempts.get(clientKey);
-      loginAttempts.set(clientKey, { count: (current?.count || 0) + 1, lastAttempt: now });
-      pruneLoginAttempts(loginAttempts, now, WINDOW_MS);
+    const adminUser = await authenticateAdminCredentials(loginIdentifier, result.data.password);
+    if (!adminUser) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
-    loginAttempts.delete(clientKey);
-    const token = randomBytes(32).toString("base64url");
-    const tokenHash = createHash("sha256").update(token).digest("hex");
-    await prisma.adminSession.create({
-      data: {
-        adminUserId: adminUser.id,
-        tokenHash,
-        expiresAt: new Date(Date.now() + SESSION_MAX_AGE * 1000),
-      },
-    });
+    await loginThrottle.reset(clientKey);
+    const token = await issueAdminSession(adminUser.adminUserId, SESSION_MAX_AGE);
 
     const response = NextResponse.json({
       success: true,

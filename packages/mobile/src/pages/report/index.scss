@@ -1,0 +1,78 @@
+.report-page {
+  min-height: 100vh;
+  padding: 48px 32px;
+  background: #f5f2f0;
+  color: #28231e;
+}
+
+.centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title, .value, .section-title {
+  display: block;
+}
+
+.title {
+  font-size: 44px;
+  font-weight: 700;
+}
+
+.meta, .label, .body {
+  display: block;
+  color: #746c64;
+  font-size: 26px;
+  margin-top: 12px;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 36px;
+}
+
+.summary > view, .advice {
+  padding: 24px;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.value {
+  margin-top: 12px;
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.advice {
+  margin-top: 20px;
+}
+
+.section-title {
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.primary, .secondary {
+  border-radius: 8px;
+  font-size: 28px;
+}
+
+.primary {
+  color: #ffffff;
+  background: #7056bd;
+}
+
+.secondary {
+  color: #4b4238;
+  background: #ffffff;
+}

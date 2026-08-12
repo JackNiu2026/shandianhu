@@ -23,11 +23,11 @@ export default function SettingsPage() {
         body: JSON.stringify({ currentPassword, newPassword }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Password update failed");
+      if (!response.ok) throw new Error(result.error || "密码修改失败");
       router.push("/login");
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Password update failed");
+      setMessage(error instanceof Error ? error.message : "密码修改失败");
     } finally {
       setSaving(false);
     }
@@ -42,19 +42,19 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-5 px-6 py-8">
       <div>
-        <h1 className="text-2xl font-bold text-ink">Account settings</h1>
-        <p className="mt-1 text-sm text-ink-muted">Manage this administrator session and password.</p>
+        <h1 className="text-2xl font-bold text-ink">系统设置</h1>
+        <p className="mt-1 text-sm text-ink-muted">管理当前管理员会话与登录密码。</p>
       </div>
-      <Card title="Change password">
+      <Card title="修改密码">
         <div className="space-y-4">
-          <Input type="password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} placeholder="Current password" />
-          <Input type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="New password (at least 8 characters)" />
+          <Input type="password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} placeholder="当前密码" />
+          <Input type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="新密码（至少 8 位）" />
           {message && <p className="text-sm text-danger">{message}</p>}
-          <Button variant="primary" onClick={changePassword} disabled={saving}>{saving ? "Saving..." : "Update password"}</Button>
+          <Button variant="primary" onClick={changePassword} disabled={saving}>{saving ? "保存中..." : "更新密码"}</Button>
         </div>
       </Card>
-      <Card title="Sign out">
-        <Button variant="danger" onClick={logout}>Sign out</Button>
+      <Card title="退出登录">
+        <Button variant="danger" onClick={logout}>退出当前账号</Button>
       </Card>
     </div>
   );

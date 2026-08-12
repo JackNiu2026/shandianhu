@@ -29,7 +29,6 @@ packages/admin/prisma/migrations/dev.db*
 .env.production.local
 .env.*.local
 .env.production
-.env.production.example
 
 # IDE
 .idea/

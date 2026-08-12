@@ -1,10 +1,26 @@
 export default defineAppConfig({
   pages: [
-    "pages/match/index",
-    "pages/test/index",
-    "pages/assessment-style/index",
-    "pages/diagnose/index",
+    "pages/smart/index",
+    "pages/chat-history/index",
+    "pages/tutors/index",
+    "pages/learning/index",
     "pages/me/index",
+    "pages/assessment-style/index",
+    "pages/assessment-wrong/index",
+    "pages/report/index",
+    // V2.3 老师端页面（不在原生 tabBar，使用 TeacherWorkspaceNav）
+    "pages/teacher-apply/index",
+    "pages/teacher-schedule/index",
+    "pages/teacher-work/index",
+    "pages/teacher-lessons/index",
+    "pages/teacher-students/index",
+    "pages/teacher-feedback/index",
+    "pages/teacher-me/index",
+    // V2.3 家长端真人家教页面（通过 navigateTo 跳转）
+    "pages/tutor-detail/index",
+    "pages/trial-booking/index",
+    "pages/trial-status/index",
+    "pages/lesson-review/index",
   ],
   window: {
     backgroundTextStyle: "light",
@@ -19,17 +35,21 @@ export default defineAppConfig({
   tabBar: {
     custom: true,
     color: "#8A827A",
-    selectedColor: "#7056BD",
+    selectedColor: "#6049AD",
     borderStyle: "white",
     backgroundColor: "#ffffff",
     list: [
       {
-        pagePath: "pages/match/index",
-        text: "发现",
+        pagePath: "pages/smart/index",
+        text: "智学",
       },
       {
-        pagePath: "pages/test/index",
-        text: "测评",
+        pagePath: "pages/tutors/index",
+        text: "家教",
+      },
+      {
+        pagePath: "pages/learning/index",
+        text: "学情",
       },
       {
         pagePath: "pages/me/index",

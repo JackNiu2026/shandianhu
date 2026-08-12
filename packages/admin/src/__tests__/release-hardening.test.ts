@@ -15,13 +15,9 @@ describe("release hardening", () => {
 
     expect(auth).toContain('AUTH_COOKIE_NAME = "admin-session"');
     expect(auth).not.toContain("jsonwebtoken");
-    expect(login).toContain("randomBytes");
-    expect(login).toContain("tokenHash");
-    expect(login).toContain("prisma.adminSession.create");
-    expect(apiAuth).toContain("createHash");
-    expect(apiAuth).toContain('status: "ACTIVE"');
-    expect(apiAuth).toContain("revokedAt: null");
-    expect(apiAuth).toContain("expiresAt: { gt: new Date() }");
+    expect(login).toContain("authenticateAdminCredentials");
+    expect(login).toContain("issueAdminSession");
+    expect(apiAuth).toContain("resolveAdminSession");
   });
 
   it("keeps authorization in Node handlers and only performs routing/CORS in middleware", () => {
@@ -40,11 +36,24 @@ describe("release hardening", () => {
     const logout = adminSource("app/api/auth/logout/route.ts");
     const changePassword = adminSource("app/api/auth/change-password/route.ts");
 
-    expect(logout).toContain("prisma.adminSession.updateMany");
-    expect(logout).toContain('status: "REVOKED"');
-    expect(changePassword).toContain("passwordHash");
-    expect(changePassword).toContain("prisma.adminSession.updateMany");
+    expect(logout).toContain("revokeAdminSession");
+    expect(changePassword).toContain("changeAdminPassword");
     expect(changePassword).toContain("clearAuthCookie");
+  });
+
+  it("keeps Prisma behind the server public admin-session service", () => {
+    const authRuntimeSources = [
+      adminSource("lib/api-auth.ts"),
+      adminSource("app/api/auth/login/route.ts"),
+      adminSource("app/api/auth/logout/route.ts"),
+      adminSource("app/api/auth/change-password/route.ts"),
+    ];
+
+    for (const source of authRuntimeSources) {
+      expect(source).not.toContain("@lightning-tiger/server/src/db/client");
+      expect(source).not.toMatch(/\\bprisma\\./);
+      expect(source).toContain("@lightning-tiger/server");
+    }
   });
 
   it("keeps Docker health checks on an existing unauthenticated endpoint", () => {

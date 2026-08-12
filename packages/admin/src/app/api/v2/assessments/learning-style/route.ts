@@ -1,6 +1,7 @@
-import { AppError, ChildService, JobService, LearningStyleAssessmentService, resolveSession } from "@lightning-tiger/server";
+import { AppError, ChildService, JobService, LearningStyleAssessmentService } from "@lightning-tiger/server";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
+import { authenticatedUserId } from "@/lib/v2-auth";
 import { toHttpResponse } from "@/lib/v2-handler";
 
 const assessments = new LearningStyleAssessmentService(undefined, new ChildService(), new JobService());
@@ -12,14 +13,6 @@ const inputSchema = z.object({
     option: z.enum(["A", "B"]),
   }).strict()),
 }).strict();
-
-async function authenticatedUserId(request: NextRequest): Promise<string> {
-  const [scheme, token] = request.headers.get("authorization")?.split(" ") ?? [];
-  if (scheme !== "Bearer" || !token) {
-    throw new AppError("UNAUTHENTICATED", 401, "Authentication required");
-  }
-  return (await resolveSession(token)).userId;
-}
 
 export async function POST(request: NextRequest) {
   return toHttpResponse(async () => {

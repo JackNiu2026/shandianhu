@@ -34,6 +34,8 @@ enum FilePurpose {
   ASSESSMENT_ARTIFACT
   REPORT_EXPORT
   AVATAR
+  TUTOR_INPUT
+  TEACHER_QUALIFICATION
   OTHER
 }
 
@@ -48,6 +50,7 @@ enum AsyncJobType {
   PROFILE_GENERATION
   REPORT_GENERATION
   FILE_PROCESSING
+  TUTORING_SUMMARY
 }
 
 enum AsyncJobStatus {
@@ -65,6 +68,18 @@ enum NotificationType {
   ASSESSMENT_COMPLETE
   REPORT_READY
   SYSTEM
+  TRIAL_REQUESTED
+  TRIAL_ACCEPTED
+  TRIAL_REJECTED
+  TRIAL_RESCHEDULE_PROPOSED
+  TRIAL_CONFIRMED
+  TRIAL_CANCELLED
+  TRIAL_COMPLETED
+  LESSON_SCHEDULED
+  LESSON_COMPLETED
+  FEEDBACK_RECEIVED
+  REVIEW_RECEIVED
+  TEACHER_AUDIT_UPDATE
 }
 
 enum NotificationStatus {
@@ -96,6 +111,15 @@ enum AuditEntityType {
   LEARNING_REPORT
   FILE_OBJECT
   MODEL_CONFIG
+  AGENT_CONFIG
+  AGENT_PROMPT_VERSION
+  TUTOR_CONVERSATION
+  TUTOR_QUOTA_ACCOUNT
+  TEACHER_APPLICATION
+  TEACHER_PROFILE
+  TRIAL_BOOKING
+  LESSON
+  DATA_GRANT
 }
 
 enum ModelProvider {
@@ -115,6 +139,8 @@ enum ModelUsagePurpose {
   ASSESSMENT
   PROFILE_GENERATION
   REPORT_GENERATION
+  AI_TUTORING
+  PROMPT_TEST
   OTHER
 }
 
@@ -156,12 +182,148 @@ enum EvidenceSource {
   MANUAL
   IMPORTED
   MODEL
+  AI_TUTOR_SUMMARY
+  TEACHER_FEEDBACK
 }
 
 enum ReportStatus {
   DRAFT
   READY
   ARCHIVED
+}
+
+// V2.2 智学系统枚举
+
+enum Subject {
+  CHINESE
+  MATH
+  ENGLISH
+  PHYSICS
+  CHEMISTRY
+}
+
+enum SchoolStage {
+  PRIMARY
+  MIDDLE
+  HIGH
+}
+
+enum AgentStatus {
+  ENABLED
+  DISABLED
+}
+
+enum PromptStatus {
+  DRAFT
+  TESTING
+  TESTED
+  PUBLISHED
+  SUPERSEDED
+}
+
+enum ConversationStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum TutorMessageRole {
+  USER
+  ASSISTANT
+}
+
+enum MessageGenerationStatus {
+  PENDING
+  COMPLETE
+  PARTIAL
+  INTERRUPTED
+  FAILED
+  CANCELLED
+}
+
+enum QuotaLedgerKind {
+  RESERVE
+  SETTLE
+  RELEASE
+  ADJUSTMENT
+}
+
+// ─── V2.3 真人家教闭环 ─────────────────────────────────────
+
+enum TeacherApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  NEEDS_MORE_INFO
+  APPROVED
+  PAUSED
+  BANNED
+}
+
+enum QualificationType {
+  IDENTITY
+  EDUCATION
+  TEACHING_CERT
+  SUBJECT_CERT
+  OTHER
+}
+
+enum QualificationReviewStatus {
+  PENDING
+  PASS
+  FAIL
+}
+
+enum TeacherServiceStatus {
+  ACTIVE
+  PAUSED
+  BANNED
+}
+
+enum TeachingMode {
+  ONLINE
+  IN_HOME
+  IN_CENTER
+}
+
+enum ScheduleSourceType {
+  TRIAL
+  LESSON
+  BLOCKED
+}
+
+enum AvailabilityExceptionType {
+  AVAILABLE
+  UNAVAILABLE
+}
+
+enum TrialBookingStatus {
+  REQUESTED
+  ACCEPTED
+  RESCHEDULE_PROPOSED
+  REJECTED
+  PARENT_CONFIRMED
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+enum LessonStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum DataGrantScope {
+  BASIC_PROFILE
+  LEARNING_NEEDS
+}
+
+enum FeedbackPerformance {
+  STRONG
+  STEADY
+  NEEDS_SUPPORT
 }
 
 model User {
@@ -184,6 +346,8 @@ model User {
   modelUsageLedgers ModelUsageLedger[]
   assessmentRuns    AssessmentRun[]    @relation("AssessmentRequester")
   reportShares      ReportShare[]      @relation("ReportShareCreator")
+  teacherApplications TeacherApplication[] @relation("TeacherApplicationUser")
+  teacherProfile    TeacherProfile?
 }
 
 model ParentProfile {
@@ -191,6 +355,7 @@ model ParentProfile {
   userId        String   @unique
   displayName   String?
   activeChildId String?
+  serviceAreaCode String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -198,6 +363,10 @@ model ParentProfile {
   children      Child[] @relation("ParentChildren")
   fileObjects   FileObject[] @relation("FileParentProfile")
   notifications Notification[] @relation("NotificationParentProfile")
+  quotaAccount  TutorQuotaAccount?
+  trialBookingsParent TrialBooking[] @relation("TrialBookingsByParent")
+  dataGrantsGiven DataGrant[] @relation("DataGrantsByParent")
+  reviewsGiven  ParentReview[]     @relation("ParentReviewByParent")
 
   @@unique([id, activeChildId])
   @@unique([userId, id])
@@ -212,6 +381,7 @@ model Child {
   schoolName      String?
   learningGoals   String[]           @default([])
   deletedAt       DateTime?
+  purgeAfter      DateTime?
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   parentProfile   ParentProfile      @relation("ParentChildren", fields: [parentProfileId], references: [id], onDelete: Cascade)
@@ -225,9 +395,17 @@ model Child {
   reports         LearningReport[]
   notifications   Notification[]       @relation("NotificationChild")
   auditLogs       AuditLog[]
+  tutorConversations TutorConversation[]
+  tutoringSummaries TutoringSummary[]
+  quotaLedgers   TutorQuotaLedger[]
+  trialBookingsChild TrialBooking[] @relation("TrialBookingChild")
+  lessonsChild   Lesson[]           @relation("LessonChild")
+  dataGrantsChild DataGrant[]       @relation("DataGrantChild")
+  reviewsChild   ParentReview[]     @relation("ParentReviewChild")
 
   @@index([parentProfileId])
   @@index([parentProfileId, deletedAt])
+  @@index([deletedAt, purgeAfter])
   @@unique([parentProfileId, id])
 }
 
@@ -258,6 +436,9 @@ model AdminUser {
   definitions  AssessmentDefinition[]
   modelConfigs ModelConfig[]
   publishedAssessmentVersions AssessmentVersion[] @relation("AssessmentVersionPublisher")
+  agentConfigs            AgentConfig[]           @relation("AgentConfigUpdatedBy")
+  createdPromptVersions   AgentPromptVersion[]   @relation("PromptVersionCreatedBy")
+  promptTests             AgentPromptTest[]
 }
 
 model AdminSession {
@@ -295,6 +476,8 @@ model FileObject {
   child          Child?         @relation("FileChild", fields: [parentProfileId, childId], references: [parentProfileId, id], onDelete: Restrict)
   artifacts      AssessmentArtifact[]
   reports        LearningReport[]
+  messageAttachments MessageAttachment[]
+  qualifications TeacherQualification[] @relation("QualificationFile")
 
   @@index([ownerUserId, createdAt])
   @@index([ownerUserId, status, deletedAt])
@@ -326,6 +509,7 @@ model AsyncJob {
   child             Child?         @relation(fields: [childId], references: [id], onDelete: SetNull)
   assessmentRun     AssessmentRun? @relation(fields: [childId, assessmentRunId], references: [childId, id], onDelete: SetNull)
   auditLogs         AuditLog[]
+  tutoringSummaries TutoringSummary[]
 
   @@index([status, retryAt, availableAt])
   @@index([childId, createdAt])
@@ -405,6 +589,8 @@ model ModelConfig {
   createdByAdmin   AdminUser?              @relation(fields: [createdByAdminId], references: [id], onDelete: SetNull)
   usageLedgers     ModelUsageLedger[]
   profileVersions  LearningProfileVersion[]
+  primaryForAgents AgentConfig[]           @relation("AgentPrimaryModel")
+  fallbackForAgents AgentConfig[]          @relation("AgentFallbackModel")
 
   @@unique([provider, modelName, capabilities])
 }
@@ -428,6 +614,8 @@ model ModelUsageLedger {
   user           User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   child          Child?            @relation(fields: [childId], references: [id], onDelete: SetNull)
   assessmentResult AssessmentResult? @relation("AssessmentResultModelCall")
+  promptTests    AgentPromptTest[]
+  tutoringSummaries TutoringSummary[]
 
   @@index([modelConfigId, purpose, createdAt])
   @@index([modelConfigId, status, createdAt])
@@ -537,6 +725,7 @@ model LearningEvidence {
   child           Child          @relation(fields: [childId], references: [id], onDelete: Cascade)
   assessmentRun   AssessmentRun? @relation(fields: [childId, assessmentRunId], references: [childId, id], onDelete: Restrict)
   profileVersionDependencies LearningProfileVersionEvidence[]
+  tutoringSummaries TutoringSummary[]
 
   @@index([childId, observedAt])
   @@index([childId, revokedAt, observedAt])
@@ -634,4 +823,444 @@ model ReportShare {
 
   @@index([learningReportId])
   @@index([expiresAt])
+}
+
+// V2.2 智学系统模型
+
+model AgentConfig {
+  id                        String              @id @default(cuid())
+  subject                   Subject
+  schoolStage               SchoolStage
+  status                    AgentStatus         @default(DISABLED)
+  publishedPromptVersionId  String?
+  primaryModelConfigId      String?
+  fallbackModelConfigId     String?
+  temperature               Float               @default(0.4)
+  maxOutputTokens           Int                 @default(2048)
+  updatedByAdminId          String?
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+  prompts                   AgentPromptVersion[]
+  conversations             TutorConversation[]
+  publishedPromptVersion    AgentPromptVersion? @relation("AgentPublishedPrompt", fields: [id, publishedPromptVersionId], references: [agentId, id], onDelete: Restrict)
+  primaryModelConfig        ModelConfig?        @relation("AgentPrimaryModel", fields: [primaryModelConfigId], references: [id], onDelete: Restrict)
+  fallbackModelConfig       ModelConfig?        @relation("AgentFallbackModel", fields: [fallbackModelConfigId], references: [id], onDelete: Restrict)
+  updatedByAdmin            AdminUser?          @relation("AgentConfigUpdatedBy", fields: [updatedByAdminId], references: [id], onDelete: SetNull)
+
+  @@unique([subject, schoolStage])
+  @@unique([id, publishedPromptVersionId])
+}
+
+model AgentPromptVersion {
+  id            String        @id @default(cuid())
+  agentId       String
+  sequence      Int
+  content       String
+  checksum      String
+  status        PromptStatus  @default(DRAFT)
+  createdById   String
+  publishedAt   DateTime?
+  supersedesId  String?
+  createdAt     DateTime      @default(now())
+  agent         AgentConfig   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  createdBy     AdminUser     @relation("PromptVersionCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  supersedes    AgentPromptVersion? @relation("PromptSupersedes", fields: [agentId, supersedesId], references: [agentId, id], onDelete: SetNull)
+  supersededBy  AgentPromptVersion[] @relation("PromptSupersedes")
+  tests         AgentPromptTest[]
+  publishedFor  AgentConfig?  @relation("AgentPublishedPrompt")
+  conversations TutorConversation[]
+
+  @@unique([agentId, sequence])
+  @@unique([agentId, id])
+}
+
+model AgentPromptTest {
+  id                 String           @id @default(cuid())
+  promptVersionId    String
+  modelUsageLedgerId String           @unique
+  createdById        String?
+  status             PromptStatus     @default(TESTING)
+  inputPreview       String?
+  outputPreview      String?
+  passed             Boolean          @default(false)
+  createdAt          DateTime         @default(now())
+  promptVersion      AgentPromptVersion @relation(fields: [promptVersionId], references: [id], onDelete: Cascade)
+  modelUsageLedger   ModelUsageLedger @relation(fields: [modelUsageLedgerId], references: [id], onDelete: Restrict)
+  createdByAdmin     AdminUser?       @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([promptVersionId, createdAt])
+}
+
+model TutorConversation {
+  id               String              @id @default(cuid())
+  childId          String
+  agentId          String
+  promptVersionId  String
+  status           ConversationStatus  @default(ACTIVE)
+  title            String?
+  lastActivityAt   DateTime            @default(now())
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  child            Child               @relation(fields: [childId], references: [id], onDelete: Cascade)
+  agent            AgentConfig         @relation(fields: [agentId], references: [id], onDelete: Restrict)
+  promptVersion    AgentPromptVersion  @relation(fields: [agentId, promptVersionId], references: [agentId, id], onDelete: Restrict)
+  messages         TutorMessage[]
+  summaries        TutoringSummary[]
+
+  @@index([childId, lastActivityAt])
+  @@index([agentId, status])
+}
+
+model TutorMessage {
+  id               String                 @id @default(cuid())
+  conversationId   String
+  clientMessageId  String
+  role             TutorMessageRole
+  content          String                 @default("")
+  generationStatus MessageGenerationStatus @default(COMPLETE)
+  modelCallId      String?
+  sequence         Int
+  createdAt        DateTime               @default(now())
+  conversation     TutorConversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  attachments      MessageAttachment[]
+
+  @@unique([conversationId, clientMessageId])
+  @@unique([conversationId, sequence])
+  @@index([conversationId, createdAt])
+}
+
+model MessageAttachment {
+  id           String        @id @default(cuid())
+  messageId    String
+  fileObjectId String
+  ordinal      Int
+  createdAt    DateTime      @default(now())
+  message      TutorMessage  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  fileObject   FileObject    @relation(fields: [fileObjectId], references: [id], onDelete: Restrict)
+
+  @@unique([messageId, ordinal])
+  @@index([fileObjectId])
+}
+
+model TutoringSummary {
+  id               String           @id @default(cuid())
+  conversationId   String
+  childId          String
+  version          Int
+  summary          Json
+  modelCallId      String?
+  evidenceId       String?          @unique
+  asyncJobId       String?
+  createdAt        DateTime         @default(now())
+  conversation     TutorConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  child            Child            @relation(fields: [childId], references: [id], onDelete: Cascade)
+  modelCall        ModelUsageLedger? @relation(fields: [modelCallId], references: [id], onDelete: SetNull)
+  evidence         LearningEvidence? @relation(fields: [childId, evidenceId], references: [childId, id], onDelete: SetNull)
+  asyncJob         AsyncJob?        @relation(fields: [asyncJobId], references: [id], onDelete: SetNull)
+
+  @@unique([conversationId, version])
+  @@index([childId, createdAt])
+}
+
+model TutorQuotaAccount {
+  id              String   @id @default(cuid())
+  parentProfileId String   @unique
+  availablePoints BigInt   @default(0)
+  reservedPoints  BigInt   @default(0)
+  version         Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  parentProfile   ParentProfile @relation(fields: [parentProfileId], references: [id], onDelete: Cascade)
+  ledgers         TutorQuotaLedger[]
+
+  @@index([parentProfileId])
+}
+
+model TutorQuotaLedger {
+  id             String          @id @default(cuid())
+  accountId      String
+  operationKey   String          @unique
+  childId        String?
+  modelCallId    String?
+  kind           QuotaLedgerKind
+  points         BigInt
+  balanceAfter   BigInt
+  reservationId  String?
+  reason         String?
+  createdAt      DateTime        @default(now())
+  account        TutorQuotaAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  child          Child?          @relation(fields: [childId], references: [id], onDelete: SetNull)
+
+  @@index([accountId, createdAt])
+  @@index([childId, createdAt])
+  @@index([reservationId])
+}
+
+// ─── V2.3 真人家教：申请、资质、审核、公开资料 ───────────────
+
+model TeacherApplication {
+  id              String                  @id @default(cuid())
+  userId          String
+  status          TeacherApplicationStatus @default(DRAFT)
+  legalName       String
+  education       String?
+  experienceYears Int?
+  pricePerHour    Int?
+  bio             String?
+  teachingModes   TeachingMode[]
+  serviceAreaCode String?
+  version         Int                     @default(0)
+  submittedAt     DateTime?
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  user            User                    @relation("TeacherApplicationUser", fields: [userId], references: [id], onDelete: Cascade)
+  qualifications  TeacherQualification[]
+  auditRecords    TeacherAuditRecord[]
+  profile         TeacherProfile?
+
+  @@index([userId, status])
+  @@index([status, updatedAt])
+}
+
+model TeacherQualification {
+  id             String                   @id @default(cuid())
+  applicationId  String
+  type           QualificationType
+  fileObjectId   String
+  reviewStatus   QualificationReviewStatus @default(PENDING)
+  reviewReason   String?
+  reviewedAt     DateTime?
+  reviewedByAdminUserId String?
+  createdAt      DateTime                 @default(now())
+  application    TeacherApplication       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  fileObject     FileObject               @relation("QualificationFile", fields: [fileObjectId], references: [id], onDelete: Restrict)
+
+  @@unique([applicationId, type, fileObjectId])
+  @@index([applicationId, reviewStatus])
+}
+
+model TeacherAuditRecord {
+  id             String   @id @default(cuid())
+  applicationId  String
+  action         String
+  reason         String?
+  actorAdminUserId String?
+  createdAt      DateTime @default(now())
+  application    TeacherApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId, createdAt])
+}
+
+model TeacherProfile {
+  id              String              @id @default(cuid())
+  userId          String              @unique
+  applicationId   String              @unique
+  displayName     String
+  bio             String
+  subjects        Subject[]
+  schoolStages    SchoolStage[]
+  teachingModes   TeachingMode[]
+  serviceAreaCodes String[]
+  teachingTags    String[]
+  experienceYears Int
+  pricePerHour    Int
+  serviceStatus   TeacherServiceStatus @default(ACTIVE)
+  version         Int                 @default(0)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  application     TeacherApplication  @relation(fields: [applicationId], references: [id], onDelete: Restrict)
+  availabilityRules    TeacherAvailabilityRule[]
+  availabilityExceptions TeacherAvailabilityException[]
+  scheduleReservations  ScheduleReservation[]
+  trialBookingsTeacher  TrialBooking[]     @relation("TrialBookingsByTeacher")
+  lessonsTeacher        Lesson[]           @relation("LessonsByTeacher")
+  dataGrantsReceived    DataGrant[]        @relation("DataGrantsByTeacher")
+  reviews               ParentReview[]
+
+  @@index([serviceStatus])
+}
+
+// ─── 排期 ──────────────────────────────────────────────────
+
+model TeacherAvailabilityRule {
+  id              String   @id @default(cuid())
+  teacherProfileId String
+  weekday         Int      // 1=周一 … 7=周日
+  startMinute     Int      // 当日分钟偏移（北京时间）
+  endMinute       Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  teacherProfile  TeacherProfile @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([teacherProfileId, weekday, startMinute, endMinute])
+  @@index([teacherProfileId, weekday])
+}
+
+model TeacherAvailabilityException {
+  id              String                   @id @default(cuid())
+  teacherProfileId String
+  date            DateTime                 // 仅取 date 部分（北京时间）
+  type            AvailabilityExceptionType
+  startMinute     Int?
+  endMinute       Int?
+  reason          String?
+  createdAt       DateTime                 @default(now())
+  teacherProfile  TeacherProfile           @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([teacherProfileId, date])
+  @@index([teacherProfileId, date])
+}
+
+model ScheduleReservation {
+  id               String            @id @default(cuid())
+  teacherProfileId String
+  sourceType       ScheduleSourceType
+  sourceId         String
+  startsAt         DateTime
+  endsAt           DateTime
+  active           Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  teacherProfile   TeacherProfile    @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceType, sourceId])
+  @@index([teacherProfileId, startsAt, endsAt])
+}
+
+// ─── 试听 ──────────────────────────────────────────────────
+
+model TrialBooking {
+  id               String            @id @default(cuid())
+  idempotencyKey   String
+  parentProfileId  String
+  childId          String
+  teacherProfileId String
+  subject          Subject
+  startsAt         DateTime
+  endsAt           DateTime
+  status           TrialBookingStatus @default(REQUESTED)
+  mode             TeachingMode?
+  parentNote       String?
+  version          Int               @default(0)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  parentProfile    ParentProfile     @relation("TrialBookingsByParent", fields: [parentProfileId], references: [id], onDelete: Cascade)
+  teacherProfile   TeacherProfile    @relation("TrialBookingsByTeacher", fields: [teacherProfileId], references: [id], onDelete: Restrict)
+  child            Child             @relation("TrialBookingChild", fields: [childId], references: [id], onDelete: Cascade)
+  changes          BookingChange[]
+  lesson           Lesson?
+
+  @@unique([parentProfileId, idempotencyKey])
+  @@index([teacherProfileId, startsAt, endsAt])
+  @@index([parentProfileId, status])
+  @@index([childId, startsAt])
+}
+
+model BookingChange {
+  id              String   @id @default(cuid())
+  bookingId       String
+  fromStatus      TrialBookingStatus
+  toStatus        TrialBookingStatus
+  action          String   // ACCEPT / REJECT / PROPOSE_RESCHEDULE / PARENT_CONFIRM / CANCEL / COMPLETE / MARK_READY
+  actorKind       String   // PARENT / TEACHER / ADMIN
+  actorId         String
+  reason          String?
+  proposedStartsAt DateTime?
+  proposedEndsAt   DateTime?
+  createdAt       DateTime @default(now())
+  booking         TrialBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId, createdAt])
+}
+
+// ─── 课程、反馈、评价 ──────────────────────────────────────
+
+model Lesson {
+  id               String            @id @default(cuid())
+  trialBookingId   String?           @unique
+  childId          String
+  teacherProfileId String
+  subject          Subject
+  startsAt         DateTime
+  endsAt           DateTime
+  status           LessonStatus      @default(SCHEDULED)
+  mode             TeachingMode?
+  completedAt      DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  trialBooking     TrialBooking?     @relation(fields: [trialBookingId], references: [id], onDelete: SetNull)
+  child            Child             @relation("LessonChild", fields: [childId], references: [id], onDelete: Cascade)
+  teacherProfile   TeacherProfile    @relation("LessonsByTeacher", fields: [teacherProfileId], references: [id], onDelete: Restrict)
+  feedbackVersions TeacherFeedback[]
+  review           ParentReview?
+
+  @@index([teacherProfileId, startsAt, endsAt])
+  @@index([childId, startsAt])
+  @@index([status])
+}
+
+model TeacherFeedback {
+  id              String             @id @default(cuid())
+  lessonId        String
+  sequence        Int
+  lessonContent   Json
+  performance     FeedbackPerformance
+  difficulties    Json
+  suggestions     Json
+  privateTeacherNote String?
+  isCurrent       Boolean            @default(true)
+  supersedesId    String?
+  createdByTeacherProfileId String
+  correctionReason String?
+  createdAt       DateTime           @default(now())
+  lesson          Lesson             @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  supersedes      TeacherFeedback?   @relation("FeedbackSupersedes", fields: [supersedesId], references: [id], onDelete: SetNull)
+  supersededBy    TeacherFeedback[]  @relation("FeedbackSupersedes")
+
+  @@unique([lessonId, sequence])
+  @@index([lessonId, isCurrent])
+  @@index([createdByTeacherProfileId])
+}
+
+model ParentReview {
+  id              String   @id @default(cuid())
+  lessonId        String   @unique
+  parentProfileId String
+  childId         String
+  teacherProfileId String
+  rating          Int      // 1–5
+  content         String
+  authorDisplayName String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  lesson          Lesson          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  parentProfile   ParentProfile   @relation("ParentReviewByParent", fields: [parentProfileId], references: [id], onDelete: Cascade)
+  child           Child           @relation("ParentReviewChild", fields: [childId], references: [id], onDelete: Cascade)
+  teacherProfile  TeacherProfile  @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
+
+  @@index([teacherProfileId, createdAt])
+  @@index([parentProfileId, createdAt])
+}
+
+// ─── 授权 ──────────────────────────────────────────────────
+
+model DataGrant {
+  id               String           @id @default(cuid())
+  parentProfileId  String
+  childId          String
+  teacherProfileId String
+  scopes           DataGrantScope[]
+  validFrom        DateTime
+  validUntil       DateTime?
+  revokedAt        DateTime?
+  sourceBookingId  String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  parentProfile    ParentProfile    @relation("DataGrantsByParent", fields: [parentProfileId], references: [id], onDelete: Cascade)
+  child            Child            @relation("DataGrantChild", fields: [childId], references: [id], onDelete: Cascade)
+  teacherProfile   TeacherProfile   @relation("DataGrantsByTeacher", fields: [teacherProfileId], references: [id], onDelete: Cascade)
+
+  @@index([teacherProfileId, childId, revokedAt])
+  @@index([parentProfileId, childId])
 }

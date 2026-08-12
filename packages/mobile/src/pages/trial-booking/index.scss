@@ -1,0 +1,145 @@
+/* 试听预约页样式 */
+.trial-booking-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--surface-base, #F5F2F0);
+}
+
+.booking-body {
+  flex: 1;
+  padding: 0 16px 40px;
+}
+
+/* 信息卡片 */
+.info-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  margin: 12px 0;
+  border: 2PX solid var(--ink, #151617);
+  border-radius: 12px;
+  background: var(--surface-paper, #FFFCF9);
+  box-shadow: 3px 4px 0 var(--ink, #151617);
+}
+
+.info-label {
+  font-size: 13px;
+  color: var(--ink-muted, #767f79);
+}
+
+.info-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink, #151617);
+}
+
+/* 表单 */
+.form-section {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink, #151617);
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5PX solid var(--ink, #151617);
+  border-radius: 10px;
+  background: var(--surface-paper, #FFFCF9);
+  font-size: 14px;
+  color: var(--ink, #151617);
+  box-sizing: border-box;
+}
+
+/* 科目选择 */
+.subject-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.subject-chip {
+  padding: 6px 12px;
+  border: 1PX solid var(--ink, #151617);
+  border-radius: 8px;
+  background: var(--surface-paper, #FFFCF9);
+  font-size: 12px;
+  color: var(--ink-muted, #767f79);
+}
+
+.subject-chip.active {
+  background: #7056BD;
+  color: #fff;
+  border-color: #7056BD;
+}
+
+/* 时间输入 */
+.time-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.time-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1.5PX solid var(--ink, #151617);
+  border-radius: 10px;
+  background: var(--surface-paper, #FFFCF9);
+  font-size: 14px;
+  text-align: center;
+}
+
+.time-sep {
+  font-size: 14px;
+  color: var(--ink-muted, #767f79);
+}
+.slot-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.slot-option { min-height: 42px; display: grid; place-items: center; padding: 8px; border: 1.5PX solid var(--ink); border-radius: 9px; background: var(--surface-paper); color: var(--ink-muted); font-size: 11px; text-align: center; }
+.slot-option.active { background: var(--growth-soft); color: var(--growth-deep); box-shadow: 2px 2px 0 var(--ink); }
+.slot-empty { display: block; padding: 14px; border: 1PX dashed var(--line); border-radius: 9px; color: var(--ink-muted); font-size: 11px; text-align: center; }
+
+/* 授课方式 */
+.mode-chips {
+  display: flex;
+  gap: 8px;
+}
+
+.mode-chip {
+  flex: 1;
+  padding: 10px 0;
+  text-align: center;
+  border: 1.5PX solid var(--ink, #151617);
+  border-radius: 10px;
+  background: var(--surface-paper, #FFFCF9);
+  font-size: 13px;
+  color: var(--ink-muted, #767f79);
+}
+
+.mode-chip.active {
+  background: #7056BD;
+  color: #fff;
+  border-color: #7056BD;
+}
+
+/* 提交按钮 */
+.submit-btn {
+  width: 100%;
+  margin-top: 24px;
+  padding: 16px 0;
+  border: 2PX solid var(--ink, #151617);
+  border-radius: 14px;
+  background: #7056BD;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 3px 4px 0 var(--ink, #151617);
+}

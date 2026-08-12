@@ -52,6 +52,7 @@ function App({ children }: { children: ReactNode }) {
           console.warn(`[font] ${font.family} ${font.weight} failed, fallback to system font`, err),
       });
     });
+
   });
 
   return (

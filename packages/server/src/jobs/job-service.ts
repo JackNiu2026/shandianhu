@@ -6,19 +6,24 @@ export type AsyncJobType =
   | "ASSESSMENT_PROCESSING"
   | "PROFILE_GENERATION"
   | "REPORT_GENERATION"
-  | "FILE_PROCESSING";
+  | "FILE_PROCESSING"
+  | "TUTORING_SUMMARY";
 
 export type AsyncJobStatus =
   | "PENDING"
+  | "QUEUED"
   | "RUNNING"
   | "RETRY_WAIT"
   | "SUCCEEDED"
   | "FAILED"
-  | "DEAD_LETTER";
+  | "DEAD_LETTER"
+  | "CANCELLED";
 
 export type AsyncJobRecord = {
   id: string;
   requestedByUserId: string | null;
+  childId?: string | null;
+  assessmentRunId?: string | null;
   type: AsyncJobType;
   dedupeKey: string;
   status: AsyncJobStatus;
@@ -103,6 +108,10 @@ export class JobService {
 
     await this.queue.enqueue(job.id, { delayMs: Math.max(0, job.availableAt.getTime() - this.now().getTime()) });
     return job;
+  }
+
+  async enqueuePersisted(jobId: string, availableAt: Date): Promise<void> {
+    await this.queue.enqueue(jobId, { delayMs: Math.max(0, availableAt.getTime() - this.now().getTime()) });
   }
 
   async start(jobId: string): Promise<AsyncJobRecord | null> {

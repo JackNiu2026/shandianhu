@@ -1,6 +1,7 @@
-import { AppError, FileService, resolveSession } from "@lightning-tiger/server";
+import { AppError, FileService } from "@lightning-tiger/server";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
+import { authenticatedUserId } from "@/lib/v2-auth";
 import { toHttpResponse } from "@/lib/v2-handler";
 
 const files = new FileService();
@@ -9,15 +10,6 @@ const uploadInputSchema = z.object({
   contentType: z.string().min(1),
   byteSize: z.number().int().positive(),
 }).strict();
-
-async function authenticatedUserId(request: NextRequest): Promise<string> {
-  const [scheme, token] = request.headers.get("authorization")?.split(" ") ?? [];
-  if (scheme !== "Bearer" || !token) {
-    throw new AppError("UNAUTHENTICATED", 401, "Authentication required");
-  }
-
-  return (await resolveSession(token)).userId;
-}
 
 async function parseUploadInput(request: NextRequest) {
   let body: unknown;

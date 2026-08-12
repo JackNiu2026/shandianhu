@@ -1,0 +1,203 @@
+/* 老师我的页样式 */
+.teacher-me-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--surface-base, #F5F2F0);
+}
+
+.me-body {
+  flex: 1;
+  padding: 0 16px 100px;
+  overflow-y: auto;
+}
+
+/* 老师身份卡 */
+.teacher-hero {
+  padding: 18px;
+  margin: 12px 0;
+  border: 2PX solid var(--ink, #151617);
+  border-radius: 18px;
+  background: linear-gradient(135deg, #C4B6FF 0%, #A896F0 55%, #685f9c 100%);
+  box-shadow: 4px 5px 0 var(--ink, #151617);
+}
+
+.hero-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.hero-name {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -.05em;
+  color: var(--ink, #151617);
+}
+
+.hero-status {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.hero-status.active {
+  background: rgba(255, 252, 249, .6);
+  color: #3f6a54;
+}
+
+.hero-status.pending {
+  background: rgba(255, 252, 249, .6);
+  color: #C96542;
+}
+
+.hero-sub {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(21, 22, 23, .62);
+}
+
+/* 区块 */
+.section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: var(--ink, #151617);
+}
+
+.section-subtitle {
+  display: block;
+  margin: 12px 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-muted, #767f79);
+}
+
+/* 申请进度 */
+.progress-card {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 12px;
+  border: 2PX solid var(--ink, #151617);
+  border-radius: 14px;
+  background: var(--surface-paper, #FFFCF9);
+  box-shadow: 3px 4px 0 var(--ink, #151617);
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.step-dot {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f1f2ec;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-muted, #767f79);
+}
+
+.step-dot.done {
+  background: #7056BD;
+  color: #fff;
+}
+
+.step-label {
+  font-size: 11px;
+  color: var(--ink-muted, #767f79);
+}
+
+/* 资质列表 */
+.qual-list {
+  margin-top: 12px;
+}
+
+.qual-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  margin-bottom: 6px;
+  border: 1.5PX solid var(--ink, #151617);
+  border-radius: 10px;
+  background: var(--surface-paper, #FFFCF9);
+}
+
+.qual-type {
+  font-size: 13px;
+  color: var(--ink, #151617);
+}
+
+.qual-status {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.qual-status.pass {
+  background: #dcebe1;
+  color: #3f6a54;
+}
+
+.qual-status.pending {
+  background: #fff4e0;
+  color: #A7770B;
+}
+
+.qual-status.fail {
+  background: #fae6df;
+  color: #C96542;
+}
+
+/* 通知卡片 */
+.notice-card {
+  padding: 12px 14px;
+  margin-top: 10px;
+  border: 1.5PX solid #A7770B;
+  border-radius: 10px;
+  background: #fff4e0;
+}
+
+.notice-text {
+  font-size: 12px;
+  color: #A7770B;
+}
+
+/* 快捷操作 */
+.action-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.action-item {
+  padding: 14px;
+  border: 2PX solid var(--ink, #151617);
+  border-radius: 14px;
+  background: #7056BD;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 3px 4px 0 var(--ink, #151617);
+}
+
+.action-item.secondary {
+  background: var(--surface-paper, #FFFCF9);
+  color: var(--ink, #151617);
+}

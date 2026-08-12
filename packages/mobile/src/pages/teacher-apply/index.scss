@@ -1,0 +1,136 @@
+/* 老师申请页样式 */
+.teacher-apply-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--surface-base, #F5F2F0);
+}
+
+.apply-body {
+  flex: 1;
+  padding: 0 16px 40px;
+}
+
+.apply-empty {
+  padding: 40px 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-muted, #767f79);
+}
+
+/* 状态横幅 */
+.status-banner {
+  padding: 10px 14px;
+  margin: 12px 0;
+  border-radius: 10px;
+  border: 1.5PX solid var(--ink, #151617);
+}
+
+.status-banner.submitted,
+.status-banner.under_review {
+  background: #e7e4f5;
+}
+
+.status-banner.approved {
+  background: #dcebe1;
+}
+
+.status-banner.needs_more_info {
+  background: #fff4e0;
+}
+
+.status-banner.banned {
+  background: #fae6df;
+}
+
+.status-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink, #151617);
+}
+
+/* 表单 */
+.form-section {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink, #151617);
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5PX solid var(--ink, #151617);
+  border-radius: 10px;
+  background: var(--surface-paper, #FFFCF9);
+  font-size: 14px;
+  color: var(--ink, #151617);
+  box-sizing: border-box;
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px 14px;
+  border: 1.5PX solid var(--ink, #151617);
+  border-radius: 10px;
+  background: var(--surface-paper, #FFFCF9);
+  font-size: 14px;
+  color: var(--ink, #151617);
+  box-sizing: border-box;
+}
+
+/* 授课方式选择 */
+.mode-chips {
+  display: flex;
+  gap: 8px;
+}
+
+.mode-chip {
+  flex: 1;
+  padding: 10px 0;
+  text-align: center;
+  border: 1.5PX solid var(--ink, #151617);
+  border-radius: 10px;
+  background: var(--surface-paper, #FFFCF9);
+  font-size: 13px;
+  color: var(--ink-muted, #767f79);
+}
+
+.mode-chip.active {
+  background: #7056BD;
+  color: #fff;
+  border-color: #7056BD;
+}
+
+/* 操作按钮 */
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 14px 0;
+  border: 2PX solid var(--ink, #151617);
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 3px 4px 0 var(--ink, #151617);
+}
+
+.action-btn.save {
+  background: var(--surface-paper, #FFFCF9);
+  color: var(--ink, #151617);
+}
+
+.action-btn.submit {
+  background: #7056BD;
+  color: #fff;
+}

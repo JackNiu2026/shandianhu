@@ -1,91 +1,24 @@
-/**
- * 自定义底部导航栏样式
- * Figma 收敛层最终设计：浮动胶囊 + 四色柔和选中态 + 毛玻璃背景
- *
- * 关键变化（vs 旧版）：
- * - 全宽贴底 → 浮动胶囊（inset 12px）
- * - 实色背景 + border-top → 半透明背景 + 圆角 + 阴影 + backdrop-filter
- * - 统一紫色选中态 → 四色柔和背景（紫/橙/绿/蓝）
- * - 硬阴影 box-shadow → 选中态无阴影
- */
-
 .bottom-nav {
   position: fixed;
-  left: 12px;
-  right: 12px;
-  /* 大写 PX 避免 pxtransform 转换后与 env() 混排导致 postcss-calc 解析失败 */
+  left: 14px;
+  right: 14px;
   bottom: calc(12PX + env(safe-area-inset-bottom, 0PX));
-  height: 72px;
+  height: 66px;
   padding: 6px;
-  gap: 4px;
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  border: 1PX solid rgba(21, 22, 23, 0.15);
-  border-radius: 21px;
-  background: rgba(255, 252, 249, 0.96);
-  box-shadow: 0 10px 24px rgba(53, 41, 31, 0.15), 0 2px 5px rgba(53, 41, 31, 0.07);
+  gap: 4px;
+  border: 1.5PX solid rgba(21,22,23,.18);
+  border-radius: 18px;
+  background: rgba(255,252,249,.96);
+  box-shadow: 0 8px 22px rgba(53,41,31,.13), 0 2px 5px rgba(53,41,31,.06);
   z-index: 100;
 }
-
-/* 毛玻璃效果渐进增强：支持的设备恢复半透明 + blur */
+.bottom-nav .nav-btn { min-width: 0; min-height: 52px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-radius: 12px; color: #756e69; }
+.bottom-nav .nav-btn .nav-symbol { width: 20px; height: 20px; }
+.bottom-nav .nav-label { font-size: 10px; font-weight: 600; }
+.bottom-nav .nav-btn.active { background: #e8e4f8; color: #6049ad; font-weight: 800; }
+.bottom-nav .nav-btn:active { transform: scale(.96); }
 @supports (backdrop-filter: blur(14px)) or (-webkit-backdrop-filter: blur(14px)) {
-  .bottom-nav {
-    background: rgba(255, 252, 249, 0.88);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-  }
+  .bottom-nav { background: rgba(255,252,249,.88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
 }
-
-.bottom-nav .nav-btn {
-  flex: 1;
-  min-height: 54px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  border-radius: 15px;
-  color: #8A827A;
-  transition: transform 0.16s ease, background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
-}
-
-.bottom-nav .nav-btn .nav-symbol {
-  width: 20px;
-  height: 20px;
-}
-
-.bottom-nav .nav-btn .nav-label {
-  font-size: 10px;
-  letter-spacing: 0.02em;
-}
-
-/* 选中态：移除阴影，保留 font-weight */
-.bottom-nav .nav-btn.active {
-  box-shadow: none;
-  font-weight: 800;
-}
-
-/* 统一橙色选中态（对齐 Figma 设计） */
-.bottom-nav .nav-btn:nth-child(1).active {
-  background: #EEE9FF;
-  color: #7056BD;
-}
-
-.bottom-nav .nav-btn:nth-child(2).active {
-  background: #FFF0E7;
-  color: #C96542;
-}
-
-.bottom-nav .nav-btn:nth-child(3).active {
-  background: #EAF0FF;
-  color: #4E70AD;
-}
-
-/* 点击反馈 */
-.bottom-nav .nav-btn:active {
-  transform: scale(0.96);
-}
-
-/* 注意:custom-tab-bar 是自定义组件,样式默认隔离,
-   页面级规则(如为浮动导航留位的 padding-bottom)写在 app.scss。 */

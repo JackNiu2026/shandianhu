@@ -2,7 +2,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
-import { parseActiveChildId } from "../app/api/v2/children/child-route-helpers";
+import { parseActiveChildId } from "../lib/api/children";
 
 const routeRoot = resolve(__dirname, "../app/api/v2/children");
 const routeFiles = ["route.ts", "[id]/route.ts", "active/route.ts"];

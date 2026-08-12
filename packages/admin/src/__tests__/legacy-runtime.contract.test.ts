@@ -15,7 +15,6 @@ const retiredRuntimePaths = [
   "app/api/diagnose",
   "app/api/dashboard",
   "app/api/content",
-  "app/(dashboard)/teachers",
   "app/(dashboard)/parents",
   "app/(dashboard)/bookings",
   "app/(dashboard)/reviews",

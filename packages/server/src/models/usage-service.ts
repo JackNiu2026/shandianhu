@@ -1,6 +1,6 @@
 import { prisma } from "../db/client";
 
-export type ModelUsagePurpose = "ASSESSMENT" | "PROFILE_GENERATION" | "REPORT_GENERATION" | "OTHER";
+export type ModelUsagePurpose = "ASSESSMENT" | "PROFILE_GENERATION" | "REPORT_GENERATION" | "AI_TUTORING" | "PROMPT_TEST" | "OTHER";
 export type ModelUsageStatus = "SUCCEEDED" | "FAILED" | "CANCELLED";
 
 export type UsageLedgerEntry = {

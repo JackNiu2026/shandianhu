@@ -1,0 +1,23 @@
+.smart-root { background: var(--surface-base); }
+.subject-panel { margin-top: 20px; padding: 10px; overflow: hidden; }
+.subject-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.subject-card { min-width: 0; min-height: 108px; display: grid; grid-template-columns: 38px 1fr; grid-template-rows: auto auto; align-content: center; column-gap: 10px; padding: 15px 13px; border-right: 1PX solid var(--line); border-bottom: 1PX solid var(--line); }
+.subject-card:nth-child(2n) { border-right: 0; }
+.subject-card:nth-child(5), .subject-card:nth-child(6) { border-bottom: 0; }
+.subject-card:active { background: var(--growth-soft); }
+.subject-symbol { grid-row: 1 / span 2; width: 38px; height: 38px; display: grid; place-items: center; border: 1.5PX solid var(--ink); border-radius: 10px; background: var(--growth-soft); color: var(--growth-deep); font-size: 16px; font-weight: 800; }
+.subject-2 .subject-symbol { background: var(--action-soft); color: #a65334; }
+.subject-3 .subject-symbol { background: var(--success-soft); color: #287b45; }
+.subject-4 .subject-symbol { background: var(--notice-soft); color: #997007; }
+.subject-5 .subject-symbol { background: #e6f1f4; color: #236776; }
+.subject-6 .subject-symbol { background: #f0e9f4; color: #74517d; }
+.subject-label { align-self: end; color: var(--ink); font-size: 15px; font-weight: 800; }
+.subject-caption { align-self: start; margin-top: 3px; color: var(--ink-muted); font-size: 11px; }
+.history-list { display: grid; gap: 9px; }
+.history-item { display: flex; align-items: center; gap: 11px; padding: 12px; border: 1.5PX solid var(--line); border-radius: 12px; background: var(--surface-paper); }
+.history-item:active { border-color: var(--ink); }
+.history-symbol { width: 38px; height: 38px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 10px; background: var(--growth-soft); color: var(--growth-deep); font-size: 14px; font-weight: 800; }
+.history-text { min-width: 0; flex: 1; display: grid; gap: 4px; }
+.history-title { overflow: hidden; color: var(--ink); font-size: 14px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.history-meta { color: var(--ink-muted); font-size: 11px; }
+.history-arrow { color: var(--ink); font-size: 23px; }

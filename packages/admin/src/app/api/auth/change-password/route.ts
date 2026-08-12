@@ -1,6 +1,5 @@
-import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@lightning-tiger/server/src/db/client";
+import { changeAdminPassword } from "@lightning-tiger/server";
 import { clearAuthCookie } from "@/lib/auth";
 import { authenticateAdmin } from "@/lib/api-auth";
 import { changePasswordSchema } from "@/lib/validation";
@@ -17,22 +16,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: result.error.issues[0]?.message || "Invalid request" }, { status: 400 });
     }
 
-    const adminUser = await prisma.adminUser.findUnique({ where: { id: auth.adminUserId } });
-    if (!adminUser) return NextResponse.json({ error: "Administrator not found" }, { status: 404 });
-    if (!await bcrypt.compare(result.data.currentPassword, adminUser.passwordHash)) {
+    const changeResult = await changeAdminPassword(
+      auth.adminUserId,
+      result.data.currentPassword,
+      result.data.newPassword,
+    );
+    if (changeResult === "NOT_FOUND") {
+      return NextResponse.json({ error: "Administrator not found" }, { status: 404 });
+    }
+    if (changeResult === "CURRENT_PASSWORD_INVALID") {
       return NextResponse.json({ error: "Current password is incorrect" }, { status: 400 });
     }
-
-    await prisma.$transaction([
-      prisma.adminUser.update({
-        where: { id: adminUser.id },
-        data: { passwordHash: await bcrypt.hash(result.data.newPassword, 10) },
-      }),
-      prisma.adminSession.updateMany({
-        where: { adminUserId: adminUser.id, status: "ACTIVE" },
-        data: { status: "REVOKED", revokedAt: new Date() },
-      }),
-    ]);
 
     const response = NextResponse.json({ success: true });
     clearAuthCookie(response);

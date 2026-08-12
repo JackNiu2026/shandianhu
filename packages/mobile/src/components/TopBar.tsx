@@ -1,4 +1,4 @@
-import { View, Image } from "@tarojs/components";
+import { View, Image, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import logoMark from "@/assets/tiger-logo-mark.png";
 import logoType from "@/assets/tiger-logo-type.png";
@@ -11,7 +11,7 @@ import logoType from "@/assets/tiger-logo-type.png";
  * - 品牌图已裁白边压缩,直接 aspectFit 显示
  * - 吸顶(position: sticky),滚动时停留在顶部,与 Figma 一致
  */
-export function TopBar() {
+export function TopBar(props: { eyebrow?: string; title?: string; subtitle?: string } = {}) {
   let paddingTop = 20;
   let barHeight = 44;
   try {
@@ -38,6 +38,13 @@ export function TopBar() {
           <Image src={logoType} mode="aspectFit" />
         </View>
       </View>
+      {props.title && (
+        <View className="topbar-context">
+          {props.eyebrow && <Text className="topbar-eyebrow">{props.eyebrow}</Text>}
+          <Text className="topbar-title">{props.title}</Text>
+          {props.subtitle && <Text className="topbar-subtitle">{props.subtitle}</Text>}
+        </View>
+      )}
     </View>
   );
 }

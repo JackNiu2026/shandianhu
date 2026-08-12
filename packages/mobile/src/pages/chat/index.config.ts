@@ -1,3 +1,5 @@
 export default definePageConfig({
-  navigationBarTitleText: "消息",
+  navigationBarTitleText: "辅导会话",
+  navigationStyle: "default",
+  enablePullDownRefresh: false,
 });

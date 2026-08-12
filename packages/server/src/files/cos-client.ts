@@ -10,6 +10,8 @@ export interface FileSigner {
     expiresInSeconds: number;
   }): Promise<string>;
   signGet(input: { objectKey: string; expiresInSeconds: number }): Promise<string>;
+  /** 永久删除 COS 对象（用于隐私清理等场景） */
+  remove(input: { objectKey: string }): Promise<void>;
 }
 
 type CosConfiguration = {
@@ -69,6 +71,15 @@ export class CosFileSigner implements FileSigner {
       Method: "GET",
       Sign: true,
       Expires: expiresInSeconds,
+    });
+  }
+
+  async remove({ objectKey }: Parameters<FileSigner["remove"]>[0]): Promise<void> {
+    const { client, configuration } = this.getClient();
+    await client.deleteObject({
+      Bucket: configuration.bucket,
+      Region: configuration.region,
+      Key: objectKey,
     });
   }
 

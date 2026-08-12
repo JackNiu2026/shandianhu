@@ -1,6 +1,12 @@
 export type Tab = "match" | "test" | "diagnose" | "me";
 export type Role = "parent" | "teacher" | null;
-export type Grade = "小学" | "初中" | "高中";
+export type Grade =
+  | "一年级" | "二年级" | "三年级" | "四年级" | "五年级" | "六年级"
+  | "初一" | "初二" | "初三"
+  | "高一" | "高二" | "高三";
+
+export type LegacyGrade = "小学" | "初中" | "高中";
+export type SchoolStageLabel = LegacyGrade;
 
 export type Prefs = {
   grade: Grade;

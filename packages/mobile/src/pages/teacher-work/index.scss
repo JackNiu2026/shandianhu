@@ -1,0 +1,173 @@
+/* 老师工作台样式 */
+.teacher-work-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--surface-base, #F5F2F0);
+}
+
+.work-body {
+  flex: 1;
+  padding: 0 16px 100px;
+  overflow-y: auto;
+}
+
+/* 服务状态徽章 */
+.status-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  margin: 12px 0;
+  border: 2PX solid var(--ink, #151617);
+  border-radius: 14px;
+  background: var(--surface-paper, #FFFCF9);
+  box-shadow: 3px 4px 0 var(--ink, #151617);
+}
+
+.status-label {
+  font-size: 13px;
+  color: var(--ink-muted, #767f79);
+}
+
+.status-value {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.status-value.active {
+  color: #27826b;
+}
+
+.status-value.inactive {
+  color: #C96542;
+}
+
+/* 区块 */
+.section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: var(--ink, #151617);
+}
+
+/* 试听卡片 */
+.trial-card {
+  padding: 14px;
+  margin-bottom: 10px;
+  border: 2PX solid var(--ink, #151617);
+  border-radius: 14px;
+  background: var(--surface-paper, #FFFCF9);
+  box-shadow: 3px 4px 0 var(--ink, #151617);
+}
+
+.trial-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.trial-subject {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink, #151617);
+}
+
+.trial-status {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #f1f2ec;
+  font-size: 11px;
+  color: #647269;
+}
+
+.trial-time {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: var(--ink-muted, #767f79);
+}
+
+.trial-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  flex: 1;
+  border: 1.5PX solid var(--ink, #151617);
+  border-radius: 10px;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 2px 2px 0 var(--ink, #151617);
+}
+
+.action-btn.accept {
+  background: #dcebe1;
+  color: #3f6a54;
+}
+
+.action-btn.reject {
+  background: #fae6df;
+  color: #C96542;
+}
+
+/* 课程卡片 */
+.lesson-card {
+  padding: 14px;
+  margin-bottom: 10px;
+  border: 2PX solid var(--ink, #151617);
+  border-radius: 14px;
+  background: var(--surface-paper, #FFFCF9);
+  box-shadow: 3px 4px 0 var(--ink, #151617);
+}
+
+.lesson-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.lesson-subject {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink, #151617);
+}
+
+.lesson-status {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #f1f2ec;
+  font-size: 11px;
+  color: #647269;
+}
+
+.lesson-time {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-muted, #767f79);
+}
+
+.lesson-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #7056BD;
+}
+
+/* 空状态 */
+.work-empty {
+  padding: 24px 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-muted, #767f79);
+}

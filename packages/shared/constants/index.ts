@@ -2,7 +2,18 @@ import type { Grade, Dim, Question } from "../types";
 
 export const subjects = ["语文", "数学", "英语", "物理", "化学"] as const;
 
-export const grades: Grade[] = ["小学", "初中", "高中"];
+export const grades: Grade[] = [
+  "一年级", "二年级", "三年级", "四年级", "五年级", "六年级",
+  "初一", "初二", "初三", "高一", "高二", "高三",
+];
+
+export function schoolStageForGrade(grade: string | null | undefined): "PRIMARY" | "MIDDLE" | "HIGH" | null {
+  if (!grade) return null;
+  if (["一年级", "二年级", "三年级", "四年级", "五年级", "六年级", "小学"].includes(grade)) return "PRIMARY";
+  if (["初一", "初二", "初三", "初中"].includes(grade)) return "MIDDLE";
+  if (["高一", "高二", "高三", "高中"].includes(grade)) return "HIGH";
+  return null;
+}
 
 export const budgetOptions = [
   { label: "¥50–100", value: 100 },

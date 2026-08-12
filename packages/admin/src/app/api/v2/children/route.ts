@@ -1,7 +1,8 @@
 import { ChildService } from "@lightning-tiger/server";
 import type { NextRequest } from "next/server";
+import { parseChildInput } from "@/lib/api/children";
+import { authenticatedUserId } from "@/lib/v2-auth";
 import { toHttpResponse } from "@/lib/v2-handler";
-import { authenticatedUserId, parseChildInput } from "./child-route-helpers";
 
 const children = new ChildService();
 

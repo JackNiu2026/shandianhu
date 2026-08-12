@@ -8,7 +8,7 @@ describe("V2 learning-style route", () => {
     const source = fs.existsSync(routePath) ? fs.readFileSync(routePath, "utf8") : "";
 
     expect(source).toContain("LearningStyleAssessmentService");
-    expect(source).toContain("resolveSession");
+    expect(source).toContain("authenticatedUserId");
     expect(source).toContain("z.object");
     expect(source).toContain("toHttpResponse");
     expect(source).not.toMatch(/@prisma\/client|db\/client|server\/src/);

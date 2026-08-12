@@ -6,12 +6,6 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@lightning-tiger/server", "@lightning-tiger/shared"],
   serverExternalPackages: ["@prisma/client"],
   poweredByHeader: false,
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   async headers() {
     return [
       {

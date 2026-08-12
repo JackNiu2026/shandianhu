@@ -60,6 +60,7 @@ function createSigner(): FileSigner {
   return {
     signPut: vi.fn().mockResolvedValue("https://cos.example/upload"),
     signGet: vi.fn().mockResolvedValue("https://cos.example/download"),
+    remove: vi.fn().mockResolvedValue(undefined),
   };
 }
 

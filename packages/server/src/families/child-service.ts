@@ -2,6 +2,7 @@ import { AppError } from "../errors/app-error";
 import { prisma } from "../db/client";
 
 const MAX_ACTIVE_CHILDREN = 5;
+const RECOVERY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 
 export type ChildRecord = {
   id: string;
@@ -12,6 +13,7 @@ export type ChildRecord = {
   schoolName: string | null;
   learningGoals: string[];
   deletedAt: Date | null;
+  purgeAfter: Date | null;
   createdAt: Date;
 };
 
@@ -61,7 +63,7 @@ type TransactionClient = {
     }): Promise<ChildRecord[]>;
     update(args: {
       where: { id: string };
-      data: Partial<Pick<ChildRecord, "name" | "grade" | "birthDate" | "schoolName" | "learningGoals" | "deletedAt">>;
+      data: Partial<Pick<ChildRecord, "name" | "grade" | "birthDate" | "schoolName" | "learningGoals" | "deletedAt" | "purgeAfter">>;
     }): Promise<ChildRecord>;
   };
 };
@@ -152,7 +154,11 @@ export class ChildService {
     await this.database.$transaction(async (tx) => {
       const parent = await this.requireParent(tx, userId);
       const child = await this.requireOwnedChild(tx, parent.id, childId);
-      await tx.child.update({ where: { id: child.id }, data: { deletedAt: new Date() } });
+      const deletedAt = new Date();
+      await tx.child.update({
+        where: { id: child.id },
+        data: { deletedAt, purgeAfter: new Date(deletedAt.getTime() + RECOVERY_WINDOW_MS) },
+      });
 
       if (parent.activeChildId === child.id) {
         const [replacement] = await tx.child.findMany({

@@ -16,6 +16,7 @@ type ChildRecord = {
   schoolName: string | null;
   learningGoals: string[];
   deletedAt: Date | null;
+  purgeAfter: Date | null;
   createdAt: Date;
 };
 
@@ -51,6 +52,7 @@ function createDatabase(
             schoolName: data.schoolName ?? null,
             learningGoals: data.learningGoals ?? [],
             deletedAt: null,
+            purgeAfter: null,
             createdAt: new Date(),
           };
           children.push(child);
@@ -83,6 +85,7 @@ function child(id: string, parentProfileId: string, createdAt: string): ChildRec
     schoolName: null,
     learningGoals: [],
     deletedAt: null,
+    purgeAfter: null,
     createdAt: new Date(createdAt),
   };
 }
@@ -165,6 +168,7 @@ describe("ChildService", () => {
     await service.softDeleteChild("user-a", "child-current");
 
     expect(children.find((item) => item.id === "child-current")?.deletedAt).toBeInstanceOf(Date);
+    expect(children.find((item) => item.id === "child-current")?.purgeAfter).toBeInstanceOf(Date);
     expect(parents[0].activeChildId).toBe("child-new");
   });
 

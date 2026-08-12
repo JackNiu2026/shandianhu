@@ -9,7 +9,7 @@ describe("V2 job status route", () => {
 
     expect(source).toMatch(/from ["']@lightning-tiger\/server["']/);
     expect(source).toContain("JobService");
-    expect(source).toContain("resolveSession");
+    expect(source).toContain("authenticatedUserId");
     expect(source).toContain("toHttpResponse");
     expect(source).not.toMatch(/@prisma\/client|db\/client|server\/src/);
   });

@@ -3,7 +3,10 @@ import type { NextResponse } from "next/server";
 export const AUTH_COOKIE_NAME = "admin-session";
 export const SESSION_MAX_AGE = 7 * 24 * 60 * 60;
 
-export const PROTECTED_PATHS = ["/dashboard", "/assessments", "/settings"];
+export const PROTECTED_PATHS = [
+  "/dashboard", "/assessments", "/settings", "/families", "/academics",
+  "/teachers", "/agents", "/audit-logs", "/notifications",
+];
 
 export function setAuthCookie(response: NextResponse, token: string): void {
   response.cookies.set({

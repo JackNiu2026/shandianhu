@@ -21,7 +21,11 @@ export type ModelGatewayConfig = {
   enabled: boolean;
 };
 
-export type ModelMessage = { role: "system" | "user" | "assistant"; content: string };
+export type ModelContent = string | Array<
+  | { type: "text"; text: string }
+  | { type: "image_url"; image_url: { url: string } }
+>;
+export type ModelMessage = { role: "system" | "user" | "assistant"; content: ModelContent };
 export type StructuredCompletionInput<T> = {
   purpose: ModelUsagePurpose;
   messages: ModelMessage[];
@@ -29,6 +33,16 @@ export type StructuredCompletionInput<T> = {
   userId?: string;
   childId?: string;
   imageCount?: number;
+  callId?: string;
+};
+
+export type TextCompletionInput = {
+  purpose: ModelUsagePurpose;
+  messages: ModelMessage[];
+  userId?: string;
+  childId?: string;
+  imageCount?: number;
+  callId?: string;
 };
 
 type GatewayDependencies = {
@@ -54,7 +68,7 @@ export class OpenAiCompatibleGateway {
     const config = await this.dependencies.config.getEnabled();
     if (!config || !config.enabled) throw new AppError("MODEL_UNAVAILABLE", 503, "Model is unavailable");
 
-    const callId = this.dependencies.id();
+    const callId = input.callId ?? this.dependencies.id();
     const startedAt = this.dependencies.clock();
     const imageCount = input.imageCount ?? 0;
     try {
@@ -92,6 +106,50 @@ export class OpenAiCompatibleGateway {
       const usage = usageFrom(providerBody);
       await this.recordUsage(successEntry(callId, config, input, usage, imageCount, this.elapsed(startedAt)));
       return { callId, output: validation.data };
+    } catch (error) {
+      const appError = error instanceof AppError ? error : modelUnavailable("Model provider request failed");
+      await this.recordUsage(failureEntry(callId, config, input, imageCount, this.elapsed(startedAt), appError.message));
+      throw appError;
+    }
+  }
+
+  async completeText(input: TextCompletionInput): Promise<{ callId: string; output: string }> {
+    const config = await this.dependencies.config.getEnabled();
+    if (!config || !config.enabled) throw new AppError("MODEL_UNAVAILABLE", 503, "Model is unavailable");
+
+    const callId = input.callId ?? this.dependencies.id();
+    const startedAt = this.dependencies.clock();
+    const imageCount = input.imageCount ?? 0;
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), config.timeoutMs);
+      let providerResponse: Response;
+      try {
+        providerResponse = await this.dependencies.fetch(chatCompletionsUrl(config.endpointUrl), {
+          method: "POST",
+          headers: { "content-type": "application/json", Authorization: `Bearer ${config.apiKey}` },
+          signal: controller.signal,
+          body: JSON.stringify({
+            model: config.modelName,
+            messages: input.messages,
+            temperature: Number(config.temperature),
+            max_tokens: config.maxOutputTokens,
+          }),
+        });
+      } catch (error) {
+        throw modelUnavailable(error instanceof Error && error.name === "AbortError" ? "Model request timed out" : "Model provider request failed");
+      } finally {
+        clearTimeout(timeout);
+      }
+      if (!providerResponse.ok) {
+        throw modelUnavailable(providerResponse.status === 429 ? "Model provider is rate limited" : "Model provider is unavailable", providerResponse.status === 429 ? 429 : 503);
+      }
+
+      const providerBody = await safeJson(providerResponse);
+      const output = contentFrom(providerBody);
+      const usage = usageFrom(providerBody);
+      await this.recordUsage(successEntry(callId, config, input, usage, imageCount, this.elapsed(startedAt)));
+      return { callId, output };
     } catch (error) {
       const appError = error instanceof AppError ? error : modelUnavailable("Model provider request failed");
       await this.recordUsage(failureEntry(callId, config, input, imageCount, this.elapsed(startedAt), appError.message));
@@ -143,11 +201,17 @@ function numberOrZero(value: unknown): number {
   return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : 0;
 }
 
-function successEntry(callId: string, config: ModelGatewayConfig, input: StructuredCompletionInput<unknown>, usage: { inputTokens: number; outputTokens: number }, imageCount: number, latencyMs: number): UsageLedgerEntry {
+type CompletionInputBase = {
+  userId?: string;
+  childId?: string;
+  purpose: ModelUsagePurpose;
+};
+
+function successEntry(callId: string, config: ModelGatewayConfig, input: CompletionInputBase, usage: { inputTokens: number; outputTokens: number }, imageCount: number, latencyMs: number): UsageLedgerEntry {
   return { callId, modelConfigId: config.id, userId: input.userId, childId: input.childId, purpose: input.purpose, status: "SUCCEEDED", inputTokens: usage.inputTokens, outputTokens: usage.outputTokens, imageCount, latencyMs, microCost: calculateMicroCost(usage.inputTokens, usage.outputTokens, imageCount, config) };
 }
 
-function failureEntry(callId: string, config: ModelGatewayConfig, input: StructuredCompletionInput<unknown>, imageCount: number, latencyMs: number, sanitizedError: string): UsageLedgerEntry {
+function failureEntry(callId: string, config: ModelGatewayConfig, input: CompletionInputBase, imageCount: number, latencyMs: number, sanitizedError: string): UsageLedgerEntry {
   return { callId, modelConfigId: config.id, userId: input.userId, childId: input.childId, purpose: input.purpose, status: "FAILED", inputTokens: 0, outputTokens: 0, imageCount, latencyMs, microCost: 0n, sanitizedError };
 }
 

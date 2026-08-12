@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -28,15 +29,9 @@ describe("package boundaries", () => {
     expect(source).not.toMatch(directPrismaImport);
   });
 
-  it("collects direct Prisma imports from a temporary v2 route handler", () => {
-    const actualRouteRoot = path.resolve(
-      __dirname,
-      "../../../admin/src/app/api/v2",
-    );
-    const routeRootExisted = fs.existsSync(actualRouteRoot);
-    fs.mkdirSync(actualRouteRoot, { recursive: true });
+  it("collects direct Prisma imports from a temporary route handler", () => {
     const fixtureDirectory = fs.mkdtempSync(
-      path.join(actualRouteRoot, ".package-boundary-"),
+      path.join(os.tmpdir(), "lightning-tiger-package-boundary-"),
     );
 
     try {
@@ -45,12 +40,9 @@ describe("package boundaries", () => {
         'import { PrismaClient } from "@prisma/client";\nimport { prisma } from "@/lib/prisma";\n',
       );
 
-      expect(collectTypeScriptSource(v2RouteRoot)).toMatch(directPrismaImport);
+      expect(collectTypeScriptSource(fixtureDirectory)).toMatch(directPrismaImport);
     } finally {
       fs.rmSync(fixtureDirectory, { recursive: true, force: true });
-      if (!routeRootExisted) {
-        fs.rmSync(actualRouteRoot, { recursive: true, force: true });
-      }
     }
   });
 

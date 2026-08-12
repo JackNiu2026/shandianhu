@@ -2,11 +2,11 @@
 # 多阶段构建：依赖安装 → 构建 → 运行
 
 # ============ Stage 1: Dependencies ============
-FROM node:20-alpine AS deps
+FROM node:24.19.0-bookworm-slim AS deps
 WORKDIR /app
 
 # 安装 pnpm
-RUN corepack enable && corepack prepare pnpm@11.20.0 --activate
+RUN corepack enable && corepack prepare pnpm@11.21.0 --activate
 
 # 复制 workspace 配置和 lockfile
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
@@ -19,10 +19,10 @@ COPY packages/mobile/package.json ./packages/mobile/
 RUN pnpm install --frozen-lockfile
 
 # ============ Stage 2: Build ============
-FROM node:20-alpine AS builder
+FROM node:24.19.0-bookworm-slim AS builder
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@11.20.0 --activate
+RUN corepack enable && corepack prepare pnpm@11.21.0 --activate
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages/admin/node_modules ./packages/admin/node_modules
@@ -41,7 +41,7 @@ RUN pnpm --filter @lightning-tiger/server prisma:generate
 RUN pnpm --filter admin build
 
 # ============ Stage 3: Runner ============
-FROM node:20-alpine AS runner
+FROM node:24.19.0-bookworm-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -75,5 +75,5 @@ ENV HOSTNAME="0.0.0.0"
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD node -e "fetch('http://localhost:3000/login').then(r=>r.ok?process.exit(0):process.exit(1)).catch(()=>process.exit(1))"
 
-# 启动命令：先运行数据库迁移，再启动应用
+# Database migration and seeding run in the Compose `migrate` release gate.
 CMD ["node", "packages/admin/server.js"]

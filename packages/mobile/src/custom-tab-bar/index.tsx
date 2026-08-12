@@ -5,12 +5,13 @@ import { NavIcon } from "../components/Icons";
 import "./index.scss";
 
 const tabs = [
-  { pagePath: "pages/match/index", text: "发现", icon: "discover" as const, activeColor: "#7056BD" },
-  { pagePath: "pages/test/index", text: "测评", icon: "assessment" as const, activeColor: "#C96542" },
-  { pagePath: "pages/me/index", text: "我的", icon: "profile" as const, activeColor: "#4E70AD" },
+  { pagePath: "pages/smart/index", text: "智学", icon: "discover" as const, activeColor: "#6049AD" },
+  { pagePath: "pages/tutors/index", text: "家教", icon: "diagnose" as const, activeColor: "#6049AD" },
+  { pagePath: "pages/learning/index", text: "学情", icon: "assessment" as const, activeColor: "#6049AD" },
+  { pagePath: "pages/me/index", text: "我的", icon: "profile" as const, activeColor: "#6049AD" },
 ];
 
-const INACTIVE_COLOR = "#8A827A";
+const INACTIVE_COLOR = "#756E69";
 
 /** 根据当前路由获取选中的 tab 索引 */
 function getSelectedIndex(): number {
